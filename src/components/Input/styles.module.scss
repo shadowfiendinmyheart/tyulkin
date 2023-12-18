@@ -1,0 +1,30 @@
+@import "../../styles/mixins.scss";
+
+.wrapper {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 1px;
+}
+
+.inputWrapper {
+  position: relative;
+}
+
+.nativeInput {
+  opacity: 0;
+  height: 0;
+  width: 0;
+  border: none;
+  outline: none;
+}
+
+.fancyInput {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+}
+
+.spaceChar {
+  @include spaceChar;
+}
