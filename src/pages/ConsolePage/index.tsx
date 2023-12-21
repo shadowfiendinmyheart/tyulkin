@@ -42,14 +42,14 @@ const ConsolePage: React.FC = () => {
   React.useEffect(() => {
     if (appStatus !== "ok") return;
 
-    dispatch(addConsoleLog(localization.getLocale(welcomeLocaleByRoute[pathname])));
+    dispatch(addConsoleLog(localization.getLocale({ key: welcomeLocaleByRoute[pathname] })));
   }, [appStatus]);
 
   // preview page text
   React.useEffect(() => {
     if (appStatus !== "ok") return;
 
-    dispatch(addConsoleLog(localization.getLocale(welcomeLocaleByRoute[pathname])));
+    dispatch(addConsoleLog(localization.getLocale({ key: welcomeLocaleByRoute[pathname] })));
   }, [pathname]);
 
   const WithPageHandler: React.FC<{ children: React.ReactNode }> = handlerByRoute[pathname];

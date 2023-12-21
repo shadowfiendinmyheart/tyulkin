@@ -16,12 +16,12 @@ const WithMainHandler: React.FC<WithMainHandlerProps> = ({ children }) => {
 
   const commandHandler = (command: string) => {
     if (command === "education") {
-      consoleDispatch(addConsoleLog(localization.getLocale("education")));
+      consoleDispatch(addConsoleLog(localization.getLocale({ key: "education" })));
       return true;
     }
 
     if (command === "about") {
-      consoleDispatch(addConsoleLog(localization.getLocale("about")));
+      consoleDispatch(addConsoleLog(localization.getLocale({ key: "about" })));
       return true;
     }
 

@@ -1,34 +1,30 @@
-export interface Dictionary {
+export interface CommonDictionary {
   welcome: string;
   settingsWelcome: string;
   education: string;
   about: string;
   help: string;
+}
+
+export interface DictionaryWithArgs {
   ["404command"]: string;
 }
 
+export type Dictionary = CommonDictionary & DictionaryWithArgs;
+
 export type DictionaryKeys = keyof Dictionary;
+export type DictionaryWithArgsKeys = keyof DictionaryWithArgs;
 
-type LocaleParamsGenerator<
-  K extends DictionaryKeys,
-  P extends string | void = void,
-> = P extends string
-  ? {
-      key: K;
-      params: { [key in P]: string };
-    }
-  : {
-      key: K;
-    };
-
-type NotFoundLocaleParam = LocaleParamsGenerator<"404command", "unknownCommand">;
-type AboutLocaleParam = LocaleParamsGenerator<"about">;
-
-const aboutLocalParam: AboutLocaleParam = { key: "about" };
-const notFoundLocaleParam: NotFoundLocaleParam = {
-  key: "404command",
-  params: { unknownCommand: "key" },
+type LocaleWithArgsGenerator<Key extends DictionaryWithArgsKeys, Args extends string> = {
+  key: Key;
+  args: Record<Args, string>;
 };
+
+type DefaultLocale = { key: DictionaryKeys };
+type NotFoundLocale = LocaleWithArgsGenerator<"404command", "unknownCommand">;
+
+export type LocaleWithArgs = NotFoundLocale;
+export type LocaleParams = DefaultLocale | LocaleWithArgs;
 
 export const languages = ["ru", "eng"] as const;
 export type Languages = (typeof languages)[number];

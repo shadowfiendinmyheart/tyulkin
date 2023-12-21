@@ -5,7 +5,7 @@ import { ThemeMode } from "../store/app/interfaces";
 export interface UserConfig {
   caretMode: CaretMode;
   colorThemeMode: ThemeMode;
-  isConsoleMode: boolean; // TODO isConsoleMode => mode: "console" | "site" | "game" ...
+  isConsoleMode: boolean; // TODO isConsoleMode => mode: "console" | "mobile" | "game" ...
 }
 
 enum StorageKeys {

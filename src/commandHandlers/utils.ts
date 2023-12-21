@@ -1,6 +1,3 @@
-export const unknownCommandText = (command: string) =>
-  `Command: ${command} not found\nЧтобы получить помощь введите /help`;
-
 export const logWrapper = (userCommand: string, log: string) => `${userCommand}\n\n${log}\n\n`;
 
 export const separateCommand = (commands: string[] | object, userCommand: string) => {

@@ -6,7 +6,7 @@ import { addConsoleLog, setCaretMode } from "../store/console/actions";
 import { makeCapitalize } from "../utils";
 import { separateCommand } from "./utils";
 import localization from "../localization";
-import { isLanguage } from "../localization/utils";
+import { checkLanguage } from "../localization/utils";
 import storage from "../storage";
 
 interface WithSettingsHandlerProps {
@@ -28,32 +28,32 @@ const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) =
     const { command, params } = separated;
 
     if (command === SettingsComamnds.SetCaret) {
-      const caretModeParam = makeCapitalize(params[0]) as keyof typeof CaretMode;
+      const caretMode = makeCapitalize(params[0]) as keyof typeof CaretMode;
 
-      if (params.length !== 1 || !CaretMode[caretModeParam]) {
-        // TODO: make error handler
-        consoleDispatch(addConsoleLog("wrong caret params"));
+      if (params.length !== 1 || !CaretMode[caretMode]) {
+        // TODO: make error handler + localization
+        consoleDispatch(addConsoleLog("wrong caret"));
         return true;
       }
 
-      storage.setCaretMode(CaretMode[caretModeParam]);
-      consoleDispatch(setCaretMode(CaretMode[caretModeParam]));
-      consoleDispatch(addConsoleLog(`ur caret successfull changed to ${caretModeParam} mode`));
+      storage.setCaretMode(CaretMode[caretMode]);
+      consoleDispatch(setCaretMode(CaretMode[caretMode]));
+      consoleDispatch(addConsoleLog(`ur caret successfull changed to ${caretMode} mode`));
       return true;
     }
 
     if (command === SettingsComamnds.SetLocale) {
-      const languageParam = params[0].toLowerCase();
+      const language = checkLanguage(params[0].toLowerCase());
 
-      if (params.length !== 1 || !isLanguage(languageParam)) {
-        // TODO: make error handler
-        consoleDispatch(addConsoleLog("wrong language params"));
+      if (params.length !== 1 || !language) {
+        // TODO: make error handler + localization
+        consoleDispatch(addConsoleLog("wrong language"));
         return true;
       }
 
-      storage.setLanguage(languageParam);
-      localization.changeDictionary(languageParam);
-      consoleDispatch(addConsoleLog(`ur language switch to ${languageParam}`));
+      storage.setLanguage(language);
+      localization.changeDictionary(language);
+      consoleDispatch(addConsoleLog(`ur language switch to ${language}`));
       return true;
     }
 

@@ -4,7 +4,6 @@ import { useConsoleContext } from "../context/consoleContext";
 import { GlobalHandlerContext } from "../context/globalHandlerContext";
 import localization from "../localization";
 import { addConsoleLog, clearLogs } from "../store/console/actions";
-import { logWrapper, unknownCommandText } from "./utils";
 
 interface WithGlobalHandlerProps {
   children?: React.ReactNode;
@@ -30,17 +29,20 @@ const WithGlobalHandler: React.FC<WithGlobalHandlerProps> = ({ children }) => {
     }
 
     if (command === "help") {
-      consoleDispatch(addConsoleLog(localization.getLocale("help")));
+      consoleDispatch(addConsoleLog(localization.getLocale({ key: "help" })));
       return true;
     }
 
     if (command === "ls") {
       // TODO: make context ls (example: SettingsCommands)
-      consoleDispatch(addConsoleLog(localization.getLocale("404command")));
       return true;
     }
 
-    consoleDispatch(addConsoleLog(unknownCommandText(command)));
+    consoleDispatch(
+      addConsoleLog(
+        localization.getLocale({ key: "404command", args: { unknownCommand: command } }),
+      ),
+    );
     return false;
   };
 
