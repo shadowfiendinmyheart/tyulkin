@@ -14,12 +14,14 @@ const History: React.FC = () => {
     }
   }, [logs]);
 
+  console.log("logs", logs);
+
   return (
     <div className={styles.list}>
       <ul>
         {logs.map((log, index) => (
           <li key={index} className={styles.log}>
-            {log.isUserPrint && <span className={styles.tag}>{"cv>"}</span>}
+            {log.isUserPrint && <span className={styles.tag}>{`${log.location}>`}</span>}
             {log.message}
           </li>
         ))}

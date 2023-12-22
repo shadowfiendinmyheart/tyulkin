@@ -8,6 +8,9 @@ import { useConsoleContext } from "../../context/consoleContext";
 import { useHandlerContext } from "../../context/handlerContext";
 import { addUserCommand, addUserLog, changeFirstUserCommand } from "../../store/console/actions";
 import styles from "./styles.module.scss";
+import { useLocation } from "react-router-dom";
+import { RoutesValues } from "../../router/interfaces";
+import { usePathnameLocation } from "../../hooks/usePathnameLocation";
 
 interface InputProps {
   setLogs?: SetState<Logs>;
@@ -21,6 +24,7 @@ const Input: React.FC<InputProps> = () => {
   const [caretPostition, setCaretPosition] = React.useState<number>(inputValue.length - 1);
   const historyPosition = React.useRef<number>(0);
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const pathnameLocation = usePathnameLocation();
 
   const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.currentTarget.value;
@@ -77,7 +81,7 @@ const Input: React.FC<InputProps> = () => {
       setInputValue("");
       historyPosition.current = 0;
 
-      consoleDispatch(addUserLog(command));
+      consoleDispatch(addUserLog(command, pathnameLocation));
       const isContextCommand = commandHandler(command);
       if (!isContextCommand) globalHandler(command);
       return;
@@ -124,7 +128,7 @@ const Input: React.FC<InputProps> = () => {
 
   return (
     <div className={styles.wrapper}>
-      <span>cv&gt;</span>
+      <span>{pathnameLocation}&gt;</span>
       <div className={styles.inputWrapper}>
         <input
           className={styles.nativeInput}

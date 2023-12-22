@@ -5,7 +5,7 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
     case ConsoleActionKind.AddLogs: {
       return {
         ...state,
-        logs: [...state.logs, action.payload!],
+        logs: [...state.logs, action.payload],
       };
     }
 
@@ -19,21 +19,21 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
     case ConsoleActionKind.AddUserCommand: {
       return {
         ...state,
-        userCommands: [action.payload!, ...state.userCommands],
+        userCommands: [action.payload, ...state.userCommands],
       };
     }
 
     case ConsoleActionKind.ChangeFirstUserCommand: {
       return {
         ...state,
-        userCommands: [action.payload!, ...state.userCommands.slice(1)],
+        userCommands: [action.payload, ...state.userCommands.slice(1)],
       };
     }
 
     case ConsoleActionKind.SetCaretMode: {
       return {
         ...state,
-        caretMode: action.payload!,
+        caretMode: action.payload,
       };
     }
   }

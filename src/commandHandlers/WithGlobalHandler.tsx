@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useConsoleContext } from "../context/consoleContext";
 import { GlobalHandlerContext } from "../context/globalHandlerContext";
+import { usePathnameLocation } from "../hooks/usePathnameLocation";
 import localization from "../localization";
 import { addConsoleLog, clearLogs } from "../store/console/actions";
 
@@ -11,6 +12,7 @@ interface WithGlobalHandlerProps {
 
 const WithGlobalHandler: React.FC<WithGlobalHandlerProps> = ({ children }) => {
   const { consoleDispatch } = useConsoleContext();
+  const pathnameLocation = usePathnameLocation();
   const navigate = useNavigate();
 
   const commandHandler = (command: string) => {
@@ -29,7 +31,7 @@ const WithGlobalHandler: React.FC<WithGlobalHandlerProps> = ({ children }) => {
     }
 
     if (command === "help") {
-      consoleDispatch(addConsoleLog(localization.getLocale({ key: "help" })));
+      consoleDispatch(addConsoleLog(localization.getLocale({ key: "help" }), pathnameLocation));
       return true;
     }
 
@@ -41,6 +43,7 @@ const WithGlobalHandler: React.FC<WithGlobalHandlerProps> = ({ children }) => {
     consoleDispatch(
       addConsoleLog(
         localization.getLocale({ key: "404command", args: { unknownCommand: command } }),
+        pathnameLocation,
       ),
     );
     return false;

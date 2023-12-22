@@ -8,6 +8,7 @@ import { separateCommand } from "./utils";
 import localization from "../localization";
 import { checkLanguage } from "../localization/utils";
 import storage from "../storage";
+import { usePathnameLocation } from "../hooks/usePathnameLocation";
 
 interface WithSettingsHandlerProps {
   children?: React.ReactNode;
@@ -21,6 +22,9 @@ enum SettingsComamnds {
 
 const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) => {
   const { consoleDispatch } = useConsoleContext();
+  const pathnameLocation = usePathnameLocation();
+
+  console.log("wqqqqqq", pathnameLocation);
 
   const commandHandler = (userCommand: string) => {
     const separated = separateCommand(SettingsComamnds, userCommand);
@@ -32,13 +36,15 @@ const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) =
 
       if (params.length !== 1 || !CaretMode[caretMode]) {
         // TODO: make error handler + localization
-        consoleDispatch(addConsoleLog("wrong caret"));
+        consoleDispatch(addConsoleLog("wrong caret", pathnameLocation));
         return true;
       }
 
       storage.setCaretMode(CaretMode[caretMode]);
       consoleDispatch(setCaretMode(CaretMode[caretMode]));
-      consoleDispatch(addConsoleLog(`ur caret successfull changed to ${caretMode} mode`));
+      consoleDispatch(
+        addConsoleLog(`ur caret successfull changed to ${caretMode} mode`, pathnameLocation),
+      );
       return true;
     }
 
@@ -47,13 +53,13 @@ const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) =
 
       if (params.length !== 1 || !language) {
         // TODO: make error handler + localization
-        consoleDispatch(addConsoleLog("wrong language"));
+        consoleDispatch(addConsoleLog("wrong language", pathnameLocation));
         return true;
       }
 
       storage.setLanguage(language);
       localization.changeDictionary(language);
-      consoleDispatch(addConsoleLog(`ur language switch to ${language}`));
+      consoleDispatch(addConsoleLog(`ur language switch to ${language}`, pathnameLocation));
       return true;
     }
 

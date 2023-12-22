@@ -4,6 +4,7 @@ export interface CommonDictionary {
   education: string;
   about: string;
   help: string;
+  loading: string;
 }
 
 export interface DictionaryWithArgs {

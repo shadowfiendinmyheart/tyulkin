@@ -4,5 +4,6 @@
   "education": "UDSU.\nIMITIF.\nIdk kafedra.\nPI(d)\n2018-2022",
   "about": "Tyulkin Ivan\n23 y.o.\nFrontend-developer\nSPB, Russia",
   "help": "start - don't work\nls - show all commands\nhelp - wtf?",
-  "404command": "Command: $unknownCommand not found\nEnter help to get help)"
+  "404command": "Command: $unknownCommand not found\nEnter help to get help)",
+  "loading": "loading"
 }
