@@ -1,7 +1,6 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
 import Console from "../../components/Console";
-import WithEducationHandler from "../../commandHandlers/WithEducationHandler";
 import WithSettingsHandler from "../../commandHandlers/WithSettingsHandler";
 import WithGlobalHandler from "../../commandHandlers/WithGlobalHandler";
 import WithMainHandler from "../../commandHandlers/WithMainHandler";
@@ -19,13 +18,11 @@ import { usePathnameLocation } from "../../hooks/usePathnameLocation";
 
 const handlerByRoute = {
   [ROUTES.MAIN]: WithMainHandler,
-  [ROUTES.EDUCATION]: WithEducationHandler,
   [ROUTES.SETTINGS]: WithSettingsHandler,
 };
 
 const welcomeLocaleByRoute: { [key in RoutesValues]: DictionaryKeys } = {
   [ROUTES.MAIN]: "welcome",
-  [ROUTES.EDUCATION]: "welcome",
   [ROUTES.SETTINGS]: "settingsWelcome",
 };
 
@@ -39,8 +36,6 @@ const ConsolePage: React.FC = () => {
   const { appState } = useAppContext();
   const pathnameLocation = usePathnameLocation();
   const appStatus = appState.status;
-
-  console.log("here welcome text", appStatus, pathname);
 
   // welcome text
   // TODO fix double console bug

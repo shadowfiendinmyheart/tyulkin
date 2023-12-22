@@ -16,10 +16,6 @@ const router = createBrowserRouter([
   },
   {
     ...consolePageParams,
-    path: ROUTES.EDUCATION,
-  },
-  {
-    ...consolePageParams,
     path: ROUTES.SETTINGS,
   },
 ]);

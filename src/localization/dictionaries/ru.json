@@ -5,5 +5,9 @@
   "about": "Тюлькин Иван\n23 года\nФронтенд-разработчик\nСПБ, Россия",
   "help": "start - чтобы начать работу\nls - доступные комманды\nhelp - почему Г перевёрнутая?",
   "404command": "Команда: $unknownCommand не найдена\nВведите help чтобы получить список доступных команд",
-  "loading": "загрузка"
+  "loading": "загрузка",
+  "wrongCaret": "Курсор $caretName не найден",
+  "changeCaret": "Курсор $caretName успешно установлен",
+  "wrongLanguage": "Язык $languageName не найден",
+  "changeLanguage": "Язык $languageName успешно установлен"
 }

@@ -5,5 +5,9 @@
   "about": "Tyulkin Ivan\n23 y.o.\nFrontend-developer\nSPB, Russia",
   "help": "start - don't work\nls - show all commands\nhelp - wtf?",
   "404command": "Command: $unknownCommand not found\nEnter help to get help)",
-  "loading": "loading"
+  "loading": "loading",
+  "wrongCaret": "caret $caretName not found",
+  "changeCaret": "ur caret successfull changed to $caretName mode",
+  "wrongLanguage": "language $languageName not found",
+  "changeLanguage": "ur language switch to $languageName"
 }

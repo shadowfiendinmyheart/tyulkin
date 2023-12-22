@@ -24,8 +24,6 @@ const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) =
   const { consoleDispatch } = useConsoleContext();
   const pathnameLocation = usePathnameLocation();
 
-  console.log("wqqqqqq", pathnameLocation);
-
   const commandHandler = (userCommand: string) => {
     const separated = separateCommand(SettingsComamnds, userCommand);
     if (!separated) return false;
@@ -35,31 +33,49 @@ const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) =
       const caretMode = makeCapitalize(params[0]) as keyof typeof CaretMode;
 
       if (params.length !== 1 || !CaretMode[caretMode]) {
-        // TODO: make error handler + localization
-        consoleDispatch(addConsoleLog("wrong caret", pathnameLocation));
+        // TODO: make error handler
+        consoleDispatch(
+          addConsoleLog(
+            localization.getLocale({ key: "wrongCaret", args: { caretName: caretMode } }),
+            pathnameLocation,
+          ),
+        );
         return true;
       }
 
       storage.setCaretMode(CaretMode[caretMode]);
       consoleDispatch(setCaretMode(CaretMode[caretMode]));
       consoleDispatch(
-        addConsoleLog(`ur caret successfull changed to ${caretMode} mode`, pathnameLocation),
+        addConsoleLog(
+          localization.getLocale({ key: "changeCaret", args: { caretName: caretMode } }),
+          pathnameLocation,
+        ),
       );
       return true;
     }
 
     if (command === SettingsComamnds.SetLocale) {
-      const language = checkLanguage(params[0].toLowerCase());
+      const language = checkLanguage(params[0].toLowerCase()) || "";
 
       if (params.length !== 1 || !language) {
-        // TODO: make error handler + localization
-        consoleDispatch(addConsoleLog("wrong language", pathnameLocation));
+        // TODO: make error handler
+        consoleDispatch(
+          addConsoleLog(
+            localization.getLocale({ key: "wrongLanguage", args: { languageName: language } }),
+            pathnameLocation,
+          ),
+        );
         return true;
       }
 
       storage.setLanguage(language);
       localization.changeDictionary(language);
-      consoleDispatch(addConsoleLog(`ur language switch to ${language}`, pathnameLocation));
+      consoleDispatch(
+        addConsoleLog(
+          localization.getLocale({ key: "changeLanguage", args: { languageName: language } }),
+          pathnameLocation,
+        ),
+      );
       return true;
     }
 

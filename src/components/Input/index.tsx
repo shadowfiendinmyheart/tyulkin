@@ -8,8 +8,6 @@ import { useConsoleContext } from "../../context/consoleContext";
 import { useHandlerContext } from "../../context/handlerContext";
 import { addUserCommand, addUserLog, changeFirstUserCommand } from "../../store/console/actions";
 import styles from "./styles.module.scss";
-import { useLocation } from "react-router-dom";
-import { RoutesValues } from "../../router/interfaces";
 import { usePathnameLocation } from "../../hooks/usePathnameLocation";
 
 interface InputProps {
@@ -34,7 +32,7 @@ const Input: React.FC<InputProps> = () => {
     if (input && !nativeEventData) {
       // long press backspace
       const caretPosition = Number(input.selectionStart);
-      setCaretPosition((prev) => caretPosition);
+      setCaretPosition(() => caretPosition);
     }
 
     setInputValue(value);
@@ -94,7 +92,7 @@ const Input: React.FC<InputProps> = () => {
     if (input) {
       const caretPosition = Number(input.selectionStart);
 
-      setCaretPosition((prev) => caretPosition);
+      setCaretPosition(() => caretPosition);
     }
   };
 
@@ -103,7 +101,7 @@ const Input: React.FC<InputProps> = () => {
     if (input && allowedKeyUpKeyCodes.includes(e.code)) {
       const caretPosition = Number(input.selectionStart) - 1;
 
-      setCaretPosition((prev) => caretPosition);
+      setCaretPosition(() => caretPosition);
     }
   };
 
