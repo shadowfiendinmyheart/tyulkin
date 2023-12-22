@@ -3,4 +3,10 @@
   height: 90vh;
   overflow: scroll;
   margin: auto;
+  -ms-overflow-style: none; /* hide scroll for IE and Edge */
+  scrollbar-width: none; /* hide scroll for Firefox */
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }

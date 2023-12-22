@@ -14,8 +14,6 @@ const History: React.FC = () => {
     }
   }, [logs]);
 
-  console.log("logs", logs);
-
   return (
     <div className={styles.list}>
       <ul>
