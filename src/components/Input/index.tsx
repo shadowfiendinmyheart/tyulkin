@@ -7,8 +7,8 @@ import { useGlobalHandlerContext } from "../../context/globalHandlerContext";
 import { useConsoleContext } from "../../context/consoleContext";
 import { useHandlerContext } from "../../context/handlerContext";
 import { addUserCommand, addUserLog, changeFirstUserCommand } from "../../store/console/actions";
-import styles from "./styles.module.scss";
 import { usePathnameLocation } from "../../hooks/usePathnameLocation";
+import styles from "./styles.module.scss";
 
 interface InputProps {
   setLogs?: SetState<Logs>;
@@ -24,6 +24,8 @@ const Input: React.FC<InputProps> = () => {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const pathnameLocation = usePathnameLocation();
 
+  console.log('caretPosition', caretPostition);
+  
   const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.currentTarget.value;
 

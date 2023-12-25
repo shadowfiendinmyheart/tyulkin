@@ -1,24 +1,35 @@
 @import "../../styles/mixins.scss";
 
+@mixin afterCaret {
+  content: "";
+  position: absolute;
+  display: block;
+  animation: blink 1s step-end infinite;
+}
+
 $caret-color: rgb(255, 255, 255);
 
 .bottom {
-  animation: blink 1s step-end infinite;
-  border-bottom: 1px solid $caret-color;
+  position: relative;
+
+  &::after {
+    @include afterCaret();
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    border: 1px solid $caret-color;
+  }
 }
 
 .default {
   position: relative;
 
   &::after {
-    content: "";
-    position: absolute;
-    display: block;
+    @include afterCaret();
     top: 0;
     right: 0;
     height: 100%;
     border: 0.5px solid $caret-color;
-    animation: blink 1s step-end infinite;
   }
 }
 
