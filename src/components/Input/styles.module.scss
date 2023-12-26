@@ -1,13 +1,15 @@
 @import "../../styles/mixins.scss";
 
-.wrapper {
-  display: flex;
-  gap: 5px;
-  margin-bottom: 1px;
+.locator {
+  margin-right: 8px;
 }
 
-.inputWrapper {
+.wrapper {
+  display: flex;
+  margin-bottom: 1px;
   position: relative;
+  width: 100%;
+  flex-wrap: wrap;
 }
 
 .nativeInput {
@@ -19,9 +21,6 @@
 }
 
 .fancyInput {
-  position: absolute;
-  top: 0;
-  left: 0;
   display: flex;
 }
 

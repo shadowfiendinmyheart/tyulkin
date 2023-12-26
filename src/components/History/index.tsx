@@ -3,16 +3,8 @@ import { useConsoleContext } from "../../context/consoleContext";
 import styles from "./styles.module.scss";
 
 const History: React.FC = () => {
-  const endLogsRef = React.useRef<HTMLDivElement>(null);
   const { consoleState } = useConsoleContext();
   const { logs } = consoleState;
-
-  React.useEffect(() => {
-    // autoscroll to bottom logs
-    if (endLogsRef.current) {
-      endLogsRef.current.scrollIntoView();
-    }
-  }, [logs]);
 
   return (
     <div className={styles.list}>
@@ -24,7 +16,6 @@ const History: React.FC = () => {
           </li>
         ))}
       </ul>
-      <div ref={endLogsRef} />
     </div>
   );
 };

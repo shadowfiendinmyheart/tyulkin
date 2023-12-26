@@ -22,10 +22,9 @@ const Input: React.FC<InputProps> = () => {
   const [caretPostition, setCaretPosition] = React.useState<number>(inputValue.length - 1);
   const historyPosition = React.useRef<number>(0);
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const consoleInputRef = React.useRef<HTMLDivElement>(null);
   const pathnameLocation = usePathnameLocation();
 
-  console.log('caretPosition', caretPostition);
-  
   const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.currentTarget.value;
 
@@ -126,32 +125,34 @@ const Input: React.FC<InputProps> = () => {
     };
   }, []);
 
+  React.useEffect(() => {
+    if (consoleInputRef.current) {
+      consoleInputRef.current.scrollIntoView({ block: "end" });
+    }
+  }, [inputValue]);
+
   return (
-    <div className={styles.wrapper}>
-      <span>{pathnameLocation}&gt;</span>
-      <div className={styles.inputWrapper}>
-        <input
-          className={styles.nativeInput}
-          type="text"
-          value={inputValue}
-          onChange={handleChangeInput}
-          onKeyDown={handleKeyDownInput}
-          onKeyUp={handleKeyUpInput}
-          autoFocus
-          ref={inputRef}
-        />
-        <div className={styles.fancyInput}>
-          {inputValue.split("").map((char, index) =>
-            caretPostition === index ? (
-              <Caret key={index}>{char}</Caret>
-            ) : (
-              <span className={cn(char === " " && styles.spaceChar)} key={index}>
-                {char}
-              </span>
-            ),
-          )}
-        </div>
-      </div>
+    <div className={styles.wrapper} ref={consoleInputRef}>
+      <span className={styles.locator}>{pathnameLocation}&gt;</span>
+      <input
+        className={styles.nativeInput}
+        type="text"
+        value={inputValue}
+        onChange={handleChangeInput}
+        onKeyDown={handleKeyDownInput}
+        onKeyUp={handleKeyUpInput}
+        autoFocus
+        ref={inputRef}
+      />
+      {inputValue.split("").map((char, index) =>
+        caretPostition === index ? (
+          <Caret key={index}>{char}</Caret>
+        ) : (
+          <span className={cn(char === " " && styles.spaceChar)} key={index}>
+            {char}
+          </span>
+        ),
+      )}
     </div>
   );
 };
