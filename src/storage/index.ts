@@ -21,7 +21,7 @@ class Storage {
 
   getCaretMode = (): CaretMode => {
     const caretMode = localStorage.getItem(StorageKeys.CaretMode) as CaretMode | null;
-    return caretMode || CaretMode.Default;
+    return caretMode || CaretMode.Vertical;
   };
 
   setThemeMode = (theme: ThemeMode) => {
