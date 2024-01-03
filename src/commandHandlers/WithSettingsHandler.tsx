@@ -4,11 +4,12 @@ import { useConsoleContext } from "../context/consoleContext";
 import { HandlerContext } from "../context/handlerContext";
 import { addConsoleLog, setCaretMode } from "../store/console/actions";
 import { makeCapitalize } from "../utils";
-import { separateCommand } from "./utils";
+import { getParamsString, separateCommand } from "./utils";
 import localization from "../localization";
 import { checkLanguage } from "../localization/utils";
 import storage from "../storage";
 import { usePathnameLocation } from "../hooks/usePathnameLocation";
+import { languages } from "../localization/interfaces";
 
 interface WithSettingsHandlerProps {
   children?: React.ReactNode;
@@ -17,7 +18,9 @@ interface WithSettingsHandlerProps {
 enum SettingsComamnds {
   SetTheme = "set theme",
   SetCaret = "set caret",
-  SetLocale = "set locale",
+  ShowCarets = "show carets",
+  SetLanguage = "set language",
+  ShowLanguages = "show languages",
 }
 
 const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) => {
@@ -29,11 +32,24 @@ const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) =
     if (!separated) return false;
     const { command, params } = separated;
 
-    if (command === SettingsComamnds.SetCaret) {
+    const caretListLocale = localization.getLocale({
+      key: "сaretList",
+      args: { carets: getParamsString(CaretMode) },
+    });
+    if (SettingsComamnds.ShowCarets === command) {
+      consoleDispatch(addConsoleLog(caretListLocale, pathnameLocation));
+      return true;
+    }
+
+    if (SettingsComamnds.SetCaret === command) {
+      if (!params[0]) {
+        consoleDispatch(addConsoleLog(caretListLocale, pathnameLocation));
+        return true;
+      }
+
       const caretMode = makeCapitalize(params[0]) as keyof typeof CaretMode;
 
-      if (params.length !== 1 || !CaretMode[caretMode]) {
-        // TODO: make error handler
+      if (!CaretMode[caretMode]) {
         consoleDispatch(
           addConsoleLog(
             localization.getLocale({ key: "wrongCaret", args: { caretName: caretMode } }),
@@ -54,14 +70,27 @@ const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) =
       return true;
     }
 
-    if (command === SettingsComamnds.SetLocale) {
-      const language = checkLanguage(params[0].toLowerCase()) || "";
+    const languageListLocale = localization.getLocale({
+      key: "languageList",
+      args: { languages: getParamsString(languages) },
+    });
+    if (SettingsComamnds.ShowCarets === command) {
+      consoleDispatch(addConsoleLog(languageListLocale, pathnameLocation));
+      return true;
+    }
 
-      if (params.length !== 1 || !language) {
-        // TODO: make error handler
+    if (SettingsComamnds.SetLanguage === command) {
+      if (!params[0]) {
+        consoleDispatch(addConsoleLog(languageListLocale, pathnameLocation));
+        return true;
+      }
+
+      const language = checkLanguage(params[0].toLowerCase());
+
+      if (!language) {
         consoleDispatch(
           addConsoleLog(
-            localization.getLocale({ key: "wrongLanguage", args: { languageName: language } }),
+            localization.getLocale({ key: "wrongLanguage", args: { languageName: params[0] } }),
             pathnameLocation,
           ),
         );
@@ -79,7 +108,7 @@ const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) =
       return true;
     }
 
-    if (command === SettingsComamnds.SetTheme) {
+    if (SettingsComamnds.SetTheme === command) {
       // TODO set theme
     }
 

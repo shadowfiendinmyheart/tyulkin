@@ -4,7 +4,7 @@ import styles from "./styles.module.scss";
 import { useConsoleContext } from "../../context/consoleContext";
 
 export enum CaretMode {
-  Vertical = "vertical", // TODO rename
+  Vertical = "vertical",
   Bottom = "bottom",
 }
 interface CaretProps {

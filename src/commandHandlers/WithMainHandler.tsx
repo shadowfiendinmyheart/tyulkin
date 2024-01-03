@@ -11,25 +11,31 @@ interface WithMainHandlerProps {
   children?: React.ReactNode;
 }
 
+enum MainCommands {
+  Education = "education",
+  About = "about",
+  Settings = "settings",
+}
+
 const WithMainHandler: React.FC<WithMainHandlerProps> = ({ children }) => {
   const { consoleDispatch } = useConsoleContext();
   const pathnameLocation = usePathnameLocation();
   const navigate = useNavigate();
 
   const commandHandler = (command: string) => {
-    if (command === "education") {
+    if (MainCommands.Education === command) {
       consoleDispatch(
         addConsoleLog(localization.getLocale({ key: "education" }), pathnameLocation),
       );
       return true;
     }
 
-    if (command === "about") {
+    if (MainCommands.About === command) {
       consoleDispatch(addConsoleLog(localization.getLocale({ key: "about" }), pathnameLocation));
       return true;
     }
 
-    if (command === "settings") {
+    if (MainCommands.Settings === command) {
       navigate(ROUTES.SETTINGS);
       return true;
     }

@@ -1,30 +1,23 @@
 export const logWrapper = (userCommand: string, log: string) => `${userCommand}\n\n${log}\n\n`;
 
 export const separateCommand = (commands: string[] | object, userCommand: string) => {
-  let transformedCommands = [];
-  // TODO
-  if (typeof commands === "object" && !Array.isArray(commands) && commands !== null) {
-    transformedCommands = Object.values(commands);
-  } else {
-    transformedCommands = commands;
-  }
+  let commandValues = Object.values(commands);
+  userCommand = userCommand.trim();
 
-  let finalCommand = "";
-  for (const command of transformedCommands) {
-    if (userCommand.trim().startsWith(command)) {
-      finalCommand = command;
-      break;
-    }
-  }
-  if (!finalCommand) return;
+  let findedCommand = commandValues.find((command) => userCommand.startsWith(command));
+  if (!findedCommand) return;
 
   const userParams =
-    userCommand.length > finalCommand.length
-      ? userCommand.slice(finalCommand.length + 1).split(" ")
+    userCommand.length > findedCommand.length
+      ? userCommand.slice(findedCommand.length + 1).split(" ")
       : [];
 
   return {
-    command: finalCommand,
+    command: findedCommand,
     params: userParams,
   };
+};
+
+export const getParamsString = (obj: object) => {
+  return Object.values(obj).join(", ");
 };

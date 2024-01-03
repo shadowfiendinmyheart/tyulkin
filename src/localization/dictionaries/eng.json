@@ -8,6 +8,8 @@
   "loading": "loading",
   "wrongCaret": "caret $caretName not found",
   "changeCaret": "ur caret successfull changed to $caretName mode",
+  "сaretList": "Allowed carets: $carets",
   "wrongLanguage": "language $languageName not found",
-  "changeLanguage": "ur language switch to $languageName"
+  "changeLanguage": "ur language switch to $languageName",
+  "languageList": "Allowed languages: $languages"
 }
