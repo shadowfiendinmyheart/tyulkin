@@ -1,5 +1,5 @@
 import React from "react";
-import { CaretMode } from "../components/Caret";
+import { CaretMode } from "../components/Char";
 import { useConsoleContext } from "../context/consoleContext";
 import { HandlerContext } from "../context/handlerContext";
 import { addConsoleLog, setCaretMode } from "../store/console/actions";

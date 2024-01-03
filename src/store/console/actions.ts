@@ -1,4 +1,4 @@
-import { CaretMode } from "../../components/Caret";
+import { CaretMode } from "../../components/Char";
 import { ConsoleActionKind, Log } from "./interfaces";
 
 export const addLog = (log: Log) => ({ type: ConsoleActionKind.AddLogs, payload: log });

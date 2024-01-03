@@ -9,19 +9,19 @@
 
 $caret-color: rgb(255, 255, 255);
 
-.bottom {
+.underline {
   position: relative;
 
   &::after {
     @include afterCaret();
     bottom: 0;
-    left: 0;
+    left: 9px;
     width: 100%;
     border: 1px solid $caret-color;
   }
 }
 
-.vertical {
+.line {
   position: relative;
 
   &::after {
@@ -33,6 +33,20 @@ $caret-color: rgb(255, 255, 255);
   }
 }
 
+.block {
+  position: relative;
+
+  &::after {
+    @include afterCaret();
+    top: 0;
+    left: 9px;
+    height: 100%;
+    width: 100%;
+    background-color: $caret-color;
+    z-index: -1;
+  }
+}
+
 @keyframes blink {
   from,
   to {
@@ -40,9 +54,16 @@ $caret-color: rgb(255, 255, 255);
   }
   50% {
     border-color: transparent;
+    background-color: transparent;
   }
 }
 
+.char {
+  mix-blend-mode: difference;
+}
+
 .spaceChar {
-  @include spaceChar;
+  display: inline-block;
+  width: 9.6px;
+  height: 100%;
 }

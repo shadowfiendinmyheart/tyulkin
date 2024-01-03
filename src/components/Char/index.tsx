@@ -1,0 +1,34 @@
+import React from "react";
+import cn from "clsx";
+import styles from "./styles.module.scss";
+import { useConsoleContext } from "../../context/consoleContext";
+
+export enum CaretMode {
+  Line = "line",
+  Underline = "underline",
+  Block = "block",
+}
+interface CharProps extends React.HTMLAttributes<HTMLSpanElement> {
+  isCaret: boolean;
+  children?: string;
+}
+
+const Char: React.FC<CharProps> = ({ isCaret, children = " ", className }) => {
+  const { consoleState } = useConsoleContext();
+  const { caretMode } = consoleState;
+
+  return (
+    <span
+      className={cn(
+        children === " " && styles.spaceChar,
+        isCaret && styles[caretMode],
+        styles.char,
+        className,
+      )}
+    >
+      {children}
+    </span>
+  );
+};
+
+export default Char;

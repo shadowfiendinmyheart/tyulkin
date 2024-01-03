@@ -7,9 +7,19 @@
 .wrapper {
   display: flex;
   margin-bottom: 1px;
-  position: relative;
   width: 100%;
   flex-wrap: wrap;
+}
+
+.chars {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.zeroChar {
+  position: absolute;
+  left: -10px;
 }
 
 .nativeInput {
@@ -22,8 +32,4 @@
 
 .fancyInput {
   display: flex;
-}
-
-.spaceChar {
-  @include spaceChar;
 }

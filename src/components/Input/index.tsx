@@ -1,6 +1,6 @@
 import React from "react";
 import cn from "clsx";
-import Caret from "../Caret";
+import Char from "../Char";
 import { SetState } from "../../commandHandlers/interfaces";
 import { Logs } from "../../store/console/interfaces";
 import { useGlobalHandlerContext } from "../../context/globalHandlerContext";
@@ -18,6 +18,7 @@ const Input: React.FC<InputProps> = () => {
   const { commandHandler } = useHandlerContext();
   const { commandHandler: globalHandler } = useGlobalHandlerContext();
   const { consoleDispatch, consoleState } = useConsoleContext();
+  const { logs, userCommands } = consoleState;
   const [inputValue, setInputValue] = React.useState<string>("");
   const [caretPostition, setCaretPosition] = React.useState<number>(inputValue.length - 1);
   const historyPosition = React.useRef<number>(0);
@@ -44,13 +45,13 @@ const Input: React.FC<InputProps> = () => {
 
   const handleKeyDownInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.code === "ArrowUp") {
-      if (!consoleState.userCommands.length) return;
+      if (!userCommands.length) return;
       historyPosition.current =
-        historyPosition.current === consoleState.userCommands.length - 1
+        historyPosition.current === userCommands.length - 1
           ? historyPosition.current
           : historyPosition.current + 1;
 
-      const nextCommand = consoleState.userCommands[historyPosition.current];
+      const nextCommand = userCommands[historyPosition.current];
       setInputValue(nextCommand);
       const newCaretPosition = nextCommand.length;
       setCaretPosition(nextCommand.length - 1);
@@ -58,11 +59,11 @@ const Input: React.FC<InputProps> = () => {
     }
 
     if (e.code === "ArrowDown") {
-      if (!consoleState.userCommands.length) return;
+      if (!userCommands.length) return;
       historyPosition.current =
         historyPosition.current === 0 ? historyPosition.current : historyPosition.current - 1;
 
-      const prevCommand = consoleState.userCommands[historyPosition.current];
+      const prevCommand = userCommands[historyPosition.current];
       setInputValue(prevCommand);
       const newCaretPosition = prevCommand.length;
       setCaretPosition(newCaretPosition);
@@ -129,7 +130,7 @@ const Input: React.FC<InputProps> = () => {
     if (consoleInputRef.current) {
       consoleInputRef.current.scrollIntoView({ block: "end" });
     }
-  }, [inputValue]);
+  }, [inputValue, logs]);
 
   return (
     <div className={styles.wrapper} ref={consoleInputRef}>
@@ -144,15 +145,14 @@ const Input: React.FC<InputProps> = () => {
         autoFocus
         ref={inputRef}
       />
-      {inputValue.split("").map((char, index) =>
-        caretPostition === index ? (
-          <Caret key={index}>{char}</Caret>
-        ) : (
-          <span className={cn(char === " " && styles.spaceChar)} key={index}>
-            {char}
-          </span>
-        ),
-      )}
+      <div className={styles.chars}>
+        {caretPostition === -1 || inputValue.length === 0 ? (
+          <Char isCaret={true} className={styles.zeroChar} />
+        ) : undefined}
+        {inputValue.split("").map((char, index) => (
+          <Char isCaret={caretPostition === index}>{char}</Char>
+        ))}
+      </div>
     </div>
   );
 };

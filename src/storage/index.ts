@@ -1,4 +1,4 @@
-import { CaretMode } from "../components/Caret";
+import { CaretMode } from "../components/Char";
 import { Languages } from "../localization/interfaces";
 import { ThemeMode } from "../store/app/interfaces";
 
@@ -21,7 +21,7 @@ class Storage {
 
   getCaretMode = (): CaretMode => {
     const caretMode = localStorage.getItem(StorageKeys.CaretMode) as CaretMode | null;
-    return caretMode || CaretMode.Vertical;
+    return caretMode || CaretMode.Block;
   };
 
   setThemeMode = (theme: ThemeMode) => {
