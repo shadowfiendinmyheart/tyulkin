@@ -25,3 +25,7 @@ export const setCaretMode = (caretMode: CaretMode) => ({
   type: ConsoleActionKind.SetCaretMode,
   payload: caretMode,
 });
+export const setCommandsHint = (commandsHint: string[]) => ({
+  type: ConsoleActionKind.SetCommandsHint,
+  payload: commandsHint,
+});

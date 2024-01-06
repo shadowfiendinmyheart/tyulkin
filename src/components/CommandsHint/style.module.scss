@@ -1,0 +1,16 @@
+.commandsHint {
+  margin-top: 5px;
+  display: grid;
+  grid-auto-columns: max-content;
+  column-gap: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, auto));
+}
+
+.command {
+  white-space: nowrap;
+  flex-grow: 1;
+}
+
+.hide {
+  display: none;
+}

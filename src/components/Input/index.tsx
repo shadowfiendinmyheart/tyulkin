@@ -1,5 +1,4 @@
 import React from "react";
-import cn from "clsx";
 import Char from "../Char";
 import { SetState } from "../../commandHandlers/interfaces";
 import { Logs } from "../../store/console/interfaces";
@@ -8,6 +7,8 @@ import { useConsoleContext } from "../../context/consoleContext";
 import { useHandlerContext } from "../../context/handlerContext";
 import { addUserCommand, addUserLog, changeFirstUserCommand } from "../../store/console/actions";
 import { usePathnameLocation } from "../../hooks/usePathnameLocation";
+import { useCommandsHint } from "./useCommandsHint";
+
 import styles from "./styles.module.scss";
 
 interface InputProps {
@@ -25,6 +26,11 @@ const Input: React.FC<InputProps> = () => {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const consoleInputRef = React.useRef<HTMLDivElement>(null);
   const pathnameLocation = usePathnameLocation();
+  const { commandsHintHandleKeyDownInput } = useCommandsHint(
+    inputValue,
+    setInputValue,
+    setCaretPosition,
+  );
 
   const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.currentTarget.value;
@@ -38,12 +44,14 @@ const Input: React.FC<InputProps> = () => {
     }
 
     setInputValue(value);
-    consoleDispatch(changeFirstUserCommand(value));
   };
 
   const allowedKeyUpKeyCodes = ["ArrowLeft", "ArrowRight", "Backspace", "MetaRight", "MetaLeft"];
 
   const handleKeyDownInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const isContinue = commandsHintHandleKeyDownInput(e);
+    if (!isContinue) return;
+
     if (e.code === "ArrowUp") {
       if (!userCommands.length) return;
       historyPosition.current =
@@ -52,6 +60,7 @@ const Input: React.FC<InputProps> = () => {
           : historyPosition.current + 1;
 
       const nextCommand = userCommands[historyPosition.current];
+      // TODO
       setInputValue(nextCommand);
       const newCaretPosition = nextCommand.length;
       setCaretPosition(nextCommand.length - 1);
@@ -132,6 +141,10 @@ const Input: React.FC<InputProps> = () => {
     }
   }, [inputValue, logs]);
 
+  React.useEffect(() => {
+    consoleDispatch(changeFirstUserCommand(inputValue));
+  }, [inputValue]);
+
   return (
     <div className={styles.wrapper} ref={consoleInputRef}>
       <span className={styles.locator}>{pathnameLocation}&gt;</span>
@@ -150,7 +163,9 @@ const Input: React.FC<InputProps> = () => {
           <Char isCaret={true} className={styles.zeroChar} />
         ) : undefined}
         {inputValue.split("").map((char, index) => (
-          <Char isCaret={caretPostition === index}>{char}</Char>
+          <Char key={index} isCaret={caretPostition === index}>
+            {char}
+          </Char>
         ))}
       </div>
     </div>

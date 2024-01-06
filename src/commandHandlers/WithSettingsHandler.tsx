@@ -4,7 +4,12 @@ import { useConsoleContext } from "../context/consoleContext";
 import { HandlerContext } from "../context/handlerContext";
 import { addConsoleLog, setCaretMode } from "../store/console/actions";
 import { makeCapitalize } from "../utils";
-import { getParamsString, separateCommand } from "./utils";
+import {
+  CommandWithParams,
+  getAllCommandsWithParams,
+  getParamsString,
+  separateCommand,
+} from "./utils";
 import localization from "../localization";
 import { checkLanguage } from "../localization/utils";
 import storage from "../storage";
@@ -22,6 +27,14 @@ enum SettingsComamnds {
   SetLanguage = "set language",
   ShowLanguages = "show languages",
 }
+
+const commandsWithParams: CommandWithParams[] = [
+  { command: SettingsComamnds.SetTheme },
+  { command: SettingsComamnds.SetCaret, params: Object.values(CaretMode) },
+  { command: SettingsComamnds.ShowCarets },
+  { command: SettingsComamnds.SetLanguage, params: Object.values(languages) },
+  { command: SettingsComamnds.ShowLanguages },
+];
 
 const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) => {
   const { consoleDispatch } = useConsoleContext();
@@ -115,7 +128,13 @@ const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) =
     return false;
   };
 
-  return <HandlerContext.Provider value={{ commandHandler }}>{children}</HandlerContext.Provider>;
+  const allCommands = getAllCommandsWithParams(commandsWithParams);
+
+  return (
+    <HandlerContext.Provider value={{ commandHandler, allCommands }}>
+      {children}
+    </HandlerContext.Provider>
+  );
 };
 
 export default WithSettingsHandler;

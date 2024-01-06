@@ -6,6 +6,7 @@ import { usePathnameLocation } from "../hooks/usePathnameLocation";
 import localization from "../localization";
 import { ROUTES } from "../router/const";
 import { addConsoleLog } from "../store/console/actions";
+import { getAllCommandsWithParams } from "./utils";
 
 interface WithMainHandlerProps {
   children?: React.ReactNode;
@@ -43,7 +44,15 @@ const WithMainHandler: React.FC<WithMainHandlerProps> = ({ children }) => {
     return false;
   };
 
-  return <HandlerContext.Provider value={{ commandHandler }}>{children}</HandlerContext.Provider>;
+  const allCommands = getAllCommandsWithParams(
+    Object.values(MainCommands).map((command) => ({ command })),
+  );
+
+  return (
+    <HandlerContext.Provider value={{ commandHandler, allCommands }}>
+      {children}
+    </HandlerContext.Provider>
+  );
 };
 
 export default WithMainHandler;

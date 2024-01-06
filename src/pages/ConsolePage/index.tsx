@@ -31,6 +31,7 @@ const ConsolePage: React.FC = () => {
     logs: [],
     userCommands: [],
     caretMode: storage.getCaretMode(),
+    commandsHint: [],
   });
   const pathname = useLocation().pathname as RoutesValues;
   const pathnameLocation = usePathnameLocation();

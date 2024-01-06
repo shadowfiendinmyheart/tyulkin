@@ -12,6 +12,7 @@ export interface ConsoleState {
   logs: Logs;
   userCommands: string[];
   caretMode: CaretMode;
+  commandsHint: string[];
 }
 
 // TODO: fix undefined in payload
@@ -20,7 +21,8 @@ export type ConsoleActionType =
   | ActionClearLogs
   | ActionAddUserCommand
   | ActionChangeFirstUserCommand
-  | ActionSetCaretMode;
+  | ActionSetCaretMode
+  | ActionSetCommandsHint;
 
 export type ActionAddLogs = ActionTypeGenerator<ConsoleActionKind.AddLogs, Log>;
 export type ActionClearLogs = ActionTypeGenerator<ConsoleActionKind.ClearLogs>;
@@ -30,6 +32,10 @@ export type ActionChangeFirstUserCommand = ActionTypeGenerator<
   string
 >;
 export type ActionSetCaretMode = ActionTypeGenerator<ConsoleActionKind.SetCaretMode, CaretMode>;
+export type ActionSetCommandsHint = ActionTypeGenerator<
+  ConsoleActionKind.SetCommandsHint,
+  string[]
+>;
 
 export enum ConsoleActionKind {
   AddLogs = "addLogs",
@@ -37,4 +43,5 @@ export enum ConsoleActionKind {
   AddUserCommand = "addUserCommand",
   ChangeFirstUserCommand = "changeFirstUserCommand",
   SetCaretMode = "setCaretMode",
+  SetCommandsHint = "setCommandsHint",
 }

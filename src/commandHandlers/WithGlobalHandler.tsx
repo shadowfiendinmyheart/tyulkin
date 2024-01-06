@@ -6,6 +6,7 @@ import { usePathnameLocation } from "../hooks/usePathnameLocation";
 import localization from "../localization";
 import { ROUTES } from "../router/const";
 import { addConsoleLog, clearLogs } from "../store/console/actions";
+import { getAllCommandsWithParams } from "./utils";
 
 interface WithGlobalHandlerProps {
   children?: React.ReactNode;
@@ -65,8 +66,12 @@ const WithGlobalHandler: React.FC<WithGlobalHandlerProps> = ({ children }) => {
     return false;
   };
 
+  const allCommands = getAllCommandsWithParams(
+    Object.values(GlobalComamnds).map((command) => ({ command })),
+  );
+
   return (
-    <GlobalHandlerContext.Provider value={{ commandHandler }}>
+    <GlobalHandlerContext.Provider value={{ commandHandler, allCommands }}>
       {children}
     </GlobalHandlerContext.Provider>
   );

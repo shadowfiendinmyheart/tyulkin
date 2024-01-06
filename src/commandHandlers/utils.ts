@@ -21,3 +21,20 @@ export const separateCommand = (commands: string[] | object, userCommand: string
 export const getParamsString = (obj: object) => {
   return Object.values(obj).join(", ");
 };
+
+export interface CommandWithParams {
+  command: string;
+  params?: string[];
+}
+export const getAllCommandsWithParams = (commandsWithParams: CommandWithParams[]) => {
+  return commandsWithParams.reduce<string[]>((prev, cur) => {
+    const newCommands = cur.params
+      ? cur.params.map((param) => cur.command + " " + param)
+      : [cur.command];
+    return [...prev, ...newCommands];
+  }, []);
+};
+
+export const getAutocompleteCommands = (commands: string[], userCommand: string) => {
+  return commands.filter((x) => x.startsWith(userCommand));
+};

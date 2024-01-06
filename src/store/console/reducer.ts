@@ -17,6 +17,7 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
     }
 
     case ConsoleActionKind.AddUserCommand: {
+      // if (!action.payload.trim()) return state;
       return {
         ...state,
         userCommands: [action.payload, ...state.userCommands],
@@ -34,6 +35,15 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
       return {
         ...state,
         caretMode: action.payload,
+      };
+    }
+
+    case ConsoleActionKind.SetCommandsHint: {
+      if (action.payload.length === 1) return { ...state, commandsHint: [] };
+
+      return {
+        ...state,
+        commandsHint: action.payload,
       };
     }
   }
