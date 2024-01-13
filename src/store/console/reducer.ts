@@ -16,15 +16,14 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
       };
     }
 
-    case ConsoleActionKind.AddUserCommand: {
-      // if (!action.payload.trim()) return state;
+    case ConsoleActionKind.AddHistoryCommand: {
       return {
         ...state,
         userCommands: [action.payload, ...state.userCommands],
       };
     }
 
-    case ConsoleActionKind.ChangeFirstUserCommand: {
+    case ConsoleActionKind.ChangeCurrentHistoryCommand: {
       return {
         ...state,
         userCommands: [action.payload, ...state.userCommands.slice(1)],

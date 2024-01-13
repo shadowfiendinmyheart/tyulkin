@@ -1,10 +1,10 @@
 export const logWrapper = (userCommand: string, log: string) => `${userCommand}\n\n${log}\n\n`;
 
 export const separateCommand = (commands: string[] | object, userCommand: string) => {
-  let commandValues = Object.values(commands);
+  const commandValues = Object.values(commands);
   userCommand = userCommand.trim();
 
-  let findedCommand = commandValues.find((command) => userCommand.startsWith(command));
+  const findedCommand = commandValues.find((command) => userCommand.startsWith(command));
   if (!findedCommand) return;
 
   const userParams =

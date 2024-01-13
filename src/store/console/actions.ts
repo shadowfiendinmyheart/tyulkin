@@ -13,12 +13,12 @@ export const addUserLog = (message: string, location: string) => ({
   payload: { message, location, isUserPrint: true },
 });
 export const clearLogs = () => ({ type: ConsoleActionKind.ClearLogs });
-export const addUserCommand = (command: string) => ({
-  type: ConsoleActionKind.AddUserCommand,
+export const addHistoryCommand = (command: string) => ({
+  type: ConsoleActionKind.AddHistoryCommand,
   payload: command,
 });
-export const changeFirstUserCommand = (command: string) => ({
-  type: ConsoleActionKind.ChangeFirstUserCommand,
+export const changeCurrentHistoryCommand = (command: string) => ({
+  type: ConsoleActionKind.ChangeCurrentHistoryCommand,
   payload: command,
 });
 export const setCaretMode = (caretMode: CaretMode) => ({

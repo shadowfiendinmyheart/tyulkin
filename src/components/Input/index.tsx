@@ -5,9 +5,10 @@ import { Logs } from "../../store/console/interfaces";
 import { useGlobalHandlerContext } from "../../context/globalHandlerContext";
 import { useConsoleContext } from "../../context/consoleContext";
 import { useHandlerContext } from "../../context/handlerContext";
-import { addUserCommand, addUserLog, changeFirstUserCommand } from "../../store/console/actions";
+import { addUserLog } from "../../store/console/actions";
 import { usePathnameLocation } from "../../hooks/usePathnameLocation";
-import { useCommandsHint } from "./useCommandsHint";
+import { useCommandsHint } from "./hooks/useCommandsHint";
+import { useHistoryCommands } from "./hooks/useHistoryCommands";
 
 import styles from "./styles.module.scss";
 
@@ -19,10 +20,9 @@ const Input: React.FC<InputProps> = () => {
   const { commandHandler } = useHandlerContext();
   const { commandHandler: globalHandler } = useGlobalHandlerContext();
   const { consoleDispatch, consoleState } = useConsoleContext();
-  const { logs, userCommands } = consoleState;
+  const { logs } = consoleState;
   const [inputValue, setInputValue] = React.useState<string>("");
   const [caretPostition, setCaretPosition] = React.useState<number>(inputValue.length - 1);
-  const historyPosition = React.useRef<number>(0);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const consoleInputRef = React.useRef<HTMLDivElement>(null);
   const pathnameLocation = usePathnameLocation();
@@ -31,6 +31,8 @@ const Input: React.FC<InputProps> = () => {
     setInputValue,
     setCaretPosition,
   );
+  const { historyCommandsHandleKeyDownInput, historyCommandsHandleChangeInput } =
+    useHistoryCommands(setInputValue, setCaretPosition, inputRef);
 
   const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.currentTarget.value;
@@ -44,6 +46,7 @@ const Input: React.FC<InputProps> = () => {
     }
 
     setInputValue(value);
+    historyCommandsHandleChangeInput(e);
   };
 
   const allowedKeyUpKeyCodes = ["ArrowLeft", "ArrowRight", "Backspace", "MetaRight", "MetaLeft"];
@@ -52,43 +55,11 @@ const Input: React.FC<InputProps> = () => {
     const isContinue = commandsHintHandleKeyDownInput(e);
     if (!isContinue) return;
 
-    if (e.code === "ArrowUp") {
-      if (!userCommands.length) return;
-      historyPosition.current =
-        historyPosition.current === userCommands.length - 1
-          ? historyPosition.current
-          : historyPosition.current + 1;
-
-      const nextCommand = userCommands[historyPosition.current];
-      // TODO
-      setInputValue(nextCommand);
-      const newCaretPosition = nextCommand.length;
-      setCaretPosition(nextCommand.length - 1);
-      setTimeout(() => inputRef.current?.setSelectionRange(newCaretPosition, newCaretPosition));
-    }
-
-    if (e.code === "ArrowDown") {
-      if (!userCommands.length) return;
-      historyPosition.current =
-        historyPosition.current === 0 ? historyPosition.current : historyPosition.current - 1;
-
-      const prevCommand = userCommands[historyPosition.current];
-      setInputValue(prevCommand);
-      const newCaretPosition = prevCommand.length;
-      setCaretPosition(newCaretPosition);
-      setTimeout(() => inputRef.current?.setSelectionRange(newCaretPosition, newCaretPosition));
-    }
+    historyCommandsHandleKeyDownInput(e);
 
     if (e.code === "Enter") {
       const command = inputValue.trim();
-      if (command) {
-        if (historyPosition.current !== 0) {
-          consoleDispatch(changeFirstUserCommand(inputValue));
-        }
-        consoleDispatch(addUserCommand(""));
-      }
       setInputValue("");
-      historyPosition.current = 0;
 
       consoleDispatch(addUserLog(command, pathnameLocation));
       const isContextCommand = commandHandler(command);
@@ -140,10 +111,6 @@ const Input: React.FC<InputProps> = () => {
       consoleInputRef.current.scrollIntoView({ block: "end" });
     }
   }, [inputValue, logs]);
-
-  React.useEffect(() => {
-    consoleDispatch(changeFirstUserCommand(inputValue));
-  }, [inputValue]);
 
   return (
     <div className={styles.wrapper} ref={consoleInputRef}>

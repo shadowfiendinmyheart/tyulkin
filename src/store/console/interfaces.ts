@@ -19,16 +19,19 @@ export interface ConsoleState {
 export type ConsoleActionType =
   | ActionAddLogs
   | ActionClearLogs
-  | ActionAddUserCommand
-  | ActionChangeFirstUserCommand
+  | ActionAddHistoryCommand
+  | ActionChangeCurrentHistoryCommand
   | ActionSetCaretMode
   | ActionSetCommandsHint;
 
 export type ActionAddLogs = ActionTypeGenerator<ConsoleActionKind.AddLogs, Log>;
 export type ActionClearLogs = ActionTypeGenerator<ConsoleActionKind.ClearLogs>;
-export type ActionAddUserCommand = ActionTypeGenerator<ConsoleActionKind.AddUserCommand, string>;
-export type ActionChangeFirstUserCommand = ActionTypeGenerator<
-  ConsoleActionKind.ChangeFirstUserCommand,
+export type ActionAddHistoryCommand = ActionTypeGenerator<
+  ConsoleActionKind.AddHistoryCommand,
+  string
+>;
+export type ActionChangeCurrentHistoryCommand = ActionTypeGenerator<
+  ConsoleActionKind.ChangeCurrentHistoryCommand,
   string
 >;
 export type ActionSetCaretMode = ActionTypeGenerator<ConsoleActionKind.SetCaretMode, CaretMode>;
@@ -40,8 +43,8 @@ export type ActionSetCommandsHint = ActionTypeGenerator<
 export enum ConsoleActionKind {
   AddLogs = "addLogs",
   ClearLogs = "clearLogs",
-  AddUserCommand = "addUserCommand",
-  ChangeFirstUserCommand = "changeFirstUserCommand",
+  AddHistoryCommand = "addHistoryCommand",
+  ChangeCurrentHistoryCommand = "changeCurrentHistoryCommand",
   SetCaretMode = "setCaretMode",
   SetCommandsHint = "setCommandsHint",
 }
