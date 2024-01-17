@@ -1,12 +1,9 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
 import Console from "../../components/Console";
-import WithSettingsHandler from "../../commandHandlers/WithSettingsHandler";
 import WithGlobalHandler from "../../commandHandlers/WithGlobalHandler";
-import WithMainHandler from "../../commandHandlers/WithMainHandler";
 import { ConsoleContext } from "../../context/consoleContext";
 import { ROUTES } from "../../router/const";
-import { RoutesValues } from "../../router/interfaces";
 import { reducer } from "../../store/console/reducer";
 import { addConsoleLog } from "../../store/console/actions";
 import storage from "../../storage";
@@ -15,13 +12,10 @@ import { CommonDictionaryKeys } from "../../localization/interfaces";
 import { usePathnameLocation } from "../../hooks/usePathnameLocation";
 
 import styles from "./styles.module.scss";
+import { handlerByRoute } from "../../commandHandlers/utils";
+import { RouteValues } from "../../router/interfaces";
 
-const handlerByRoute = {
-  [ROUTES.MAIN]: WithMainHandler,
-  [ROUTES.SETTINGS]: WithSettingsHandler,
-};
-
-const welcomeLocaleByRoute: { [key in RoutesValues]: CommonDictionaryKeys } = {
+const welcomeLocaleByRoute: { [key in RouteValues]: CommonDictionaryKeys } = {
   [ROUTES.MAIN]: "welcome",
   [ROUTES.SETTINGS]: "settingsWelcome",
 };
@@ -33,7 +27,7 @@ const ConsolePage: React.FC = () => {
     caretMode: storage.getCaretMode(),
     commandsHint: [],
   });
-  const pathname = useLocation().pathname as RoutesValues;
+  const pathname = useLocation().pathname as RouteValues;
   const pathnameLocation = usePathnameLocation();
 
   // welcome text

@@ -1,19 +1,26 @@
+import React from "react";
+import { ROUTES } from "../router/const";
+import { RouteValues } from "../router/interfaces";
+import { CommandWithParams } from "./interfaces";
+import WithMainHandler, { MainCommands } from "./WithMainHandler";
+import WithSettingsHandler, { SettingsCommands } from "./WithSettingsHandler";
+
 export const logWrapper = (userCommand: string, log: string) => `${userCommand}\n\n${log}\n\n`;
 
 export const separateCommand = (commands: string[] | object, userCommand: string) => {
   const commandValues = Object.values(commands);
   userCommand = userCommand.trim();
 
-  const findedCommand = commandValues.find((command) => userCommand.startsWith(command));
-  if (!findedCommand) return;
+  const foundCommand = commandValues.find((command) => userCommand.startsWith(command));
+  if (!foundCommand) return;
 
   const userParams =
-    userCommand.length > findedCommand.length
-      ? userCommand.slice(findedCommand.length + 1).split(" ")
+    userCommand.length > foundCommand.length
+      ? userCommand.slice(foundCommand.length + 1).split(" ")
       : [];
 
   return {
-    command: findedCommand,
+    command: foundCommand,
     params: userParams,
   };
 };
@@ -22,10 +29,6 @@ export const getParamsString = (obj: object) => {
   return Object.values(obj).join(", ");
 };
 
-export interface CommandWithParams {
-  command: string;
-  params?: string[];
-}
 export const getAllCommandsWithParams = (commandsWithParams: CommandWithParams[]) => {
   return commandsWithParams.reduce<string[]>((prev, cur) => {
     const newCommands = cur.params
@@ -37,4 +40,13 @@ export const getAllCommandsWithParams = (commandsWithParams: CommandWithParams[]
 
 export const getAutocompleteCommands = (commands: string[], userCommand: string) => {
   return commands.filter((x) => x.startsWith(userCommand));
+};
+
+export const commandsByRoute: Record<RouteValues, object> = {
+  [ROUTES.MAIN]: MainCommands,
+  [ROUTES.SETTINGS]: SettingsCommands,
+};
+export const handlerByRoute: Record<RouteValues, React.FC> = {
+  [ROUTES.MAIN]: WithMainHandler,
+  [ROUTES.SETTINGS]: WithSettingsHandler,
 };

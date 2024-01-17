@@ -11,7 +11,7 @@ export interface DictionaryWithArgs {
   ["404command"]: string;
   wrongCaret: string;
   changeCaret: string;
-  сaretList: string;
+  caretList: string;
   wrongLanguage: string;
   changeLanguage: string;
   languageList: string;
@@ -31,7 +31,7 @@ type CommonLocale = { key: CommonDictionaryKeys };
 type NotFoundLocale = LocaleWithArgsGenerator<"404command", "unknownCommand">;
 type WrongCaretLocale = LocaleWithArgsGenerator<"wrongCaret", "caretName">;
 type ChangeCaretLocale = LocaleWithArgsGenerator<"changeCaret", "caretName">;
-type CaretListLocale = LocaleWithArgsGenerator<"сaretList", "carets">;
+type CaretListLocale = LocaleWithArgsGenerator<"caretList", "carets">;
 type WrongLanguageLocale = LocaleWithArgsGenerator<"wrongLanguage", "languageName">;
 type ChangeLanguageLocale = LocaleWithArgsGenerator<"changeLanguage", "languageName">;
 type LanguageListLocale = LocaleWithArgsGenerator<"languageList", "languages">;

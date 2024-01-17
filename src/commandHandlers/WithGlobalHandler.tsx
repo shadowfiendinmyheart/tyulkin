@@ -5,14 +5,15 @@ import { GlobalHandlerContext } from "../context/globalHandlerContext";
 import { usePathnameLocation } from "../hooks/usePathnameLocation";
 import localization from "../localization";
 import { ROUTES } from "../router/const";
+import { RouteValues } from "../router/interfaces";
 import { addConsoleLog, clearLogs } from "../store/console/actions";
-import { getAllCommandsWithParams } from "./utils";
+import { commandsByRoute, getAllCommandsWithParams } from "./utils";
 
 interface WithGlobalHandlerProps {
   children?: React.ReactNode;
 }
 
-enum GlobalComamnds {
+enum GlobalCommands {
   Back = "back",
   Clear = "clear",
   Menu = "menu",
@@ -31,29 +32,33 @@ const WithGlobalHandler: React.FC<WithGlobalHandlerProps> = ({ children }) => {
       return true;
     }
 
-    if ([GlobalComamnds.Back, "cd ..", "cd.."].includes(command)) {
+    if ([GlobalCommands.Back, "cd ..", "cd.."].includes(command)) {
       const prevLocation = location.pathname.split("/").at(-2) || "";
       navigate(`/${prevLocation}`);
       return true;
     }
 
-    if (GlobalComamnds.Clear === command) {
+    if (GlobalCommands.Clear === command) {
       consoleDispatch(clearLogs());
       return true;
     }
 
-    if ([GlobalComamnds.Menu, "exit"].includes(command)) {
+    if ([GlobalCommands.Menu, "exit"].includes(command)) {
       navigate(ROUTES.MAIN);
       return true;
     }
 
-    if (GlobalComamnds.Help === command) {
+    if (GlobalCommands.Help === command) {
       consoleDispatch(addConsoleLog(localization.getLocale({ key: "help" }), pathnameLocation));
       return true;
     }
 
-    if (GlobalComamnds.Ls === command) {
-      // TODO: make context ls (example: SettingsCommands)
+    if (GlobalCommands.Ls === command) {
+      const globalCommands = Object.values(GlobalCommands);
+      const route = location.pathname as RouteValues;
+      const locationCommands = Object.values(commandsByRoute[route]);
+      const allAvailableCommands = [...locationCommands, ...globalCommands].sort().join("   ");
+      consoleDispatch(addConsoleLog(allAvailableCommands, pathnameLocation));
       return true;
     }
 
@@ -67,7 +72,7 @@ const WithGlobalHandler: React.FC<WithGlobalHandlerProps> = ({ children }) => {
   };
 
   const allCommands = getAllCommandsWithParams(
-    Object.values(GlobalComamnds).map((command) => ({ command })),
+    Object.values(GlobalCommands).map((command) => ({ command })),
   );
 
   return (

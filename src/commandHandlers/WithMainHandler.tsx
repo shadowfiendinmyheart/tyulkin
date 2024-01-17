@@ -12,7 +12,7 @@ interface WithMainHandlerProps {
   children?: React.ReactNode;
 }
 
-enum MainCommands {
+export enum MainCommands {
   Education = "education",
   About = "about",
   Settings = "settings",

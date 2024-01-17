@@ -4,23 +4,19 @@ import { useConsoleContext } from "../context/consoleContext";
 import { HandlerContext } from "../context/handlerContext";
 import { addConsoleLog, setCaretMode } from "../store/console/actions";
 import { makeCapitalize } from "../utils";
-import {
-  CommandWithParams,
-  getAllCommandsWithParams,
-  getParamsString,
-  separateCommand,
-} from "./utils";
+import { getAllCommandsWithParams, getParamsString, separateCommand } from "./utils";
 import localization from "../localization";
 import { checkLanguage } from "../localization/utils";
 import storage from "../storage";
 import { usePathnameLocation } from "../hooks/usePathnameLocation";
 import { languages } from "../localization/interfaces";
+import { CommandWithParams } from "./interfaces";
 
 interface WithSettingsHandlerProps {
   children?: React.ReactNode;
 }
 
-enum SettingsComamnds {
+export enum SettingsCommands {
   SetTheme = "set theme",
   SetCaret = "set caret",
   ShowCarets = "show carets",
@@ -29,11 +25,11 @@ enum SettingsComamnds {
 }
 
 const commandsWithParams: CommandWithParams[] = [
-  { command: SettingsComamnds.SetTheme },
-  { command: SettingsComamnds.SetCaret, params: Object.values(CaretMode) },
-  { command: SettingsComamnds.ShowCarets },
-  { command: SettingsComamnds.SetLanguage, params: Object.values(languages) },
-  { command: SettingsComamnds.ShowLanguages },
+  { command: SettingsCommands.SetTheme },
+  { command: SettingsCommands.SetCaret, params: Object.values(CaretMode) },
+  { command: SettingsCommands.ShowCarets },
+  { command: SettingsCommands.SetLanguage, params: Object.values(languages) },
+  { command: SettingsCommands.ShowLanguages },
 ];
 
 const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) => {
@@ -41,20 +37,20 @@ const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) =
   const pathnameLocation = usePathnameLocation();
 
   const commandHandler = (userCommand: string) => {
-    const separated = separateCommand(SettingsComamnds, userCommand);
+    const separated = separateCommand(SettingsCommands, userCommand);
     if (!separated) return false;
     const { command, params } = separated;
 
     const caretListLocale = localization.getLocale({
-      key: "сaretList",
+      key: "caretList",
       args: { carets: getParamsString(CaretMode) },
     });
-    if (SettingsComamnds.ShowCarets === command) {
+    if (SettingsCommands.ShowCarets === command) {
       consoleDispatch(addConsoleLog(caretListLocale, pathnameLocation));
       return true;
     }
 
-    if (SettingsComamnds.SetCaret === command) {
+    if (SettingsCommands.SetCaret === command) {
       if (!params[0]) {
         consoleDispatch(addConsoleLog(caretListLocale, pathnameLocation));
         return true;
@@ -87,12 +83,12 @@ const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) =
       key: "languageList",
       args: { languages: getParamsString(languages) },
     });
-    if (SettingsComamnds.ShowCarets === command) {
+    if (SettingsCommands.ShowCarets === command) {
       consoleDispatch(addConsoleLog(languageListLocale, pathnameLocation));
       return true;
     }
 
-    if (SettingsComamnds.SetLanguage === command) {
+    if (SettingsCommands.SetLanguage === command) {
       if (!params[0]) {
         consoleDispatch(addConsoleLog(languageListLocale, pathnameLocation));
         return true;
@@ -121,7 +117,7 @@ const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) =
       return true;
     }
 
-    if (SettingsComamnds.SetTheme === command) {
+    if (SettingsCommands.SetTheme === command) {
       // TODO set theme
     }
 
