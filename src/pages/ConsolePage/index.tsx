@@ -9,7 +9,6 @@ import { addConsoleLog } from "../../store/console/actions";
 import storage from "../../storage";
 import localization from "../../localization";
 import { CommonDictionaryKeys } from "../../localization/interfaces";
-import { usePathnameLocation } from "../../hooks/usePathnameLocation";
 
 import styles from "./styles.module.scss";
 import { handlerByRoute } from "../../commandHandlers/utils";
@@ -28,16 +27,10 @@ const ConsolePage: React.FC = () => {
     commandsHint: [],
   });
   const pathname = useLocation().pathname as RouteValues;
-  const pathnameLocation = usePathnameLocation();
 
   // welcome text
   React.useEffect(() => {
-    dispatch(
-      addConsoleLog(
-        localization.getLocale({ key: welcomeLocaleByRoute[pathname] }),
-        pathnameLocation,
-      ),
-    );
+    dispatch(addConsoleLog(localization.getLocale({ key: welcomeLocaleByRoute[pathname] })));
   }, [pathname]);
 
   const WithPageHandler: React.FC<{ children: React.ReactNode }> = handlerByRoute[pathname];

@@ -7,8 +7,8 @@
   "404command": "Command: $unknownCommand not found\nEnter help to get help)",
   "loading": "loading",
   "wrongCaret": "caret $caretName not found",
-  "changeCaret": "ur caret successfull changed to $caretName mode",
-  "сaretList": "Allowed carets: $carets",
+  "changeCaret": "ur caret successful changed to $caretName mode",
+  "caretList": "Allowed carets: $carets",
   "wrongLanguage": "language $languageName not found",
   "changeLanguage": "ur language switch to $languageName",
   "languageList": "Allowed languages: $languages"

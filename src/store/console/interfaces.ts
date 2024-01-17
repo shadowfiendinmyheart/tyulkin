@@ -3,8 +3,6 @@ import { ActionTypeGenerator } from "../interfaces";
 
 export interface Log {
   message: string;
-  isUserPrint: boolean;
-  location: string;
 }
 export type Logs = Array<Log>;
 

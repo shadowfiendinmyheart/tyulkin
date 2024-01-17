@@ -8,7 +8,6 @@ import { getAllCommandsWithParams, getParamsString, separateCommand } from "./ut
 import localization from "../localization";
 import { checkLanguage } from "../localization/utils";
 import storage from "../storage";
-import { usePathnameLocation } from "../hooks/usePathnameLocation";
 import { languages } from "../localization/interfaces";
 import { CommandWithParams } from "./interfaces";
 
@@ -34,7 +33,6 @@ const commandsWithParams: CommandWithParams[] = [
 
 const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) => {
   const { consoleDispatch } = useConsoleContext();
-  const pathnameLocation = usePathnameLocation();
 
   const commandHandler = (userCommand: string) => {
     const separated = separateCommand(SettingsCommands, userCommand);
@@ -46,13 +44,13 @@ const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) =
       args: { carets: getParamsString(CaretMode) },
     });
     if (SettingsCommands.ShowCarets === command) {
-      consoleDispatch(addConsoleLog(caretListLocale, pathnameLocation));
+      consoleDispatch(addConsoleLog(caretListLocale));
       return true;
     }
 
     if (SettingsCommands.SetCaret === command) {
       if (!params[0]) {
-        consoleDispatch(addConsoleLog(caretListLocale, pathnameLocation));
+        consoleDispatch(addConsoleLog(caretListLocale));
         return true;
       }
 
@@ -62,7 +60,6 @@ const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) =
         consoleDispatch(
           addConsoleLog(
             localization.getLocale({ key: "wrongCaret", args: { caretName: caretMode } }),
-            pathnameLocation,
           ),
         );
         return true;
@@ -73,7 +70,6 @@ const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) =
       consoleDispatch(
         addConsoleLog(
           localization.getLocale({ key: "changeCaret", args: { caretName: caretMode } }),
-          pathnameLocation,
         ),
       );
       return true;
@@ -84,13 +80,13 @@ const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) =
       args: { languages: getParamsString(languages) },
     });
     if (SettingsCommands.ShowCarets === command) {
-      consoleDispatch(addConsoleLog(languageListLocale, pathnameLocation));
+      consoleDispatch(addConsoleLog(languageListLocale));
       return true;
     }
 
     if (SettingsCommands.SetLanguage === command) {
       if (!params[0]) {
-        consoleDispatch(addConsoleLog(languageListLocale, pathnameLocation));
+        consoleDispatch(addConsoleLog(languageListLocale));
         return true;
       }
 
@@ -100,7 +96,6 @@ const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) =
         consoleDispatch(
           addConsoleLog(
             localization.getLocale({ key: "wrongLanguage", args: { languageName: params[0] } }),
-            pathnameLocation,
           ),
         );
         return true;
@@ -111,7 +106,6 @@ const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) =
       consoleDispatch(
         addConsoleLog(
           localization.getLocale({ key: "changeLanguage", args: { languageName: language } }),
-          pathnameLocation,
         ),
       );
       return true;

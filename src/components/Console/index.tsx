@@ -1,5 +1,5 @@
 import React from "react";
-import History from "../History";
+import Logs from "../Logs";
 import Input from "../Input";
 import CommandsHint from "../CommandsHint";
 import styles from "./styles.module.scss";
@@ -7,7 +7,7 @@ import styles from "./styles.module.scss";
 const Console: React.FC = () => {
   return (
     <div className={styles.wrapper}>
-      <History />
+      <Logs />
       <Input />
       <CommandsHint />
     </div>

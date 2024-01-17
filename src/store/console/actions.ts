@@ -2,15 +2,15 @@ import { CaretMode } from "../../components/Char";
 import { ConsoleActionKind, Log } from "./interfaces";
 
 export const addLog = (log: Log) => ({ type: ConsoleActionKind.AddLogs, payload: log });
-export const addConsoleLog = (message: string, location: string) => {
+export const addConsoleLog = (message: string) => {
   return {
     type: ConsoleActionKind.AddLogs,
-    payload: { message, location, isUserPrint: false },
+    payload: { message },
   };
 };
 export const addUserLog = (message: string, location: string) => ({
   type: ConsoleActionKind.AddLogs,
-  payload: { message, location, isUserPrint: true },
+  payload: { message: `${location}> ${message}` },
 });
 export const clearLogs = () => ({ type: ConsoleActionKind.ClearLogs });
 export const addHistoryCommand = (command: string) => ({

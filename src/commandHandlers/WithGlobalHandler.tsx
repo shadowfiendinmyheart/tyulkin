@@ -2,7 +2,6 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useConsoleContext } from "../context/consoleContext";
 import { GlobalHandlerContext } from "../context/globalHandlerContext";
-import { usePathnameLocation } from "../hooks/usePathnameLocation";
 import localization from "../localization";
 import { ROUTES } from "../router/const";
 import { RouteValues } from "../router/interfaces";
@@ -23,7 +22,6 @@ enum GlobalCommands {
 
 const WithGlobalHandler: React.FC<WithGlobalHandlerProps> = ({ children }) => {
   const { consoleDispatch } = useConsoleContext();
-  const pathnameLocation = usePathnameLocation();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -49,7 +47,7 @@ const WithGlobalHandler: React.FC<WithGlobalHandlerProps> = ({ children }) => {
     }
 
     if (GlobalCommands.Help === command) {
-      consoleDispatch(addConsoleLog(localization.getLocale({ key: "help" }), pathnameLocation));
+      consoleDispatch(addConsoleLog(localization.getLocale({ key: "help" })));
       return true;
     }
 
@@ -58,14 +56,13 @@ const WithGlobalHandler: React.FC<WithGlobalHandlerProps> = ({ children }) => {
       const route = location.pathname as RouteValues;
       const locationCommands = Object.values(commandsByRoute[route]);
       const allAvailableCommands = [...locationCommands, ...globalCommands].sort().join("   ");
-      consoleDispatch(addConsoleLog(allAvailableCommands, pathnameLocation));
+      consoleDispatch(addConsoleLog(allAvailableCommands));
       return true;
     }
 
     consoleDispatch(
       addConsoleLog(
         localization.getLocale({ key: "404command", args: { unknownCommand: command } }),
-        pathnameLocation,
       ),
     );
     return false;

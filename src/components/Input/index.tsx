@@ -22,7 +22,7 @@ const Input: React.FC<InputProps> = () => {
   const { consoleDispatch, consoleState } = useConsoleContext();
   const { logs } = consoleState;
   const [inputValue, setInputValue] = React.useState<string>("");
-  const [caretPostition, setCaretPosition] = React.useState<number>(inputValue.length - 1);
+  const [caretPosition, setCaretPosition] = React.useState<number>(inputValue.length - 1);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const consoleInputRef = React.useRef<HTMLDivElement>(null);
   const pathnameLocation = usePathnameLocation();
@@ -126,11 +126,11 @@ const Input: React.FC<InputProps> = () => {
         ref={inputRef}
       />
       <div className={styles.chars}>
-        {caretPostition === -1 || inputValue.length === 0 ? (
+        {caretPosition === -1 || inputValue.length === 0 ? (
           <Char isCaret={true} className={styles.zeroChar} />
         ) : undefined}
         {inputValue.split("").map((char, index) => (
-          <Char key={index} isCaret={caretPostition === index}>
+          <Char key={index} isCaret={caretPosition === index}>
             {char}
           </Char>
         ))}
