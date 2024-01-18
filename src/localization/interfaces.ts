@@ -1,9 +1,11 @@
+import { GlobalCommands } from "../commandHandlers/WithGlobalHandler";
+import { MainCommands } from "../commandHandlers/WithMainHandler";
+
 export interface CommonDictionary {
   welcome: string;
   settingsWelcome: string;
   education: string;
   about: string;
-  help: string;
   loading: string;
 }
 
@@ -15,6 +17,9 @@ export interface DictionaryWithArgs {
   wrongLanguage: string;
   changeLanguage: string;
   languageList: string;
+  help: string;
+  ["/Help"]: string;
+  ["/settingsHelp"]: string;
 }
 
 export type Dictionary = CommonDictionary & DictionaryWithArgs;
@@ -35,6 +40,9 @@ type CaretListLocale = LocaleWithArgsGenerator<"caretList", "carets">;
 type WrongLanguageLocale = LocaleWithArgsGenerator<"wrongLanguage", "languageName">;
 type ChangeLanguageLocale = LocaleWithArgsGenerator<"changeLanguage", "languageName">;
 type LanguageListLocale = LocaleWithArgsGenerator<"languageList", "languages">;
+type HelpLocale = LocaleWithArgsGenerator<"help", GlobalCommands>;
+type MainHelpLocale = LocaleWithArgsGenerator<"/Help", MainCommands>;
+type SettingsHelpLocale = LocaleWithArgsGenerator<"/settingsHelp", MainCommands>;
 
 export type LocaleWithArgs =
   | NotFoundLocale
@@ -43,7 +51,10 @@ export type LocaleWithArgs =
   | CaretListLocale
   | WrongLanguageLocale
   | ChangeLanguageLocale
-  | LanguageListLocale;
+  | LanguageListLocale
+  | HelpLocale
+  | MainHelpLocale
+  | SettingsHelpLocale;
 export type LocaleParams = CommonLocale | LocaleWithArgs;
 
 export const languages = ["ru", "eng"] as const;

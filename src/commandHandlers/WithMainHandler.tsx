@@ -32,7 +32,7 @@ const WithMainHandler: React.FC<WithMainHandlerProps> = ({ children }) => {
       return true;
     }
 
-    if (MainCommands.Settings === command) {
+    if ([MainCommands.Settings, `cd ${MainCommands.Settings}`].includes(command)) {
       navigate(ROUTES.SETTINGS);
       return true;
     }

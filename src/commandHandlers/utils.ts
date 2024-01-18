@@ -50,3 +50,9 @@ export const handlerByRoute: Record<RouteValues, React.FC> = {
   [ROUTES.MAIN]: WithMainHandler,
   [ROUTES.SETTINGS]: WithSettingsHandler,
 };
+
+export const getHelpLocaleArgs = (commandObject: object): Record<string, string> => {
+  return Object.values(commandObject).reduce((prev, cur) => {
+    return { ...prev, [cur]: cur };
+  }, {});
+};

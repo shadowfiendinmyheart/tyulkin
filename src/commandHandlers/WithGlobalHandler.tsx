@@ -6,13 +6,13 @@ import localization from "../localization";
 import { ROUTES } from "../router/const";
 import { RouteValues } from "../router/interfaces";
 import { addConsoleLog, clearLogs } from "../store/console/actions";
-import { commandsByRoute, getAllCommandsWithParams } from "./utils";
+import { commandsByRoute, getAllCommandsWithParams, getHelpLocaleArgs } from "./utils";
 
 interface WithGlobalHandlerProps {
   children?: React.ReactNode;
 }
 
-enum GlobalCommands {
+export enum GlobalCommands {
   Back = "back",
   Clear = "clear",
   Menu = "menu",
@@ -47,7 +47,15 @@ const WithGlobalHandler: React.FC<WithGlobalHandlerProps> = ({ children }) => {
     }
 
     if (GlobalCommands.Help === command) {
-      consoleDispatch(addConsoleLog(localization.getLocale({ key: "help" })));
+      const route = location.pathname as RouteValues;
+      const helpGlobalArgs = getHelpLocaleArgs(GlobalCommands);
+      const helpLocationArgs = getHelpLocaleArgs(commandsByRoute[route]);
+      const globalHelpLocale = localization.getLocale({ key: "help", args: helpGlobalArgs });
+      const locationHelpLocale = localization.getLocale({
+        key: `${route}Help`,
+        args: helpLocationArgs,
+      });
+      consoleDispatch(addConsoleLog(`${locationHelpLocale}${globalHelpLocale}`));
       return true;
     }
 
