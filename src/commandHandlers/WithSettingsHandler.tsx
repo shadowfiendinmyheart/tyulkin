@@ -79,7 +79,7 @@ const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) =
       key: "languageList",
       args: { languages: getParamsString(languages) },
     });
-    if (SettingsCommands.ShowCarets === command) {
+    if (SettingsCommands.ShowLanguages === command) {
       consoleDispatch(addConsoleLog(languageListLocale));
       return true;
     }

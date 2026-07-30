@@ -1,14 +1,13 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-module.exports = {
-  mode: "development",
+module.exports = (env, argv) => ({
+  mode: argv.mode || "development",
   entry: "./src/main.tsx",
-  devtool: "inline-source-map",
+  devtool: argv.mode === "production" ? false : "inline-source-map",
   output: {
     path: path.join(__dirname, "/dist"),
     filename: "bundle.js",
   },
-  devtool: "inline-source-map",
   devServer: {
     static: "./dist",
     historyApiFallback: true,
@@ -39,4 +38,4 @@ module.exports = {
       template: "./src/index.html",
     }),
   ],
-};
+});
