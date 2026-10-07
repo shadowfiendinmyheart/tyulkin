@@ -22,14 +22,14 @@
 | TASK-28 | P1 | S | **`/settings/` (со слешем) падает в ErrorPage** | `handlerByRoute[pathname]` и `welcomeLocaleByRoute[pathname]` берутся по сырому pathname → `undefined`. Нормализовать путь или брать хендлер из route-конфига. [ConsolePage/index.tsx:36](src/pages/ConsolePage/index.tsx#L36) |
 | TASK-29 | P1 | S | **Статус `error` при загрузке словаря не обрабатывается** | При ошибке `initDictionary` всё равно рендерится Router → `getLocale` кидает «dictionary is empty». Показывать fallback/ErrorPage. [App.tsx:34-40](src/App.tsx#L34-L40) |
 | TASK-30 | P2 | S | **Невалидированные значения из localStorage** | `getLanguage`/`getCaretMode` кастят без проверки (в отличие от `getThemeMode`) → мусор в storage ломает загрузку словаря / класс каретки. Нет try/catch на доступ к storage (blocked storage кидает). [storage/index.ts](src/storage/index.ts) |
-| TASK-31 | P2 | S | **Неверный тип у `/settingsHelp`** | `SettingsHelpLocale` параметризован `MainCommands` вместо `SettingsCommands`. [localization/interfaces.ts:51](src/localization/interfaces.ts#L51) |
+| ✅ TASK-31 | P2 | S | **Неверный тип у `/settingsHelp`** | `SettingsHelpLocale` параметризован `MainCommands` вместо `SettingsCommands`. [localization/interfaces.ts:51](src/localization/interfaces.ts#L51) |
 | TASK-32 | P3 | S | Дубль welcome-сообщения в dev | `useEffect` + StrictMode → приветствие дважды. Некритично, но мешает отладке. [ConsolePage/index.tsx:32-34](src/pages/ConsolePage/index.tsx#L32-L34) |
 
 ## 🏗 Архитектура и рефакторинг
 
 | ID | Pri | Est | Задача | Суть |
 |---|---|---|---|---|
-| TASK-33 | P1 | L | **Реестр команд вместо if-цепочек** | Сейчас команда описана в 4 местах: enum, if-ветка в хендлере, `commandsWithParams` для автодополнения, вручную написанный help в каждом словаре. Ввести декларативный реестр `{ name, aliases, params, descriptionKey, run(ctx, args) }`, из которого генерируются `help`, `ls`, автодополнение (включая алиасы `cd ..`, `exit`, `cd settings`). Закрывает часть TASK-25/27/31. |
+| ✅ TASK-33 | P1 | L | **Реестр команд вместо if-цепочек** | Сейчас команда описана в 4 местах: enum, if-ветка в хендлере, `commandsWithParams` для автодополнения, вручную написанный help в каждом словаре. Ввести декларативный реестр `{ name, aliases, params, descriptionKey, run(ctx, args) }`, из которого генерируются `help`, `ls`, автодополнение (включая алиасы `cd ..`, `exit`, `cd settings`). Закрывает часть TASK-25/27/31. |
 | TASK-34 | P2 | M | **Локализация как часть React-состояния** | Синглтон `Localization` вне React — смена языка не вызывает ререндер, `appState.language` мёртвый. Вынести в контекст/хук `useT()`; обновлять `<html lang>`. Механизм `$arg` через `String.replace` заменяет только первое вхождение и для help по сути просто срезает `$` — упростить. |
 | TASK-35 | P2 | S | **Разорвать циклические импорты** | `commandHandlers/utils` ↔ `WithMainHandler/WithSettingsHandler`; `localization/interfaces` → `WithGlobalHandler` → `localization`. Доменные типы (`CaretMode`, темы) живут в `components/Char` и импортируются в store/storage. Вынести в `src/domain` / `src/constants`. |
 | TASK-36 | P2 | S | **Удалить мёртвый код** | `logWrapper`, `addLog`, `setLanguage` action, `UserConfig`/`getInitialUserConfig`/`isConsoleMode`, `InputProps.setLogs` + `SetState`, пустой миксин `spaceChar` и `mixins.scss`, классы `.fancyInput`, `.tag`. |

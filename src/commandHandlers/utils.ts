@@ -1,60 +1,46 @@
-import React from "react";
-import { ROUTES } from "../router/const";
-import { RouteValues } from "../router/interfaces";
-import { CommandWithParams } from "./interfaces";
-import WithMainHandler, { MainCommands } from "./WithMainHandler";
-import WithSettingsHandler, { SettingsCommands } from "./WithSettingsHandler";
+import { Command } from "./interfaces";
 
 export const logWrapper = (userCommand: string, log: string) => `${userCommand}\n\n${log}\n\n`;
 
+const getCommandPhrases = ({ name, aliases = [] }: Command) => [name, ...aliases];
+
 // matches whole words: "set themeblack" is not "set theme"
-// a command with params accepts at most one argument, a command without params accepts none
-export const separateCommand = (commandsWithParams: CommandWithParams[], userCommand: string) => {
+// the first matching command decides: with params it accepts at most one argument, without none
+export const separateCommand = (commands: Command[], userCommand: string) => {
   const userWords = userCommand.trim().split(/\s+/);
 
-  const found = commandsWithParams.find(({ command }) =>
-    command.split(" ").every((word, index) => userWords[index] === word),
-  );
-  if (!found) return;
+  for (const command of commands) {
+    for (const phrase of getCommandPhrases(command)) {
+      const phraseWords = phrase.split(" ");
+      if (!phraseWords.every((word, index) => userWords[index] === word)) continue;
 
-  const params = userWords.slice(found.command.split(" ").length);
-  const maxParamsCount = found.params ? 1 : 0;
-  if (params.length > maxParamsCount) return;
+      const params = userWords.slice(phraseWords.length);
+      const maxParamsCount = command.params ? 1 : 0;
+      if (params.length > maxParamsCount) return;
 
-  return {
-    command: found.command,
-    params,
-  };
+      return { command, params };
+    }
+  }
+};
+
+// "menu (exit) - return to the main menu"
+export const getHelpLine = (command: Command, description: string) => {
+  const aliases = command.aliases?.length ? ` (${command.aliases.join(", ")})` : "";
+  return `${command.name}${aliases} - ${description}`;
 };
 
 export const getParamsString = (obj: object) => {
   return Object.values(obj).join(", ");
 };
 
-export const getAllCommandsWithParams = (commandsWithParams: CommandWithParams[]) => {
-  return commandsWithParams.reduce<string[]>((prev, cur) => {
-    const newCommands = cur.params
-      ? cur.params.map((param) => cur.command + " " + param)
-      : [cur.command];
-    return [...prev, ...newCommands];
-  }, []);
+export const getAllCommandsWithParams = (commands: Command[]) => {
+  return commands.flatMap((command) =>
+    getCommandPhrases(command).flatMap((phrase) =>
+      command.params ? command.params.map((param) => `${phrase} ${param}`) : [phrase],
+    ),
+  );
 };
 
 export const getAutocompleteCommands = (commands: string[], userCommand: string) => {
   return commands.filter((x) => x.startsWith(userCommand));
-};
-
-export const commandsByRoute: Record<RouteValues, object> = {
-  [ROUTES.MAIN]: MainCommands,
-  [ROUTES.SETTINGS]: SettingsCommands,
-};
-export const handlerByRoute: Record<RouteValues, React.FC> = {
-  [ROUTES.MAIN]: WithMainHandler,
-  [ROUTES.SETTINGS]: WithSettingsHandler,
-};
-
-export const getHelpLocaleArgs = (commandObject: object): Record<string, string> => {
-  return Object.values(commandObject).reduce((prev, cur) => {
-    return { ...prev, [cur]: cur };
-  }, {});
 };

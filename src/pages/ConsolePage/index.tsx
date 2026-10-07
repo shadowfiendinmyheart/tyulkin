@@ -1,7 +1,8 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
 import Console from "../../components/Console";
-import WithGlobalHandler from "../../commandHandlers/WithGlobalHandler";
+import WithCommandHandler from "../../commandHandlers/WithCommandHandler";
+import { commandsByRoute } from "../../commandHandlers/commands";
 import { ConsoleContext } from "../../context/consoleContext";
 import { ROUTES } from "../../router/const";
 import { reducer } from "../../store/console/reducer";
@@ -11,7 +12,6 @@ import localization from "../../localization";
 import { CommonDictionaryKeys } from "../../localization/interfaces";
 
 import styles from "./styles.module.scss";
-import { handlerByRoute } from "../../commandHandlers/utils";
 import { RouteValues } from "../../router/interfaces";
 
 const welcomeLocaleByRoute: { [key in RouteValues]: CommonDictionaryKeys } = {
@@ -33,8 +33,6 @@ const ConsolePage: React.FC = () => {
     dispatch(addConsoleLog(localization.getLocale({ key: welcomeLocaleByRoute[pathname] })));
   }, [pathname]);
 
-  const WithPageHandler: React.FC<{ children: React.ReactNode }> = handlerByRoute[pathname];
-
   return (
     <ConsoleContext.Provider
       value={{
@@ -42,13 +40,11 @@ const ConsolePage: React.FC = () => {
         consoleDispatch: dispatch,
       }}
     >
-      <WithGlobalHandler>
-        <WithPageHandler>
-          <div className={styles.wrapper}>
-            <Console />
-          </div>
-        </WithPageHandler>
-      </WithGlobalHandler>
+      <WithCommandHandler commands={commandsByRoute[pathname]}>
+        <div className={styles.wrapper}>
+          <Console />
+        </div>
+      </WithCommandHandler>
     </ConsoleContext.Provider>
   );
 };

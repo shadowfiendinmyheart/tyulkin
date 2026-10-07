@@ -1,13 +1,11 @@
 import React from "react";
 import { getAutocompleteCommands } from "../../../commandHandlers/utils";
 import { useConsoleContext } from "../../../context/consoleContext";
-import { useGlobalHandlerContext } from "../../../context/globalHandlerContext";
 import { useHandlerContext } from "../../../context/handlerContext";
 import { setCommandsHint } from "../../../store/console/actions";
 
 export const useCommandsHint = (inputValue: string, setInputValue: any, setCaretPosition: any) => {
   const { allCommands } = useHandlerContext();
-  const { allCommands: globalAllCommands } = useGlobalHandlerContext();
   const { consoleDispatch } = useConsoleContext();
   const tabCounterRef = React.useRef(0);
   const isTabSwitchMode = React.useRef(false);
@@ -21,10 +19,7 @@ export const useCommandsHint = (inputValue: string, setInputValue: any, setCaret
     if (e.key === "Tab") {
       e.preventDefault();
 
-      const autocompleteCommands = getAutocompleteCommands(
-        [...(globalAllCommands || []), ...(allCommands || [])],
-        oldUserInputRef.current,
-      );
+      const autocompleteCommands = getAutocompleteCommands(allCommands, oldUserInputRef.current);
 
       if (autocompleteCommands.length > 1 && !isTabSwitchMode.current) {
         consoleDispatch(setCommandsHint(autocompleteCommands));

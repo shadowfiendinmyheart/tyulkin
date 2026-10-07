@@ -62,6 +62,35 @@ describe("console", () => {
   });
 });
 
+describe("command registry (TASK-33)", () => {
+  it("generates help from page and global commands", async () => {
+    const { user } = renderConsole("/settings");
+    await user.keyboard("help{Enter}");
+    const help = getLogs().at(-1)?.split("\n");
+    expect(help?.[0]).toBe("set theme - set the theme");
+    expect(help).toContain("show languages - list languages");
+    expect(help?.at(-1)).toBe("ls - list commands");
+  });
+
+  it("generates ls from page and global commands", async () => {
+    const { user } = renderConsole();
+    await user.keyboard("ls{Enter}");
+    expect(getLogs().at(-1)).toBe("about   back   clear   education   help   ls   menu   settings");
+  });
+
+  it("runs and autocompletes aliases", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("cd s{Tab}");
+    expect(input.value).toBe("cd settings");
+
+    await user.keyboard("{Enter}");
+    expect(getLogs().at(-1)).toBe("Settings menu");
+
+    await user.keyboard("exit{Enter}");
+    expect(getLogs().at(-1)).toBe("Hi everyone!");
+  });
+});
+
 describe("history (TASK-23)", () => {
   it("browses executed commands with ArrowUp/ArrowDown and restores the draft", async () => {
     const { user, input } = renderConsole();

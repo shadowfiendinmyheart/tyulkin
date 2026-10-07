@@ -2,7 +2,6 @@ import React from "react";
 import Char from "../Char";
 import { SetState } from "../../commandHandlers/interfaces";
 import { Logs } from "../../store/console/interfaces";
-import { useGlobalHandlerContext } from "../../context/globalHandlerContext";
 import { useConsoleContext } from "../../context/consoleContext";
 import { useHandlerContext } from "../../context/handlerContext";
 import { addHistoryCommand, addUserLog } from "../../store/console/actions";
@@ -18,7 +17,6 @@ interface InputProps {
 
 const Input: React.FC<InputProps> = () => {
   const { commandHandler } = useHandlerContext();
-  const { commandHandler: globalHandler } = useGlobalHandlerContext();
   const { consoleDispatch, consoleState } = useConsoleContext();
   const { logs, history } = consoleState;
   const [inputValue, setInputValue] = React.useState<string>("");
@@ -68,8 +66,7 @@ const Input: React.FC<InputProps> = () => {
       if (command && command !== history[0]) consoleDispatch(addHistoryCommand(command));
 
       consoleDispatch(addUserLog(command, pathnameLocation));
-      const isContextCommand = commandHandler(command);
-      if (!isContextCommand) globalHandler(command);
+      commandHandler(command);
     }
   };
 

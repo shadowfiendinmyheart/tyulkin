@@ -1,12 +1,27 @@
-import { GlobalCommands } from "../commandHandlers/WithGlobalHandler";
-import { MainCommands } from "../commandHandlers/WithMainHandler";
-
 export interface CommonDictionary {
   welcome: string;
   settingsWelcome: string;
   education: string;
   about: string;
   loading: string;
+}
+
+// one line of `help` per command, see commandHandlers/commands
+export interface CommandDescriptionDictionary {
+  helpBack: string;
+  helpClear: string;
+  helpMenu: string;
+  helpHelp: string;
+  helpLs: string;
+  helpEducation: string;
+  helpAbout: string;
+  helpSettings: string;
+  helpSetTheme: string;
+  helpShowThemes: string;
+  helpSetCaret: string;
+  helpShowCarets: string;
+  helpSetLanguage: string;
+  helpShowLanguages: string;
 }
 
 export interface DictionaryWithArgs {
@@ -21,14 +36,12 @@ export interface DictionaryWithArgs {
   wrongTheme: string;
   changeTheme: string;
   themeList: string;
-  help: string;
-  ["/Help"]: string;
-  ["/settingsHelp"]: string;
 }
 
-export type Dictionary = CommonDictionary & DictionaryWithArgs;
+export type Dictionary = CommonDictionary & CommandDescriptionDictionary & DictionaryWithArgs;
 
 export type CommonDictionaryKeys = keyof CommonDictionary;
+export type CommandDescriptionKeys = keyof CommandDescriptionDictionary;
 export type DictionaryWithArgsKeys = keyof DictionaryWithArgs;
 
 type LocaleWithArgsGenerator<Key extends DictionaryWithArgsKeys, Args extends string> = {
@@ -36,7 +49,7 @@ type LocaleWithArgsGenerator<Key extends DictionaryWithArgsKeys, Args extends st
   args: Record<Args, string>;
 };
 
-type CommonLocale = { key: CommonDictionaryKeys };
+type CommonLocale = { key: CommonDictionaryKeys | CommandDescriptionKeys };
 type NotFoundLocale = LocaleWithArgsGenerator<"404command", "unknownCommand">;
 type WrongCaretLocale = LocaleWithArgsGenerator<"wrongCaret", "caretName">;
 type ChangeCaretLocale = LocaleWithArgsGenerator<"changeCaret", "caretName">;
@@ -48,9 +61,6 @@ type LanguageListLocale = LocaleWithArgsGenerator<"languageList", "languages">;
 type WrongThemeLocale = LocaleWithArgsGenerator<"wrongTheme", "themeName">;
 type ChangeThemeLocale = LocaleWithArgsGenerator<"changeTheme", "themeName">;
 type ThemeListLocale = LocaleWithArgsGenerator<"themeList", "themes">;
-type HelpLocale = LocaleWithArgsGenerator<"help", GlobalCommands>;
-type MainHelpLocale = LocaleWithArgsGenerator<"/Help", MainCommands>;
-type SettingsHelpLocale = LocaleWithArgsGenerator<"/settingsHelp", MainCommands>;
 
 export type LocaleWithArgs =
   | NotFoundLocale
@@ -63,10 +73,7 @@ export type LocaleWithArgs =
   | LanguageListLocale
   | WrongThemeLocale
   | ChangeThemeLocale
-  | ThemeListLocale
-  | HelpLocale
-  | MainHelpLocale
-  | SettingsHelpLocale;
+  | ThemeListLocale;
 export type LocaleParams = CommonLocale | LocaleWithArgs;
 
 export const languages = ["ru", "eng"] as const;

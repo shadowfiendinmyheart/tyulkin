@@ -1,4 +1,4 @@
 export interface HandlerContextType {
-  commandHandler: (command: string) => boolean;
-  allCommands?: string[];
+  commandHandler: (command: string) => void;
+  allCommands: string[];
 }

@@ -1,19 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { GlobalCommands } from "../../commandHandlers/WithGlobalHandler";
-import { MainCommands } from "../../commandHandlers/WithMainHandler";
-import { SettingsCommands } from "../../commandHandlers/WithSettingsHandler";
-import { getHelpLocaleArgs } from "../../commandHandlers/utils";
-import { getLocaleWithArgs, LOCALE_PARAMS_ANCHOR } from "../utils";
+import { commandsByRoute, globalCommands } from "../../commandHandlers/commands";
 import eng from "./eng.json";
 import ru from "./ru.json";
 
 const dictionaries = { eng, ru };
 
-const helpCommands = {
-  help: GlobalCommands,
-  "/Help": MainCommands,
-  "/settingsHelp": SettingsCommands,
-} as const;
+const allCommands = [...globalCommands, ...Object.values(commandsByRoute).flat()];
+const descriptionKeys = allCommands.map(({ descriptionKey }) => descriptionKey);
+
+it("every command has its own description key", () => {
+  expect(new Set(descriptionKeys).size).toBe(descriptionKeys.length);
+});
 
 describe.each(Object.entries(dictionaries))("%s dictionary", (_, dictionary) => {
   it("has the same keys as the other dictionaries", () => {
@@ -22,19 +19,16 @@ describe.each(Object.entries(dictionaries))("%s dictionary", (_, dictionary) => 
     });
   });
 
-  it.each(Object.entries(helpCommands))("%s lists every command", (key, commands) => {
-    const locale = getLocaleWithArgs({
-      key: key as keyof typeof helpCommands,
-      args: getHelpLocaleArgs(commands),
-      locale: dictionary[key as keyof typeof helpCommands],
-    });
+  it.each(allCommands.map((command) => [command.name, command.descriptionKey]))(
+    "describes the %s command",
+    (_, descriptionKey) => {
+      expect(dictionary[descriptionKey]).toEqual(expect.stringMatching(/\S/));
+    },
+  );
 
-    expect(locale).not.toContain(LOCALE_PARAMS_ANCHOR);
-    Object.values(commands).forEach((command) => {
-      expect(locale.split("\n")).toContainEqual(
-        expect.stringMatching(new RegExp(`^${command} - `)),
-      );
-    });
+  it("has no descriptions of removed commands", () => {
+    const helpKeys = Object.keys(dictionary).filter((key) => /^help[A-Z]/.test(key));
+    expect(helpKeys.sort()).toEqual([...descriptionKeys].sort());
   });
 
   it("has no broken line breaks", () => {
