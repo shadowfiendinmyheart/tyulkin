@@ -37,13 +37,9 @@ const Input: React.FC<InputProps> = () => {
   const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.currentTarget.value;
 
-    const input = inputRef.current;
-    const nativeEventData = (e.nativeEvent as InputEvent).data;
-    if (input && !nativeEventData) {
-      // long press backspace
-      const caretPosition = Number(input.selectionStart);
-      setCaretPosition(() => caretPosition);
-    }
+    // virtual keyboards send key "Unidentified" on keydown, so the caret is synced here
+    const caretPosition = Number(e.currentTarget.selectionStart) - 1;
+    setCaretPosition(() => caretPosition);
 
     setInputValue(value);
     historyCommandsHandleChangeInput(e);
@@ -57,24 +53,14 @@ const Input: React.FC<InputProps> = () => {
 
     historyCommandsHandleKeyDownInput(e);
 
-    if (e.code === "Enter") {
+    // e.code is empty on virtual keyboards, e.key is reliable
+    if (e.key === "Enter") {
       const command = inputValue.trim();
       setInputValue("");
 
       consoleDispatch(addUserLog(command, pathnameLocation));
       const isContextCommand = commandHandler(command);
       if (!isContextCommand) globalHandler(command);
-      return;
-    }
-
-    if (allowedKeyUpKeyCodes.includes(e.code)) return;
-    if (e.key.length !== 1) return; // prevent moving caret on shift, ctrl and etc...
-
-    const input = inputRef.current;
-    if (input) {
-      const caretPosition = Number(input.selectionStart);
-
-      setCaretPosition(() => caretPosition);
     }
   };
 
@@ -98,11 +84,20 @@ const Input: React.FC<InputProps> = () => {
       inputRef.current && inputRef.current.focus();
     };
 
+    // focus on click/tap opens the virtual keyboard on mobile (it must happen inside a user gesture)
+    const clickFocusEventHandler = () => {
+      const isTextSelected = Boolean(window.getSelection()?.toString());
+      if (isTextSelected) return; // don't break copying text from logs
+      autoFocusEventHandler();
+    };
+
     inputRef.current?.addEventListener("select", noSelectEventHandler, false);
     document.addEventListener("keydown", autoFocusEventHandler, false);
+    document.addEventListener("click", clickFocusEventHandler, false);
     return () => {
       inputRef.current?.removeEventListener("select", noSelectEventHandler, false);
       document.removeEventListener("keydown", autoFocusEventHandler, false);
+      document.removeEventListener("click", clickFocusEventHandler, false);
     };
   }, []);
 
@@ -123,6 +118,11 @@ const Input: React.FC<InputProps> = () => {
         onKeyDown={handleKeyDownInput}
         onKeyUp={handleKeyUpInput}
         autoFocus
+        autoComplete="off"
+        autoCapitalize="off"
+        autoCorrect="off"
+        spellCheck={false}
+        enterKeyHint="send"
         ref={inputRef}
       />
       <div className={styles.chars}>

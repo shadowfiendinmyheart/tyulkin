@@ -5,6 +5,7 @@
 }
 
 .wrapper {
+  position: relative;
   display: flex;
   margin-bottom: 1px;
   width: 100%;
@@ -22,12 +23,19 @@
   left: -10px;
 }
 
+// visually hidden, but still focusable on mobile (zero-sized inputs may not open the keyboard)
 .nativeInput {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
   opacity: 0;
-  height: 0;
-  width: 0;
   border: none;
   outline: none;
+  caret-color: transparent;
+  pointer-events: none;
+  font-size: 16px; // iOS zooms the page on focus when font-size < 16px
 }
 
 .fancyInput {

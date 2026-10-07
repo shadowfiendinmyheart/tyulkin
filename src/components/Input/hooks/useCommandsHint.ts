@@ -18,7 +18,7 @@ export const useCommandsHint = (inputValue: string, setInputValue: any, setCaret
   }, [inputValue]);
 
   const commandsHintHandleKeyDownInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.code === "Tab") {
+    if (e.key === "Tab") {
       e.preventDefault();
 
       const autocompleteCommands = getAutocompleteCommands(
@@ -50,7 +50,7 @@ export const useCommandsHint = (inputValue: string, setInputValue: any, setCaret
     isTabSwitchMode.current = false;
     tabCounterRef.current = 0;
 
-    if (e.code === "Enter") {
+    if (e.key === "Enter") {
       consoleDispatch(setCommandsHint([]));
     }
 

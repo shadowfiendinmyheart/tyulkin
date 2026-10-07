@@ -24,7 +24,7 @@ export const useHistoryCommands = (
       setTimeout(() => inputRef.current?.setSelectionRange(newCaretPosition, newCaretPosition));
     };
 
-    switch (e.code) {
+    switch (e.key) {
     case "ArrowUp": {
       if (!userCommands.length) return;
       historyPosition.current =
@@ -49,7 +49,7 @@ export const useHistoryCommands = (
 
     case "Enter": {
       historyPosition.current = 0;
-      const command = userCommands[0].trim();
+      const command = userCommands[0]?.trim();
       if (command) {
         if (historyPosition.current !== 0) {
           consoleDispatch(changeCurrentHistoryCommand(command));
