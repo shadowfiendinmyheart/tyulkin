@@ -6,6 +6,15 @@ import localization from "./localization";
 import { AppContext } from "./context/appContext";
 import storage from "./storage";
 import LoadingPage from "./pages/LoadingPage";
+import { delay } from "./utils";
+
+// loading animation is shown at least this long, so it doesn't just flash
+const MIN_LOADING_ANIMATION_MS = 1000;
+
+const getLoadingAnimationTime = () => {
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  return prefersReducedMotion ? 0 : MIN_LOADING_ANIMATION_MS;
+};
 
 const App: React.FC = () => {
   const [state, dispatch] = React.useReducer(reducer, {
@@ -22,8 +31,8 @@ const App: React.FC = () => {
     (async () => {
       try {
         dispatch(setStatus("loading"));
-        await new Promise((res) => setTimeout(res, 1000));
-        await localization.initDictionary();
+        // dictionary loads in parallel with the animation instead of after it
+        await Promise.all([localization.initDictionary(), delay(getLoadingAnimationTime())]);
         dispatch(setStatus("ok"));
       } catch (error) {
         dispatch(setStatus("error"));

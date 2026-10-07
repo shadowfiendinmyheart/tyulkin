@@ -3,7 +3,7 @@ import React from "react";
 const loadingFrames = ["-", "—", "--", "——", "---", "———", "---", "——", "--", "—"];
 
 const LoadingPage: React.FC = () => {
-  const [loadingFrame, setLoadingFrame] = React.useState("");
+  const [loadingFrame, setLoadingFrame] = React.useState(loadingFrames[0]);
 
   React.useEffect(() => {
     let i = 0;
