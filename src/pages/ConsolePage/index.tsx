@@ -22,7 +22,7 @@ const welcomeLocaleByRoute: { [key in RouteValues]: CommonDictionaryKeys } = {
 const ConsolePage: React.FC = () => {
   const [state, dispatch] = React.useReducer(reducer, {
     logs: [],
-    userCommands: [],
+    history: [],
     caretMode: storage.getCaretMode(),
     commandsHint: [],
   });

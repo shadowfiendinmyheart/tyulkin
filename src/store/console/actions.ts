@@ -2,7 +2,6 @@ import { CaretMode } from "../../components/Char";
 import {
   ActionAddHistoryCommand,
   ActionAddLogs,
-  ActionChangeCurrentHistoryCommand,
   ActionClearLogs,
   ActionSetCaretMode,
   ActionSetCommandsHint,
@@ -27,12 +26,6 @@ export const addUserLog = (message: string, location: string): ActionAddLogs => 
 export const clearLogs = (): ActionClearLogs => ({ type: ConsoleActionKind.ClearLogs });
 export const addHistoryCommand = (command: string): ActionAddHistoryCommand => ({
   type: ConsoleActionKind.AddHistoryCommand,
-  payload: command,
-});
-export const changeCurrentHistoryCommand = (
-  command: string,
-): ActionChangeCurrentHistoryCommand => ({
-  type: ConsoleActionKind.ChangeCurrentHistoryCommand,
   payload: command,
 });
 export const setCaretMode = (caretMode: CaretMode): ActionSetCaretMode => ({

@@ -3,7 +3,7 @@ import { getAutocompleteCommands } from "../../../commandHandlers/utils";
 import { useConsoleContext } from "../../../context/consoleContext";
 import { useGlobalHandlerContext } from "../../../context/globalHandlerContext";
 import { useHandlerContext } from "../../../context/handlerContext";
-import { changeCurrentHistoryCommand, setCommandsHint } from "../../../store/console/actions";
+import { setCommandsHint } from "../../../store/console/actions";
 
 export const useCommandsHint = (inputValue: string, setInputValue: any, setCaretPosition: any) => {
   const { allCommands } = useHandlerContext();
@@ -44,7 +44,6 @@ export const useCommandsHint = (inputValue: string, setInputValue: any, setCaret
       tabCounterRef.current = tabCounterRef.current + 1;
       setInputValue(autocompletedCommand);
       setCaretPosition(autocompletedCommand.length - 1);
-      consoleDispatch(changeCurrentHistoryCommand(autocompletedCommand));
       return false;
     }
     isTabSwitchMode.current = false;

@@ -5,7 +5,7 @@ import { Logs } from "../../store/console/interfaces";
 import { useGlobalHandlerContext } from "../../context/globalHandlerContext";
 import { useConsoleContext } from "../../context/consoleContext";
 import { useHandlerContext } from "../../context/handlerContext";
-import { addUserLog } from "../../store/console/actions";
+import { addHistoryCommand, addUserLog } from "../../store/console/actions";
 import { usePathnameLocation } from "../../hooks/usePathnameLocation";
 import { useCommandsHint } from "./hooks/useCommandsHint";
 import { useHistoryCommands } from "./hooks/useHistoryCommands";
@@ -20,7 +20,7 @@ const Input: React.FC<InputProps> = () => {
   const { commandHandler } = useHandlerContext();
   const { commandHandler: globalHandler } = useGlobalHandlerContext();
   const { consoleDispatch, consoleState } = useConsoleContext();
-  const { logs } = consoleState;
+  const { logs, history } = consoleState;
   const [inputValue, setInputValue] = React.useState<string>("");
   const [caretPosition, setCaretPosition] = React.useState<number>(inputValue.length - 1);
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -31,8 +31,12 @@ const Input: React.FC<InputProps> = () => {
     setInputValue,
     setCaretPosition,
   );
-  const { historyCommandsHandleKeyDownInput, historyCommandsHandleChangeInput } =
-    useHistoryCommands(setInputValue, setCaretPosition, inputRef);
+  const { historyCommandsHandleKeyDownInput, resetHistoryBrowsing } = useHistoryCommands(
+    inputValue,
+    setInputValue,
+    setCaretPosition,
+    inputRef,
+  );
 
   const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.currentTarget.value;
@@ -42,14 +46,18 @@ const Input: React.FC<InputProps> = () => {
     setCaretPosition(() => caretPosition);
 
     setInputValue(value);
-    historyCommandsHandleChangeInput(e);
+    resetHistoryBrowsing();
   };
 
   const allowedKeyUpKeyCodes = ["ArrowLeft", "ArrowRight", "Backspace", "MetaRight", "MetaLeft"];
 
   const handleKeyDownInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const isContinue = commandsHintHandleKeyDownInput(e);
-    if (!isContinue) return;
+    if (!isContinue) {
+      // Tab autocomplete replaced the line
+      resetHistoryBrowsing();
+      return;
+    }
 
     historyCommandsHandleKeyDownInput(e);
 
@@ -57,6 +65,7 @@ const Input: React.FC<InputProps> = () => {
     if (e.key === "Enter") {
       const command = inputValue.trim();
       setInputValue("");
+      if (command && command !== history[0]) consoleDispatch(addHistoryCommand(command));
 
       consoleDispatch(addUserLog(command, pathnameLocation));
       const isContextCommand = commandHandler(command);

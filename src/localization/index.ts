@@ -7,8 +7,9 @@ class Localization {
   private language: Languages = storage.getLanguage();
 
   private async getDictionary(language: Languages): Promise<Dictionary | undefined> {
+    // keys like "404command" are not valid identifiers, so only `default` is guaranteed to have them
     const jsonDictionary = await import(`./dictionaries/${language}.json`);
-    return jsonDictionary;
+    return jsonDictionary.default;
   }
 
   async initDictionary() {

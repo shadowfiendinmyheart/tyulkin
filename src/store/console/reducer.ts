@@ -19,14 +19,7 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
     case ConsoleActionKind.AddHistoryCommand: {
       return {
         ...state,
-        userCommands: [action.payload, ...state.userCommands],
-      };
-    }
-
-    case ConsoleActionKind.ChangeCurrentHistoryCommand: {
-      return {
-        ...state,
-        userCommands: [action.payload, ...state.userCommands.slice(1)],
+        history: [action.payload, ...state.history],
       };
     }
 

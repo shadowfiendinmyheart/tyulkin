@@ -1,19 +1,23 @@
 import React from "react";
 import { useConsoleContext } from "../../../context/consoleContext";
-import { addHistoryCommand, changeCurrentHistoryCommand } from "../../../store/console/actions";
+
+// -1 means "not browsing": the input shows the draft the user is typing
+const DRAFT_POSITION = -1;
 
 export const useHistoryCommands = (
+  inputValue: string,
   setInputValue: React.Dispatch<React.SetStateAction<string>>,
   setCaretPosition: React.Dispatch<React.SetStateAction<number>>,
   inputRef: React.RefObject<HTMLInputElement>,
 ) => {
-  const historyPosition = React.useRef<number>(0);
-  const { consoleDispatch, consoleState } = useConsoleContext();
-  const { userCommands } = consoleState;
+  const historyPosition = React.useRef<number>(DRAFT_POSITION);
+  const draft = React.useRef<string>("");
+  const { consoleState } = useConsoleContext();
+  const { history } = consoleState;
 
-  const historyCommandsHandleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.currentTarget.value;
-    consoleDispatch(changeCurrentHistoryCommand(value));
+  // any edit (typing, Tab autocomplete) turns the current line into the new draft
+  const resetHistoryBrowsing = () => {
+    historyPosition.current = DRAFT_POSITION;
   };
 
   const historyCommandsHandleKeyDownInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -26,45 +30,34 @@ export const useHistoryCommands = (
 
     switch (e.key) {
       case "ArrowUp": {
-        if (!userCommands.length) return;
-        historyPosition.current =
-          historyPosition.current === userCommands.length - 1
-            ? historyPosition.current
-            : historyPosition.current + 1;
-
-        const nextCommand = userCommands[historyPosition.current];
-        updateInput(nextCommand);
+        // the native action moves the caret to the line start, out of sync with the drawn caret
+        e.preventDefault();
+        if (historyPosition.current >= history.length - 1) return;
+        if (historyPosition.current === DRAFT_POSITION) draft.current = inputValue;
+        historyPosition.current += 1;
+        updateInput(history[historyPosition.current]);
         break;
       }
 
       case "ArrowDown": {
-        if (!userCommands.length) return;
-        historyPosition.current =
-          historyPosition.current === 0 ? historyPosition.current : historyPosition.current - 1;
-
-        const prevCommand = userCommands[historyPosition.current];
-        updateInput(prevCommand);
+        e.preventDefault();
+        if (historyPosition.current === DRAFT_POSITION) return;
+        historyPosition.current -= 1;
+        updateInput(
+          historyPosition.current === DRAFT_POSITION
+            ? draft.current
+            : history[historyPosition.current],
+        );
         break;
       }
 
       case "Enter": {
-        historyPosition.current = 0;
-        const command = userCommands[0]?.trim();
-        if (command) {
-          if (historyPosition.current !== 0) {
-            consoleDispatch(changeCurrentHistoryCommand(command));
-          }
-          consoleDispatch(addHistoryCommand(""));
-        }
-        break;
-      }
-
-      default: {
-        historyPosition.current = 0;
+        resetHistoryBrowsing();
+        draft.current = "";
         break;
       }
     }
   };
 
-  return { historyCommandsHandleKeyDownInput, historyCommandsHandleChangeInput };
+  return { historyCommandsHandleKeyDownInput, resetHistoryBrowsing };
 };
