@@ -1,21 +1,9 @@
 import { ThemeMode } from "../../domain";
-import { Languages } from "../../localization/interfaces";
-import {
-  ActionSetLanguage,
-  ActionSetStatus,
-  ActionSetTheme,
-  AppActionKind,
-  AppStatus,
-} from "./interfaces";
+import { ActionSetStatus, ActionSetTheme, AppActionKind, AppStatus } from "./interfaces";
 
 export const setStatus = (status: AppStatus): ActionSetStatus => ({
   type: AppActionKind.SetStatus,
   payload: status,
-});
-
-export const setLanguage = (language: Languages): ActionSetLanguage => ({
-  type: AppActionKind.SetLanguage,
-  payload: language,
 });
 
 export const setTheme = (theme: ThemeMode): ActionSetTheme => ({

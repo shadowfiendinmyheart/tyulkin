@@ -1,4 +1,3 @@
-import localization from "../../localization";
 import { ROUTES } from "../../router/const";
 import { Command } from "../interfaces";
 
@@ -6,12 +5,12 @@ export const mainCommands: Command[] = [
   {
     name: "education",
     descriptionKey: "helpEducation",
-    run: ({ log }) => log(localization.getLocale({ key: "education" })),
+    run: ({ log, t }) => log(t({ key: "education" })),
   },
   {
     name: "about",
     descriptionKey: "helpAbout",
-    run: ({ log }) => log(localization.getLocale({ key: "about" })),
+    run: ({ log, t }) => log(t({ key: "about" })),
   },
   {
     name: "settings",

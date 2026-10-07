@@ -30,3 +30,35 @@ describe("checkLanguage", () => {
     expect(checkLanguage("de")).toBeUndefined();
   });
 });
+
+describe("getLocaleWithArgs placeholders", () => {
+  it("substitutes every occurrence", () => {
+    expect(
+      getLocaleWithArgs({
+        key: "changeTheme",
+        args: { themeName: "Black" },
+        locale: "$themeName is $themeName",
+      }),
+    ).toBe("Black is Black");
+  });
+
+  it("keeps `$` patterns inside values and unknown placeholders as is", () => {
+    expect(
+      getLocaleWithArgs({
+        key: "404command",
+        args: { unknownCommand: "$& $unknownCommand $$" },
+        locale: "Command $unknownCommand not found, $other",
+      }),
+    ).toBe("Command $& $unknownCommand $$ not found, $other");
+  });
+
+  it("substitutes a placeholder followed by word characters", () => {
+    expect(
+      getLocaleWithArgs({
+        key: "themeList",
+        args: { themes: "Black" },
+        locale: "$themes_list: $themesX",
+      }),
+    ).toBe("Black_list: BlackX");
+  });
+});

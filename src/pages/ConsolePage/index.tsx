@@ -8,7 +8,7 @@ import { ROUTES } from "../../router/const";
 import { reducer } from "../../store/console/reducer";
 import { addConsoleLog } from "../../store/console/actions";
 import storage from "../../storage";
-import localization from "../../localization";
+import { useT } from "../../context/localizationContext";
 import { CommonDictionaryKeys } from "../../localization/interfaces";
 
 import styles from "./styles.module.scss";
@@ -27,10 +27,16 @@ const ConsolePage: React.FC = () => {
     commandsHint: [],
   });
   const pathname = useLocation().pathname as RouteValues;
+  const t = useT();
+  // welcome text is logged on navigation only, not again after a language change
+  const tRef = React.useRef(t);
+  React.useLayoutEffect(() => {
+    tRef.current = t;
+  }, [t]);
 
   // welcome text
   React.useEffect(() => {
-    dispatch(addConsoleLog(localization.getLocale({ key: welcomeLocaleByRoute[pathname] })));
+    dispatch(addConsoleLog(tRef.current({ key: welcomeLocaleByRoute[pathname] })));
   }, [pathname]);
 
   return (

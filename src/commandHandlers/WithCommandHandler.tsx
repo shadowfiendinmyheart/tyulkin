@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/appContext";
 import { useConsoleContext } from "../context/consoleContext";
 import { HandlerContext } from "../context/handlerContext";
-import localization from "../localization";
+import { useLocalization } from "../context/localizationContext";
 import { addConsoleLog } from "../store/console/actions";
 import { globalCommands } from "./commands";
 import { Command, CommandContext } from "./interfaces";
@@ -18,6 +18,7 @@ interface WithCommandHandlerProps {
 const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, children }) => {
   const { consoleDispatch } = useConsoleContext();
   const { appDispatch } = useAppContext();
+  const { t, changeLanguage } = useLocalization();
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
@@ -35,12 +36,14 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
 
     const separated = separateCommand(availableCommands, userCommand);
     if (!separated) {
-      log(localization.getLocale({ key: "404command", args: { unknownCommand: userCommand } }));
+      log(t({ key: "404command", args: { unknownCommand: userCommand } }));
       return;
     }
 
     const ctx: CommandContext = {
       log,
+      t,
+      changeLanguage,
       consoleDispatch,
       appDispatch,
       navigate,

@@ -9,13 +9,6 @@ export function reducer(state: AppState, action: AppActionType): AppState {
       };
     }
 
-    case AppActionKind.SetLanguage: {
-      return {
-        ...state,
-        language: action.payload,
-      };
-    }
-
     case AppActionKind.SetTheme: {
       return {
         ...state,

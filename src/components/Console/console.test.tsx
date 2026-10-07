@@ -1,11 +1,15 @@
 import React from "react";
-import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import ConsolePage from "../../pages/ConsolePage";
 import { AppContext } from "../../context/appContext";
-import localization from "../../localization";
+import { LocalizationContext } from "../../context/localizationContext";
+import { createT } from "../../localization";
+import eng from "../../localization/dictionaries/eng.json";
+
+const t = createT(eng);
 
 // jsdom has no layout
 Element.prototype.scrollIntoView = () => undefined;
@@ -14,23 +18,23 @@ const renderConsole = (path = "/") => {
   render(
     <AppContext.Provider
       value={{
-        appState: { status: "ok", language: "eng", theme: "Black" },
+        appState: { status: "ok", theme: "Black" },
         appDispatch: () => undefined,
       }}
     >
-      <MemoryRouter initialEntries={[path]}>
-        <ConsolePage />
-      </MemoryRouter>
+      <LocalizationContext.Provider
+        value={{ language: "eng", t, changeLanguage: () => Promise.resolve(t) }}
+      >
+        <MemoryRouter initialEntries={[path]}>
+          <ConsolePage />
+        </MemoryRouter>
+      </LocalizationContext.Provider>
     </AppContext.Provider>,
   );
   return { user: userEvent.setup(), input: screen.getByRole("textbox") as HTMLInputElement };
 };
 
 const getLogs = () => screen.getAllByRole("listitem").map((item) => item.textContent);
-
-beforeAll(async () => {
-  await localization.changeDictionary("eng");
-});
 
 beforeEach(() => localStorage.clear());
 afterEach(cleanup);
@@ -46,7 +50,7 @@ describe("console", () => {
     const { user } = renderConsole();
     await user.keyboard("about{Enter}");
     expect(getLogs()).toContain("cv> about");
-    expect(getLogs()).toContain(localization.getLocale({ key: "about" }));
+    expect(getLogs()).toContain(eng.about);
   });
 
   it("reports an unknown command and respects word boundaries (TASK-25)", async () => {

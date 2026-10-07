@@ -1,10 +1,12 @@
 import { NavigateFunction } from "react-router-dom";
-import { CommandDescriptionKeys } from "../localization/interfaces";
+import { CommandDescriptionKeys, Languages, TFunction } from "../localization/interfaces";
 import { AppActionType } from "../store/app/interfaces";
 import { ConsoleActionType } from "../store/console/interfaces";
 
 export interface CommandContext {
   log: (message: string) => void;
+  t: TFunction;
+  changeLanguage: (language: Languages) => Promise<TFunction>;
   consoleDispatch: (action: ConsoleActionType) => void;
   appDispatch: (action: AppActionType) => void;
   navigate: NavigateFunction;

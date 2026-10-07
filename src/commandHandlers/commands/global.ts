@@ -1,4 +1,3 @@
-import localization from "../../localization";
 import { ROUTES } from "../../router/const";
 import { clearLogs } from "../../store/console/actions";
 import { Command } from "../interfaces";
@@ -28,9 +27,9 @@ export const globalCommands: Command[] = [
   {
     name: "help",
     descriptionKey: "helpHelp",
-    run: ({ log, commands }) => {
+    run: ({ log, t, commands }) => {
       const help = commands.map((command) =>
-        getHelpLine(command, localization.getLocale({ key: command.descriptionKey })),
+        getHelpLine(command, t({ key: command.descriptionKey })),
       );
       log(help.join("\n"));
     },

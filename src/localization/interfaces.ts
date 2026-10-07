@@ -78,3 +78,5 @@ export type LocaleParams = CommonLocale | LocaleWithArgs;
 
 export const languages = ["ru", "eng"] as const;
 export type Languages = (typeof languages)[number];
+
+export type TFunction = (params: LocaleParams) => string;
