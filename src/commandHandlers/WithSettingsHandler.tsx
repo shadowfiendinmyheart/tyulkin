@@ -4,7 +4,7 @@ import { useAppContext } from "../context/appContext";
 import { useConsoleContext } from "../context/consoleContext";
 import { HandlerContext } from "../context/handlerContext";
 import { addConsoleLog, setCaretMode } from "../store/console/actions";
-import { setTheme } from "../store/app/actions";
+import { setLanguage, setTheme } from "../store/app/actions";
 import { themeModes, ThemeMode } from "../store/app/interfaces";
 import { makeCapitalize } from "../utils";
 import { getAllCommandsWithParams, getParamsString, separateCommand } from "./utils";
@@ -41,7 +41,7 @@ const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) =
   const { appDispatch } = useAppContext();
 
   const commandHandler = (userCommand: string) => {
-    const separated = separateCommand(SettingsCommands, userCommand);
+    const separated = separateCommand(commandsWithParams, userCommand);
     if (!separated) return false;
     const { command, params } = separated;
 
@@ -107,13 +107,28 @@ const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) =
         return true;
       }
 
-      storage.setLanguage(language);
-      localization.changeDictionary(language);
-      consoleDispatch(
-        addConsoleLog(
-          localization.getLocale({ key: "changeLanguage", args: { languageName: language } }),
-        ),
-      );
+      // the message must be taken from the new dictionary, so wait for it to load
+      localization
+        .changeDictionary(language)
+        .then(() => {
+          storage.setLanguage(language);
+          appDispatch(setLanguage(language));
+          consoleDispatch(
+            addConsoleLog(
+              localization.getLocale({ key: "changeLanguage", args: { languageName: language } }),
+            ),
+          );
+        })
+        .catch(() => {
+          consoleDispatch(
+            addConsoleLog(
+              localization.getLocale({
+                key: "changeLanguageError",
+                args: { languageName: language },
+              }),
+            ),
+          );
+        });
       return true;
     }
 

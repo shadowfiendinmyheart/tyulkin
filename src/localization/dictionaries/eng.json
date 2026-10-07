@@ -13,6 +13,7 @@
   "caretList": "Allowed carets: $carets",
   "wrongLanguage": "language $languageName not found",
   "changeLanguage": "ur language switch to $languageName",
+  "changeLanguageError": "failed to load language $languageName, please try again",
   "languageList": "Allowed languages: $languages",
   "wrongTheme": "theme $themeName not found",
   "changeTheme": "ur theme switch to $themeName",

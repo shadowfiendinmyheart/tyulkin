@@ -5,7 +5,7 @@ import { addHistoryCommand, changeCurrentHistoryCommand } from "../../../store/c
 export const useHistoryCommands = (
   setInputValue: React.Dispatch<React.SetStateAction<string>>,
   setCaretPosition: React.Dispatch<React.SetStateAction<number>>,
-  inputRef: React.RefObject<HTMLInputElement>
+  inputRef: React.RefObject<HTMLInputElement>,
 ) => {
   const historyPosition = React.useRef<number>(0);
   const { consoleDispatch, consoleState } = useConsoleContext();
@@ -25,44 +25,44 @@ export const useHistoryCommands = (
     };
 
     switch (e.key) {
-    case "ArrowUp": {
-      if (!userCommands.length) return;
-      historyPosition.current =
+      case "ArrowUp": {
+        if (!userCommands.length) return;
+        historyPosition.current =
           historyPosition.current === userCommands.length - 1
             ? historyPosition.current
             : historyPosition.current + 1;
 
-      const nextCommand = userCommands[historyPosition.current];
-      updateInput(nextCommand);
-      break;
-    }
+        const nextCommand = userCommands[historyPosition.current];
+        updateInput(nextCommand);
+        break;
+      }
 
-    case "ArrowDown": {
-      if (!userCommands.length) return;
-      historyPosition.current =
+      case "ArrowDown": {
+        if (!userCommands.length) return;
+        historyPosition.current =
           historyPosition.current === 0 ? historyPosition.current : historyPosition.current - 1;
 
-      const prevCommand = userCommands[historyPosition.current];
-      updateInput(prevCommand);
-      break;
-    }
-
-    case "Enter": {
-      historyPosition.current = 0;
-      const command = userCommands[0]?.trim();
-      if (command) {
-        if (historyPosition.current !== 0) {
-          consoleDispatch(changeCurrentHistoryCommand(command));
-        }
-        consoleDispatch(addHistoryCommand(""));
+        const prevCommand = userCommands[historyPosition.current];
+        updateInput(prevCommand);
+        break;
       }
-      break;
-    }
 
-    default: {
-      historyPosition.current = 0;
-      break;
-    }
+      case "Enter": {
+        historyPosition.current = 0;
+        const command = userCommands[0]?.trim();
+        if (command) {
+          if (historyPosition.current !== 0) {
+            consoleDispatch(changeCurrentHistoryCommand(command));
+          }
+          consoleDispatch(addHistoryCommand(""));
+        }
+        break;
+      }
+
+      default: {
+        historyPosition.current = 0;
+        break;
+      }
     }
   };
 

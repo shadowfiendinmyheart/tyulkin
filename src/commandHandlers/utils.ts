@@ -7,21 +7,23 @@ import WithSettingsHandler, { SettingsCommands } from "./WithSettingsHandler";
 
 export const logWrapper = (userCommand: string, log: string) => `${userCommand}\n\n${log}\n\n`;
 
-export const separateCommand = (commands: string[] | object, userCommand: string) => {
-  const commandValues = Object.values(commands);
-  userCommand = userCommand.trim();
+// matches whole words: "set themeblack" is not "set theme"
+// a command with params accepts at most one argument, a command without params accepts none
+export const separateCommand = (commandsWithParams: CommandWithParams[], userCommand: string) => {
+  const userWords = userCommand.trim().split(/\s+/);
 
-  const foundCommand = commandValues.find((command) => userCommand.startsWith(command));
-  if (!foundCommand) return;
+  const found = commandsWithParams.find(({ command }) =>
+    command.split(" ").every((word, index) => userWords[index] === word),
+  );
+  if (!found) return;
 
-  const userParams =
-    userCommand.length > foundCommand.length
-      ? userCommand.slice(foundCommand.length + 1).split(" ")
-      : [];
+  const params = userWords.slice(found.command.split(" ").length);
+  const maxParamsCount = found.params ? 1 : 0;
+  if (params.length > maxParamsCount) return;
 
   return {
-    command: foundCommand,
-    params: userParams,
+    command: found.command,
+    params,
   };
 };
 

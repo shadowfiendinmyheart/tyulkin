@@ -16,6 +16,7 @@ export interface DictionaryWithArgs {
   caretList: string;
   wrongLanguage: string;
   changeLanguage: string;
+  changeLanguageError: string;
   languageList: string;
   wrongTheme: string;
   changeTheme: string;
@@ -42,6 +43,7 @@ type ChangeCaretLocale = LocaleWithArgsGenerator<"changeCaret", "caretName">;
 type CaretListLocale = LocaleWithArgsGenerator<"caretList", "carets">;
 type WrongLanguageLocale = LocaleWithArgsGenerator<"wrongLanguage", "languageName">;
 type ChangeLanguageLocale = LocaleWithArgsGenerator<"changeLanguage", "languageName">;
+type ChangeLanguageErrorLocale = LocaleWithArgsGenerator<"changeLanguageError", "languageName">;
 type LanguageListLocale = LocaleWithArgsGenerator<"languageList", "languages">;
 type WrongThemeLocale = LocaleWithArgsGenerator<"wrongTheme", "themeName">;
 type ChangeThemeLocale = LocaleWithArgsGenerator<"changeTheme", "themeName">;
@@ -57,6 +59,7 @@ export type LocaleWithArgs =
   | CaretListLocale
   | WrongLanguageLocale
   | ChangeLanguageLocale
+  | ChangeLanguageErrorLocale
   | LanguageListLocale
   | WrongThemeLocale
   | ChangeThemeLocale

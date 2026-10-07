@@ -13,6 +13,7 @@
   "caretList": "Доступные курсоры: $carets",
   "wrongLanguage": "Язык $languageName не найден",
   "changeLanguage": "Язык $languageName успешно установлен",
+  "changeLanguageError": "Не удалось загрузить язык $languageName, попробуйте ещё раз",
   "languageList": "Доступные языки: $languages",
   "wrongTheme": "Тема $themeName не найдена",
   "changeTheme": "Тема $themeName успешно установлена",

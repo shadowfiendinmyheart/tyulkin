@@ -18,8 +18,11 @@ class Localization {
   }
 
   async changeDictionary(language: Languages) {
+    const dictionary = await this.getDictionary(language);
+    if (!dictionary) throw Error("change dictionary error");
+    // switch only after a successful load, so a failed import keeps the current language
     this.language = language;
-    await this.initDictionary();
+    this.dictionary = dictionary;
   }
 
   getLocale(params: LocaleParams) {

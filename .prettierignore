@@ -1,2 +1,5 @@
 node_modules
 dist
+# markdown tables are maintained by hand and by /backlog, /task skills
+BACKLOG.md
+.claude
