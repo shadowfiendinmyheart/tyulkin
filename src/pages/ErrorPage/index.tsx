@@ -1,43 +1,44 @@
 import React from "react";
 import { useRouteError, isRouteErrorResponse } from "react-router-dom";
+import styles from "./styles.module.scss";
 
-// TODO: make fancy ErrorPage
+const errorAscii = ` _____ ____  ____   ___  ____
+| ____|  _ \\|  _ \\ / _ \\|  _ \\
+|  _| | |_) | |_) | | | | |_) |
+| |___|  _ <|  _ <| |_| |  _ <
+|_____|_| \\_\\_| \\_\\\\___/|_| \\_\\`;
+
+const promptByStatus: Record<string, string> = {
+  "401": "unauthorized",
+  "403": "access_denied",
+  "404": "not_found",
+};
+const defaultPrompt = "internal_error";
+
 const ErrorPage: React.FC = () => {
   const error = useRouteError();
 
+  let status = "500";
+  let message = "";
+
   if (isRouteErrorResponse(error)) {
-    if (error.status === 401) {
-      // ...
-    }
+    status = String(error.status);
+    message = error.data?.message || error.statusText;
+  } else if (error instanceof Error) {
+    message = error.message;
+  }
 
-    if (error.status === 404) {
-      // ...
-    }
-
-    return (
-      <div id="error-page">
-        <h1>Oops! {error.status}</h1>
-        <p>{error.statusText}</p>
-        {error.data?.message && (
-          <p>
-            <i>{error.data.message}</i>
-          </p>
-        )}
+  return (
+    <div className={styles.wrapper}>
+      <pre className={styles.ascii}>{errorAscii}</pre>
+      <div className={styles.status}>{status}</div>
+      {message && <div className={styles.message}>{message}</div>}
+      <div className={styles.prompt}>
+        {promptByStatus[status] || defaultPrompt}
+        <span className={styles.cursor} />
       </div>
-    );
-  }
-
-  if (error instanceof Error) {
-    <div id="error-page">
-      <h1>Oops! Unexpected Error</h1>
-      <p>Something went wrong.</p>
-      <p>
-        <i>{error.message}</i>
-      </p>
-    </div>;
-  }
-
-  return <></>;
+    </div>
+  );
 };
 
 export default ErrorPage;

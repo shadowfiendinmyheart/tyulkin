@@ -5,7 +5,7 @@
   "about": "Tyulkin Ivan\n23 y.o.\nFrontend-developer\nSPB, Russia",
   "help": "$Back - назад/n$Clear - очистить консоль\n$Menu - вернуться в главное меню\nHelp - помощь\n$Ls - список команд",
   "/Help": "$education - образование\n$about - что-то обо мне...\n$settings - меню настроек",
-  "/settingsHelp": "$set theme - назначить тему\n$set caret - назначить текстовый курсор\n$show carets - посмотреть список текстовых курсоров\n$set language - назначить язык\n$show languages - посмотреть список языков",
+  "/settingsHelp": "$set theme - назначить тему\n$show themes - посмотреть список тем\n$set caret - назначить текстовый курсор\n$show carets - посмотреть список текстовых курсоров\n$set language - назначить язык\n$show languages - посмотреть список языков",
   "404command": "Command: $unknownCommand not found\nEnter help or ls to get help)",
   "loading": "loading",
   "wrongCaret": "caret $caretName not found",
@@ -13,5 +13,8 @@
   "caretList": "Allowed carets: $carets",
   "wrongLanguage": "language $languageName not found",
   "changeLanguage": "ur language switch to $languageName",
-  "languageList": "Allowed languages: $languages"
+  "languageList": "Allowed languages: $languages",
+  "wrongTheme": "theme $themeName not found",
+  "changeTheme": "ur theme switch to $themeName",
+  "themeList": "Allowed themes: $themes"
 }

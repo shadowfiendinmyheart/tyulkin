@@ -1,8 +1,11 @@
 import React from "react";
 import { CaretMode } from "../components/Char";
+import { useAppContext } from "../context/appContext";
 import { useConsoleContext } from "../context/consoleContext";
 import { HandlerContext } from "../context/handlerContext";
 import { addConsoleLog, setCaretMode } from "../store/console/actions";
+import { setTheme } from "../store/app/actions";
+import { themeModes, ThemeMode } from "../store/app/interfaces";
 import { makeCapitalize } from "../utils";
 import { getAllCommandsWithParams, getParamsString, separateCommand } from "./utils";
 import localization from "../localization";
@@ -17,6 +20,7 @@ interface WithSettingsHandlerProps {
 
 export enum SettingsCommands {
   SetTheme = "set theme",
+  ShowThemes = "show themes",
   SetCaret = "set caret",
   ShowCarets = "show carets",
   SetLanguage = "set language",
@@ -24,7 +28,8 @@ export enum SettingsCommands {
 }
 
 const commandsWithParams: CommandWithParams[] = [
-  { command: SettingsCommands.SetTheme },
+  { command: SettingsCommands.SetTheme, params: [...themeModes] },
+  { command: SettingsCommands.ShowThemes },
   { command: SettingsCommands.SetCaret, params: Object.values(CaretMode) },
   { command: SettingsCommands.ShowCarets },
   { command: SettingsCommands.SetLanguage, params: Object.values(languages) },
@@ -33,6 +38,7 @@ const commandsWithParams: CommandWithParams[] = [
 
 const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) => {
   const { consoleDispatch } = useConsoleContext();
+  const { appDispatch } = useAppContext();
 
   const commandHandler = (userCommand: string) => {
     const separated = separateCommand(SettingsCommands, userCommand);
@@ -111,8 +117,36 @@ const WithSettingsHandler: React.FC<WithSettingsHandlerProps> = ({ children }) =
       return true;
     }
 
+    const themeListLocale = localization.getLocale({
+      key: "themeList",
+      args: { themes: getParamsString(themeModes) },
+    });
+    if (SettingsCommands.ShowThemes === command) {
+      consoleDispatch(addConsoleLog(themeListLocale));
+      return true;
+    }
+
     if (SettingsCommands.SetTheme === command) {
-      // TODO set theme
+      if (!params[0]) {
+        consoleDispatch(addConsoleLog(themeListLocale));
+        return true;
+      }
+
+      const theme = makeCapitalize(params[0]) as ThemeMode;
+
+      if (!themeModes.includes(theme)) {
+        consoleDispatch(
+          addConsoleLog(localization.getLocale({ key: "wrongTheme", args: { themeName: theme } })),
+        );
+        return true;
+      }
+
+      storage.setThemeMode(theme);
+      appDispatch(setTheme(theme));
+      consoleDispatch(
+        addConsoleLog(localization.getLocale({ key: "changeTheme", args: { themeName: theme } })),
+      );
+      return true;
     }
 
     return false;

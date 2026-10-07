@@ -1,0 +1,48 @@
+.wrapper {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+  padding: 0 16px;
+}
+
+.ascii {
+  white-space: pre;
+  line-height: 1.2;
+  font-size: clamp(8px, 2vw, 16px);
+  margin: 0;
+}
+
+.status {
+  font-size: 1.4rem;
+  letter-spacing: 2px;
+}
+
+.message {
+  color: var(--muted-color);
+  max-width: 480px;
+}
+
+.prompt {
+  margin-top: 8px;
+  color: var(--muted-color);
+}
+
+.cursor {
+  display: inline-block;
+  width: 0.55em;
+  height: 1em;
+  margin-left: 2px;
+  background-color: var(--caret-color);
+  vertical-align: text-bottom;
+  animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}

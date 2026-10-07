@@ -1,0 +1,36 @@
+// theme is applied via data-theme attribute on <html> (see App.tsx)
+:root,
+[data-theme="Black"] {
+  --bg-color: #000;
+  --text-color: #ccc;
+  --muted-color: #888;
+  --caret-color: #fff;
+}
+
+[data-theme="White"] {
+  --bg-color: #fff;
+  --text-color: #222;
+  --muted-color: #777;
+  --caret-color: #000;
+}
+
+[data-theme="Light"] {
+  --bg-color: #fdf6e3;
+  --text-color: #586e75;
+  --muted-color: #93a1a1;
+  --caret-color: #586e75;
+}
+
+[data-theme="Dark"] {
+  --bg-color: #1e1e1e;
+  --text-color: #d4d4d4;
+  --muted-color: #808080;
+  --caret-color: #d4d4d4;
+}
+
+[data-theme="Hacker"] {
+  --bg-color: #000;
+  --text-color: #33ff33;
+  --muted-color: #1a9e1a;
+  --caret-color: #33ff33;
+}

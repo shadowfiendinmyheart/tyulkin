@@ -1,11 +1,11 @@
 import { CaretMode } from "../components/Char";
 import { Languages } from "../localization/interfaces";
-import { ThemeMode } from "../store/app/interfaces";
+import { ThemeMode, themeModes } from "../store/app/interfaces";
 
 export interface UserConfig {
   caretMode: CaretMode;
   colorThemeMode: ThemeMode;
-  isConsoleMode: boolean; // TODO isConsoleMode => mode: "console" | "mobile" | "game" ...
+  isConsoleMode: boolean;
 }
 
 enum StorageKeys {
@@ -28,9 +28,9 @@ class Storage {
     localStorage.setItem(StorageKeys.ThemeMode, theme);
   };
 
-  getThemeMode = () => {
-    const themeMode = localStorage.getItem(StorageKeys.ThemeMode) as ThemeMode | null;
-    return themeMode || "Black";
+  getThemeMode = (): ThemeMode => {
+    const themeMode = localStorage.getItem(StorageKeys.ThemeMode);
+    return themeModes.find((theme) => theme === themeMode) || "Black";
   };
 
   setLanguage = (language: Languages) => {

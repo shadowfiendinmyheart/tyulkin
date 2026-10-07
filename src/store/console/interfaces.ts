@@ -13,7 +13,6 @@ export interface ConsoleState {
   commandsHint: string[];
 }
 
-// TODO: fix undefined in payload
 export type ConsoleActionType =
   | ActionAddLogs
   | ActionClearLogs

@@ -7,7 +7,7 @@
   animation: blink 1s step-end infinite;
 }
 
-$caret-color: rgb(255, 255, 255);
+$caret-color: var(--caret-color);
 
 .underline {
   position: relative;
@@ -58,8 +58,19 @@ $caret-color: rgb(255, 255, 255);
   }
 }
 
-.char {
-  mix-blend-mode: difference;
+// block caret is drawn over the next char, so the next char is inverted in sync with caret blink
+.block + .char {
+  animation: blinkText 1s step-end infinite;
+}
+
+@keyframes blinkText {
+  from,
+  to {
+    color: var(--bg-color);
+  }
+  50% {
+    color: var(--text-color);
+  }
 }
 
 .spaceChar {

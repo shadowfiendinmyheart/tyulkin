@@ -2,7 +2,6 @@ import React from "react";
 
 const loadingFrames = ["-", "—", "--", "——", "---", "———", "---", "——", "--", "—"];
 
-// TODO: make fancy LoadingPage
 const LoadingPage: React.FC = () => {
   const [loadingFrame, setLoadingFrame] = React.useState("");
 

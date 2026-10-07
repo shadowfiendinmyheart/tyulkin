@@ -17,6 +17,9 @@ export interface DictionaryWithArgs {
   wrongLanguage: string;
   changeLanguage: string;
   languageList: string;
+  wrongTheme: string;
+  changeTheme: string;
+  themeList: string;
   help: string;
   ["/Help"]: string;
   ["/settingsHelp"]: string;
@@ -40,6 +43,9 @@ type CaretListLocale = LocaleWithArgsGenerator<"caretList", "carets">;
 type WrongLanguageLocale = LocaleWithArgsGenerator<"wrongLanguage", "languageName">;
 type ChangeLanguageLocale = LocaleWithArgsGenerator<"changeLanguage", "languageName">;
 type LanguageListLocale = LocaleWithArgsGenerator<"languageList", "languages">;
+type WrongThemeLocale = LocaleWithArgsGenerator<"wrongTheme", "themeName">;
+type ChangeThemeLocale = LocaleWithArgsGenerator<"changeTheme", "themeName">;
+type ThemeListLocale = LocaleWithArgsGenerator<"themeList", "themes">;
 type HelpLocale = LocaleWithArgsGenerator<"help", GlobalCommands>;
 type MainHelpLocale = LocaleWithArgsGenerator<"/Help", MainCommands>;
 type SettingsHelpLocale = LocaleWithArgsGenerator<"/settingsHelp", MainCommands>;
@@ -52,6 +58,9 @@ export type LocaleWithArgs =
   | WrongLanguageLocale
   | ChangeLanguageLocale
   | LanguageListLocale
+  | WrongThemeLocale
+  | ChangeThemeLocale
+  | ThemeListLocale
   | HelpLocale
   | MainHelpLocale
   | SettingsHelpLocale;

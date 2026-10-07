@@ -2,7 +2,9 @@ import { Languages } from "../../localization/interfaces";
 import { ActionTypeGenerator } from "../interfaces";
 
 export type AppStatus = "init" | "loading" | "error" | "ok";
-export type ThemeMode = "White" | "Black" | "Light" | "Dark" | "Hacker";
+
+export const themeModes = ["White", "Black", "Light", "Dark", "Hacker"] as const;
+export type ThemeMode = (typeof themeModes)[number];
 
 export interface AppState {
   status: AppStatus;
@@ -10,7 +12,6 @@ export interface AppState {
   theme: ThemeMode;
 }
 
-// TODO: fix undefined in payload
 export type AppActionType = ActionSetStatus | ActionSetLanguage | ActionSetTheme;
 
 export type ActionSetStatus = ActionTypeGenerator<AppActionKind.SetStatus, AppStatus>;

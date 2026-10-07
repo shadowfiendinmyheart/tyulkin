@@ -1,3 +1,5 @@
+@import "./styles/themes.scss";
+
 * {
   margin: 0;
   padding: 0;
@@ -5,7 +7,7 @@
 
 body,
 input {
-  background-color: black;
-  color: #ccc;
+  background-color: var(--bg-color);
+  color: var(--text-color);
   font-family: "IBM Plex Mono", monospace;
 }

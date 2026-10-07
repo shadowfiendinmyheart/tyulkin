@@ -5,7 +5,7 @@
   "about": "Тюлькин Иван\n23 года\nФронтенд-разработчик\nСПБ, Россия",
   "help": "\n$back - назад\n$clear - очистить консоль\n$menu - вернуться в главное меню\n$help - помощь\n$ls - список команд",
   "/Help": "$education - образование\n$about - что-то обо мне...\n$settings - меню настроек",
-  "/settingsHelp": "$set theme - назначить тему\n$set caret - назначить текстовый курсор\n$show carets - посмотреть список текстовых курсоров\n$set language - назначить язык\n$show languages - посмотреть список языков",
+  "/settingsHelp": "$set theme - назначить тему\n$show themes - посмотреть список тем\n$set caret - назначить текстовый курсор\n$show carets - посмотреть список текстовых курсоров\n$set language - назначить язык\n$show languages - посмотреть список языков",
   "404command": "Команда: $unknownCommand не найдена\nВведите help или ls чтобы получить список доступных команд",
   "loading": "загрузка",
   "wrongCaret": "Курсор $caretName не найден",
@@ -13,5 +13,8 @@
   "caretList": "Доступные курсоры: $carets",
   "wrongLanguage": "Язык $languageName не найден",
   "changeLanguage": "Язык $languageName успешно установлен",
-  "languageList": "Доступные языки: $languages"
+  "languageList": "Доступные языки: $languages",
+  "wrongTheme": "Тема $themeName не найдена",
+  "changeTheme": "Тема $themeName успешно установлена",
+  "themeList": "Доступные темы: $themes"
 }

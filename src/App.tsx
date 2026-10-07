@@ -10,9 +10,13 @@ import LoadingPage from "./pages/LoadingPage";
 const App: React.FC = () => {
   const [state, dispatch] = React.useReducer(reducer, {
     status: "init",
-    theme: "Black",
+    theme: storage.getThemeMode(),
     language: storage.getLanguage(),
   });
+
+  React.useLayoutEffect(() => {
+    document.documentElement.dataset.theme = state.theme;
+  }, [state.theme]);
 
   React.useEffect(() => {
     (async () => {
