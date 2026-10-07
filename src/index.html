@@ -1,16 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" prefix="og: https://ogp.me/ns# profile: https://ogp.me/ns/profile#">
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ivan Tyulkin — Frontend developer</title>
+    <meta
+      name="description"
+      content="Ivan Tyulkin — frontend developer from Saint Petersburg, Russia. Interactive terminal-style CV: type help to see the available commands."
+    />
+    <meta name="author" content="Ivan Tyulkin" />
+    <meta property="og:type" content="profile" />
+    <meta property="og:title" content="Ivan Tyulkin — Frontend developer" />
+    <meta
+      property="og:description"
+      content="Frontend developer from Saint Petersburg, Russia. Interactive terminal-style CV."
+    />
+    <meta property="og:locale" content="en_US" />
+    <meta property="profile:first_name" content="Ivan" />
+    <meta property="profile:last_name" content="Tyulkin" />
+    <meta name="twitter:card" content="summary" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23000'/%3E%3Cpath d='M7 10l6 6-6 6' fill='none' stroke='%23ccc' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M15 23h10' stroke='%23ccc' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E"
+    />
     <link
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap"
       rel="stylesheet"
     />
-    <title>CV</title>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <style>
+        body {
+          background-color: #000;
+          color: #ccc;
+          font-family: "IBM Plex Mono", monospace;
+          padding: 16px;
+        }
+      </style>
+      <main>
+        <p><%= about %></p>
+        <p><%= education %></p>
+        <p>This CV is an interactive terminal. Please enable JavaScript to use it.</p>
+      </main>
+    </noscript>
   </body>
 </html>

@@ -1,5 +1,12 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const eng = require("./src/localization/dictionaries/eng.json");
+
+// static CV text for crawlers and no-JS visitors, taken from the dictionary (single source)
+const escapeHtml = (text) =>
+  text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const toHtmlLines = (text) => escapeHtml(text).split("\n").join("<br />");
+
 module.exports = (env, argv) => ({
   mode: argv.mode || "development",
   entry: "./src/main.tsx",
@@ -36,6 +43,10 @@ module.exports = (env, argv) => ({
   plugins: [
     new HtmlWebpackPlugin({
       template: "./src/index.html",
+      templateParameters: {
+        about: toHtmlLines(eng.about),
+        education: toHtmlLines(eng.education),
+      },
     }),
   ],
 });
