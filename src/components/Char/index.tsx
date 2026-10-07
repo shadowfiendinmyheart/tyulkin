@@ -3,11 +3,6 @@ import cn from "clsx";
 import styles from "./styles.module.scss";
 import { useConsoleContext } from "../../context/consoleContext";
 
-export enum CaretMode {
-  Line = "line",
-  Underline = "underline",
-  Block = "block",
-}
 interface CharProps extends React.HTMLAttributes<HTMLSpanElement> {
   isCaret: boolean;
   children?: string;

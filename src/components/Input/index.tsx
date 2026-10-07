@@ -1,7 +1,5 @@
 import React from "react";
 import Char from "../Char";
-import { SetState } from "../../commandHandlers/interfaces";
-import { Logs } from "../../store/console/interfaces";
 import { useConsoleContext } from "../../context/consoleContext";
 import { useHandlerContext } from "../../context/handlerContext";
 import { addHistoryCommand, addUserLog } from "../../store/console/actions";
@@ -11,11 +9,7 @@ import { useHistoryCommands } from "./hooks/useHistoryCommands";
 
 import styles from "./styles.module.scss";
 
-interface InputProps {
-  setLogs?: SetState<Logs>;
-}
-
-const Input: React.FC<InputProps> = () => {
+const Input: React.FC = () => {
   const { commandHandler } = useHandlerContext();
   const { consoleDispatch, consoleState } = useConsoleContext();
   const { logs, history } = consoleState;

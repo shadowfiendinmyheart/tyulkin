@@ -1,4 +1,4 @@
-import { CaretMode } from "../../components/Char";
+import { CaretMode } from "../../domain";
 import { ActionTypeGenerator } from "../interfaces";
 
 export interface Log {

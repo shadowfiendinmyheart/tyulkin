@@ -1,10 +1,9 @@
-import { CaretMode } from "../../components/Char";
+import { CaretMode, ThemeMode, themeModes } from "../../domain";
 import localization from "../../localization";
 import { languages } from "../../localization/interfaces";
 import { checkLanguage } from "../../localization/utils";
 import storage from "../../storage";
 import { setLanguage, setTheme } from "../../store/app/actions";
-import { ThemeMode, themeModes } from "../../store/app/interfaces";
 import { setCaretMode } from "../../store/console/actions";
 import { makeCapitalize } from "../../utils";
 import { Command } from "../interfaces";

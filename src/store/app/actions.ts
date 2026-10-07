@@ -1,3 +1,4 @@
+import { ThemeMode } from "../../domain";
 import { Languages } from "../../localization/interfaces";
 import {
   ActionSetLanguage,
@@ -5,7 +6,6 @@ import {
   ActionSetTheme,
   AppActionKind,
   AppStatus,
-  ThemeMode,
 } from "./interfaces";
 
 export const setStatus = (status: AppStatus): ActionSetStatus => ({

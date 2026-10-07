@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CaretMode } from "../../components/Char";
+import { CaretMode } from "../../domain";
 import {
   addConsoleLog,
   addHistoryCommand,

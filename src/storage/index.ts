@@ -1,12 +1,5 @@
-import { CaretMode } from "../components/Char";
+import { CaretMode, ThemeMode, themeModes } from "../domain";
 import { Languages } from "../localization/interfaces";
-import { ThemeMode, themeModes } from "../store/app/interfaces";
-
-export interface UserConfig {
-  caretMode: CaretMode;
-  colorThemeMode: ThemeMode;
-  isConsoleMode: boolean;
-}
 
 enum StorageKeys {
   CaretMode = "caretMode",
@@ -40,14 +33,6 @@ class Storage {
   getLanguage = () => {
     const language = localStorage.getItem(StorageKeys.language) as Languages | null;
     return language || "ru";
-  };
-
-  getInitialUserConfig = (): UserConfig => {
-    return {
-      caretMode: this.getCaretMode(),
-      isConsoleMode: true,
-      colorThemeMode: this.getThemeMode(),
-    };
   };
 }
 

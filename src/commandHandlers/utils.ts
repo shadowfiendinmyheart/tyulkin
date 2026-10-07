@@ -1,7 +1,5 @@
 import { Command } from "./interfaces";
 
-export const logWrapper = (userCommand: string, log: string) => `${userCommand}\n\n${log}\n\n`;
-
 const getCommandPhrases = ({ name, aliases = [] }: Command) => [name, ...aliases];
 
 // matches whole words: "set themeblack" is not "set theme"

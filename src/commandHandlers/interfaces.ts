@@ -3,8 +3,6 @@ import { CommandDescriptionKeys } from "../localization/interfaces";
 import { AppActionType } from "../store/app/interfaces";
 import { ConsoleActionType } from "../store/console/interfaces";
 
-export type SetState<T> = React.Dispatch<React.SetStateAction<T>>;
-
 export interface CommandContext {
   log: (message: string) => void;
   consoleDispatch: (action: ConsoleActionType) => void;

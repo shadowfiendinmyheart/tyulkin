@@ -1,10 +1,8 @@
+import { ThemeMode } from "../../domain";
 import { Languages } from "../../localization/interfaces";
 import { ActionTypeGenerator } from "../interfaces";
 
 export type AppStatus = "init" | "loading" | "error" | "ok";
-
-export const themeModes = ["White", "Black", "Light", "Dark", "Hacker"] as const;
-export type ThemeMode = (typeof themeModes)[number];
 
 export interface AppState {
   status: AppStatus;
