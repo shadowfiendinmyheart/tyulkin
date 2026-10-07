@@ -9,39 +9,60 @@ import { useHistoryCommands } from "./hooks/useHistoryCommands";
 
 import styles from "./styles.module.scss";
 
+// selections are collapsed to selectionEnd (see noSelectEventHandler), so it is the real caret;
+// the caret is drawn on the char before it
+const readCaretPosition = (input: HTMLInputElement) =>
+  (input.selectionEnd ?? input.value.length) - 1;
+
 const Input: React.FC = () => {
   const { commandHandler } = useHandlerContext();
   const { consoleDispatch, consoleState } = useConsoleContext();
   const { logs, history } = consoleState;
   const [inputValue, setInputValue] = React.useState<string>("");
-  const [caretPosition, setCaretPosition] = React.useState<number>(inputValue.length - 1);
+  // index of the char the caret is drawn on (-1 — before the first char), see readCaretPosition
+  const [caretPosition, setCaretPosition] = React.useState<number>(-1);
+  // bumped by replaceInputValue, so the caret moves to the end even if the value is unchanged
+  const [caretToEndRequest, setCaretToEndRequest] = React.useState<number>(0);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const consoleInputRef = React.useRef<HTMLDivElement>(null);
   const pathnameLocation = usePathnameLocation();
-  const { commandsHintHandleKeyDownInput } = useCommandsHint(
-    inputValue,
-    setInputValue,
-    setCaretPosition,
-  );
+
+  // programmatic line replacement (Tab autocomplete, history): the caret goes to the end
+  const replaceInputValue = (value: string) => {
+    setInputValue(value);
+    setCaretToEndRequest((request) => request + 1);
+  };
+
+  const { commandsHintHandleKeyDownInput } = useCommandsHint(inputValue, replaceInputValue);
   const { historyCommandsHandleKeyDownInput, resetHistoryBrowsing } = useHistoryCommands(
     inputValue,
-    setInputValue,
-    setCaretPosition,
-    inputRef,
+    replaceInputValue,
   );
 
+  // the native input is the single source of truth for the caret
+  const syncCaretPosition = React.useCallback(() => {
+    if (inputRef.current) setCaretPosition(readCaretPosition(inputRef.current));
+  }, []);
+
   const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.currentTarget.value;
-
-    // virtual keyboards send key "Unidentified" on keydown, so the caret is synced here
-    const caretPosition = Number(e.currentTarget.selectionStart) - 1;
-    setCaretPosition(() => caretPosition);
-
-    setInputValue(value);
+    setInputValue(e.currentTarget.value);
+    // batched with the value (virtual keyboards send key "Unidentified", so keys can't be relied on)
+    syncCaretPosition();
     resetHistoryBrowsing();
   };
 
-  const allowedKeyUpKeyCodes = ["ArrowLeft", "ArrowRight", "Backspace", "MetaRight", "MetaLeft"];
+  // programmatic value changes (Enter, Tab autocomplete, history) and caret-to-end requests
+  // resync the drawn caret; after typing this is a no-op, onChange has already synced it
+  const handledCaretToEndRequest = React.useRef<number>(0);
+  React.useLayoutEffect(() => {
+    const input = inputRef.current;
+    if (!input) return;
+    if (handledCaretToEndRequest.current !== caretToEndRequest) {
+      handledCaretToEndRequest.current = caretToEndRequest;
+      input.setSelectionRange(input.value.length, input.value.length);
+    }
+    setCaretPosition(readCaretPosition(input));
+  }, [inputValue, caretToEndRequest]);
 
   const handleKeyDownInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const isContinue = commandsHintHandleKeyDownInput(e);
@@ -64,20 +85,12 @@ const Input: React.FC = () => {
     }
   };
 
-  const handleKeyUpInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    const input = inputRef.current;
-    if (input && allowedKeyUpKeyCodes.includes(e.code)) {
-      const caretPosition = Number(input.selectionStart) - 1;
-
-      setCaretPosition(() => caretPosition);
-    }
-  };
-
   React.useEffect(() => {
     // https://stackoverflow.com/questions/29221991/prevent-select-on-input-text-field
     const noSelectEventHandler = () => {
       if (!inputRef.current) return;
       inputRef.current.selectionStart = inputRef.current.selectionEnd;
+      syncCaretPosition();
     };
 
     const autoFocusEventHandler = () => {
@@ -91,15 +104,20 @@ const Input: React.FC = () => {
       autoFocusEventHandler();
     };
 
-    inputRef.current?.addEventListener("select", noSelectEventHandler, false);
+    const input = inputRef.current;
+    input?.addEventListener("select", noSelectEventHandler, false);
+    // input-level selectionchange (Firefox) keeps the caret in sync while an arrow key is held;
+    // React's onSelect covers the rest
+    input?.addEventListener("selectionchange", syncCaretPosition, false);
     document.addEventListener("keydown", autoFocusEventHandler, false);
     document.addEventListener("click", clickFocusEventHandler, false);
     return () => {
-      inputRef.current?.removeEventListener("select", noSelectEventHandler, false);
+      input?.removeEventListener("select", noSelectEventHandler, false);
+      input?.removeEventListener("selectionchange", syncCaretPosition, false);
       document.removeEventListener("keydown", autoFocusEventHandler, false);
       document.removeEventListener("click", clickFocusEventHandler, false);
     };
-  }, []);
+  }, [syncCaretPosition]);
 
   React.useEffect(() => {
     if (consoleInputRef.current) {
@@ -116,7 +134,8 @@ const Input: React.FC = () => {
         value={inputValue}
         onChange={handleChangeInput}
         onKeyDown={handleKeyDownInput}
-        onKeyUp={handleKeyUpInput}
+        // React fires onSelect on any selection change: arrows, Home/End, Delete, click, paste
+        onSelect={syncCaretPosition}
         autoFocus
         autoComplete="off"
         autoCapitalize="off"

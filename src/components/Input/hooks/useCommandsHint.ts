@@ -4,7 +4,11 @@ import { useConsoleContext } from "../../../context/consoleContext";
 import { useHandlerContext } from "../../../context/handlerContext";
 import { setCommandsHint } from "../../../store/console/actions";
 
-export const useCommandsHint = (inputValue: string, setInputValue: any, setCaretPosition: any) => {
+export const useCommandsHint = (
+  inputValue: string,
+  // replaces the line and moves the caret to its end
+  replaceInputValue: (value: string) => void,
+) => {
   const { allCommands } = useHandlerContext();
   const { consoleDispatch } = useConsoleContext();
   const tabCounterRef = React.useRef(0);
@@ -37,8 +41,7 @@ export const useCommandsHint = (inputValue: string, setInputValue: any, setCaret
         autocompletedCommand = autocompleteCommands[0];
       }
       tabCounterRef.current = tabCounterRef.current + 1;
-      setInputValue(autocompletedCommand);
-      setCaretPosition(autocompletedCommand.length - 1);
+      replaceInputValue(autocompletedCommand);
       return false;
     }
     isTabSwitchMode.current = false;
