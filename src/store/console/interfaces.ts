@@ -1,13 +1,20 @@
 import { CaretMode } from "../../domain";
 import { ActionTypeGenerator } from "../interfaces";
 
-export interface Log {
+export interface NewLog {
   message: string;
+}
+export interface Log extends NewLog {
+  // stable React key: logs are dropped from the start (MAX_LOGS), so indexes shift
+  id: number;
 }
 export type Logs = Array<Log>;
 
 export interface ConsoleState {
+  // the newest MAX_LOGS logs
   logs: Logs;
+  // id of the next added log; never reset, so ids stay unique after clear
+  nextLogId: number;
   // executed commands, newest first
   history: string[];
   caretMode: CaretMode;
@@ -21,7 +28,7 @@ export type ConsoleActionType =
   | ActionSetCaretMode
   | ActionSetCommandsHint;
 
-export type ActionAddLogs = ActionTypeGenerator<ConsoleActionKind.AddLogs, Log>;
+export type ActionAddLogs = ActionTypeGenerator<ConsoleActionKind.AddLogs, NewLog>;
 export type ActionClearLogs = ActionTypeGenerator<ConsoleActionKind.ClearLogs>;
 export type ActionAddHistoryCommand = ActionTypeGenerator<
   ConsoleActionKind.AddHistoryCommand,

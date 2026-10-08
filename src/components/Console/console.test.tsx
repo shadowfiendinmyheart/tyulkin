@@ -332,3 +332,77 @@ describe("accessibility (TASK-49)", () => {
     expect(screen.queryByText(eng.inputHint)).toBeNull();
   });
 });
+
+describe("UX shortcuts (TASK-52)", () => {
+  it("runs commands case-insensitively and autocompletes regardless of case", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("ABOUT{Enter}");
+    expect(getLogs().at(-1)).toBe(eng.about);
+
+    await user.keyboard("EDU{Tab}");
+    expect(input.value).toBe("education");
+  });
+
+  it("clears the screen on Ctrl+L and keeps the typed line", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("about{Enter}hel");
+    await user.keyboard("{Control>}l{/Control}");
+    expect(screen.queryAllByRole("listitem")).toEqual([]);
+    expect(input.value).toBe("hel");
+  });
+
+  it("treats the physical L key as Ctrl+L on a non-Latin layout", () => {
+    renderConsole();
+    const input = screen.getByRole("textbox");
+    expect(fireEvent.keyDown(input, { key: "д", code: "KeyL", ctrlKey: true })).toBe(false);
+    expect(screen.queryAllByRole("listitem")).toEqual([]);
+  });
+
+  it("drops the typed line on Ctrl+C without recording it", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("about{Enter}draft");
+    await user.keyboard("{Control>}c{/Control}");
+    expect(input.value).toBe("");
+    expect(getLogs().at(-1)).toBe("cv> draft^C");
+
+    await user.keyboard("{ArrowUp}");
+    expect(input.value).toBe("about");
+    await user.keyboard("{ArrowUp}");
+    expect(input.value).toBe("about");
+  });
+
+  it("leaves Ctrl+C to copying when text is selected", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("draft");
+    const selection = window.getSelection();
+    selection?.selectAllChildren(screen.getByRole("log"));
+    expect(fireEvent.keyDown(input, { key: "c", code: "KeyC", ctrlKey: true })).toBe(true);
+    expect(input.value).toBe("draft");
+    selection?.removeAllRanges();
+  });
+
+  it("keeps the selection in logs on Ctrl so Ctrl+C copies it", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("draft");
+    input.blur();
+    const selection = window.getSelection();
+    selection?.selectAllChildren(screen.getByRole("log"));
+
+    fireEvent.keyDown(document.body, { key: "Control", ctrlKey: true });
+    expect(document.activeElement).not.toBe(input);
+    expect(selection?.toString()).toContain("Hi everyone!");
+
+    // without a selection any key focuses the command line
+    selection?.removeAllRanges();
+    fireEvent.keyDown(document.body, { key: "Control", ctrlKey: true });
+    expect(document.activeElement).toBe(input);
+  });
+
+  it("ignores Ctrl+C during IME composition", () => {
+    renderConsole();
+    const input = screen.getByRole("textbox") as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "ab" } });
+    fireEvent.keyDown(input, { key: "Process", code: "KeyC", ctrlKey: true, isComposing: true });
+    expect(input.value).toBe("ab");
+  });
+});

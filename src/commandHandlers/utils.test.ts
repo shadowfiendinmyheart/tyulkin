@@ -58,6 +58,14 @@ describe("separateCommand", () => {
     expect(separateCommand([setTheme, set], "set theme Black White")).toBeUndefined();
   });
 
+  it("matches commands and aliases case-insensitively, keeping params as typed", () => {
+    expect(separateCommand(commands, "Set THEME black")).toEqual({
+      command: setTheme,
+      params: ["black"],
+    });
+    expect(separateCommand(commands, "CD ..")).toEqual({ command: back, params: [] });
+  });
+
   it("returns undefined for an unknown command", () => {
     expect(separateCommand(commands, "unknown")).toBeUndefined();
   });
@@ -85,6 +93,11 @@ describe("getAutocompleteCommands", () => {
       "set theme White",
     ]);
     expect(getAutocompleteCommands(all, "sh")).toEqual(["show themes"]);
+  });
+
+  it("ignores case", () => {
+    expect(getAutocompleteCommands(all, "SET theme b")).toEqual(["set theme Black"]);
+    expect(getAutocompleteCommands(all, "Sh")).toEqual(["show themes"]);
   });
 
   it("returns everything for an empty input and nothing for no match", () => {

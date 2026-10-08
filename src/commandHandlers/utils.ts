@@ -2,15 +2,17 @@ import { Command } from "./interfaces";
 
 const getCommandPhrases = ({ name, aliases = [] }: Command) => [name, ...aliases];
 
-// matches whole words: "set themeblack" is not "set theme"
+// matches whole words case-insensitively: "Help" is "help", "set themeblack" is not "set theme";
+// params are returned as typed, commands normalize them themselves
 // the first matching command decides: with params it accepts at most one argument, without none
 export const separateCommand = (commands: Command[], userCommand: string) => {
   const userWords = userCommand.trim().split(/\s+/);
+  const lowerUserWords = userWords.map((word) => word.toLowerCase());
 
   for (const command of commands) {
     for (const phrase of getCommandPhrases(command)) {
-      const phraseWords = phrase.split(" ");
-      if (!phraseWords.every((word, index) => userWords[index] === word)) continue;
+      const phraseWords = phrase.toLowerCase().split(" ");
+      if (!phraseWords.every((word, index) => lowerUserWords[index] === word)) continue;
 
       const params = userWords.slice(phraseWords.length);
       const maxParamsCount = command.params ? 1 : 0;
@@ -39,8 +41,10 @@ export const getAllCommandsWithParams = (commands: Command[]) => {
   );
 };
 
+// case-insensitive like separateCommand: "He" completes to "help"
 export const getAutocompleteCommands = (commands: string[], userCommand: string) => {
-  return commands.filter((x) => x.startsWith(userCommand));
+  const prefix = userCommand.toLowerCase();
+  return commands.filter((x) => x.toLowerCase().startsWith(prefix));
 };
 
 // "/settings" and "/settings/" -> "/"; the root is its own parent

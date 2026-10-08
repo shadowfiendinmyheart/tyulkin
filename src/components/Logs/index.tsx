@@ -10,8 +10,10 @@ const Logs: React.FC = () => {
     // role="log" is a polite live region: screen readers announce new logs (command output)
     <div className={styles.list} role="log" aria-live="polite">
       <ul>
-        {logs.map((log, index) => (
-          <li key={index} className={styles.log}>
+        {/* id, not index: once the oldest logs are dropped, index keys would rewrite every
+            item's text, and the live region could announce them all again */}
+        {logs.map((log) => (
+          <li key={log.id} className={styles.log}>
             {log.message}
           </li>
         ))}

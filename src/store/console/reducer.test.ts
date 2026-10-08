@@ -9,10 +9,11 @@ import {
   setCommandsHint,
 } from "./actions";
 import { ConsoleState } from "./interfaces";
-import { reducer } from "./reducer";
+import { MAX_LOGS, reducer } from "./reducer";
 
 const initialState: ConsoleState = {
   logs: [],
+  nextLogId: 0,
   history: [],
   caretMode: CaretMode.Block,
   commandsHint: [],
@@ -22,8 +23,26 @@ describe("console reducer", () => {
   it("adds and clears logs", () => {
     let state = reducer(initialState, addConsoleLog("hello"));
     state = reducer(state, addUserLog("ls", "~"));
-    expect(state.logs).toEqual([{ message: "hello" }, { message: "~> ls" }]);
+    expect(state.logs).toEqual([
+      { message: "hello", id: 0 },
+      { message: "~> ls", id: 1 },
+    ]);
     expect(reducer(state, clearLogs()).logs).toEqual([]);
+  });
+
+  it("keeps log ids unique after clear", () => {
+    let state = reducer(initialState, addConsoleLog("a"));
+    state = reducer(state, clearLogs());
+    state = reducer(state, addConsoleLog("b"));
+    expect(state.logs).toEqual([{ message: "b", id: 1 }]);
+  });
+
+  it("keeps only the newest MAX_LOGS logs (TASK-52)", () => {
+    let state = initialState;
+    for (let i = 0; i < MAX_LOGS + 2; i++) state = reducer(state, addConsoleLog(`log ${i}`));
+    expect(state.logs).toHaveLength(MAX_LOGS);
+    expect(state.logs[0]).toEqual({ message: "log 2", id: 2 });
+    expect(state.logs.at(-1)).toEqual({ message: `log ${MAX_LOGS + 1}`, id: MAX_LOGS + 1 });
   });
 
   it("keeps history newest first", () => {

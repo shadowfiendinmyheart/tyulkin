@@ -23,6 +23,7 @@ const welcomeLocaleByRoute: { [key in RouteValues]: CommonDictionaryKeys } = {
 // lazy: storage is read once, not on every render
 const createInitialState = (): ConsoleState => ({
   logs: [],
+  nextLogId: 0,
   history: [],
   caretMode: storage.getCaretMode(),
   commandsHint: [],

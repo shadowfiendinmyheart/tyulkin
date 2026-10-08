@@ -2,7 +2,12 @@ import React from "react";
 import Char from "../Char";
 import { useConsoleContext } from "../../context/consoleContext";
 import { useHandlerContext } from "../../context/handlerContext";
-import { addHistoryCommand, addUserLog } from "../../store/console/actions";
+import {
+  addHistoryCommand,
+  addUserLog,
+  clearLogs,
+  setCommandsHint,
+} from "../../store/console/actions";
 import { usePathnameLocation } from "../../hooks/usePathnameLocation";
 import { useCommandsHint } from "./hooks/useCommandsHint";
 import { useHistoryCommands } from "./hooks/useHistoryCommands";
@@ -14,6 +19,20 @@ import styles from "./styles.module.scss";
 // the caret is drawn on the char before it
 const readCaretPosition = (input: HTMLInputElement) =>
   (input.selectionEnd ?? input.value.length) - 1;
+
+// terminal-style Ctrl+<letter>; Shift/Alt/Meta combos are left to the browser
+// (Ctrl+Shift+C is DevTools, Ctrl+Alt is AltGr on Windows).
+// On a non-Latin layout e.key is a local letter ("д"), so the physical key decides
+const isCtrlShortcut = (e: React.KeyboardEvent, letter: string) => {
+  if (!e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return false;
+  if (e.nativeEvent.isComposing) return false; // IME composition owns the keys
+  const key = e.key.toLowerCase();
+  if (/^[a-z]$/.test(key)) return key === letter;
+  return e.code === `Key${letter.toUpperCase()}`;
+};
+
+// text selected on the page (in logs); the input's own selection is always collapsed
+const isTextSelected = () => Boolean(window.getSelection()?.toString());
 
 const Input: React.FC = () => {
   const { commandHandler } = useHandlerContext();
@@ -79,6 +98,25 @@ const Input: React.FC = () => {
 
     historyCommandsHandleKeyDownInput(e);
 
+    // Ctrl+L clears the screen like `clear`, the typed line stays
+    if (isCtrlShortcut(e, "l")) {
+      e.preventDefault(); // the browser would focus the address bar
+      consoleDispatch(clearLogs());
+      consoleDispatch(setCommandsHint([]));
+      return;
+    }
+
+    // Ctrl+C drops the typed line as in bash: it is echoed with ^C and not added to history;
+    // with text selected on the page it stays a copy
+    if (isCtrlShortcut(e, "c") && !isTextSelected()) {
+      e.preventDefault();
+      consoleDispatch(addUserLog(`${inputValue}^C`, pathnameLocation));
+      consoleDispatch(setCommandsHint([]));
+      setInputValue("");
+      resetHistoryBrowsing();
+      return;
+    }
+
     // e.code is empty on virtual keyboards, e.key is reliable
     if (e.key === "Enter") {
       const command = inputValue.trim();
@@ -104,8 +142,13 @@ const Input: React.FC = () => {
 
     // focus on click/tap opens the virtual keyboard on mobile (it must happen inside a user gesture)
     const clickFocusEventHandler = () => {
-      const isTextSelected = Boolean(window.getSelection()?.toString());
-      if (isTextSelected) return; // don't break copying text from logs
+      if (isTextSelected()) return; // don't break copying text from logs
+      autoFocusEventHandler();
+    };
+
+    // focusing the input drops the page selection: keep it for Ctrl/Cmd+C on selected logs
+    const keyDownFocusEventHandler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && isTextSelected()) return;
       autoFocusEventHandler();
     };
 
@@ -114,12 +157,12 @@ const Input: React.FC = () => {
     // input-level selectionchange (Firefox) keeps the caret in sync while an arrow key is held;
     // React's onSelect covers the rest
     input?.addEventListener("selectionchange", syncCaretPosition, false);
-    document.addEventListener("keydown", autoFocusEventHandler, false);
+    document.addEventListener("keydown", keyDownFocusEventHandler, false);
     document.addEventListener("click", clickFocusEventHandler, false);
     return () => {
       input?.removeEventListener("select", noSelectEventHandler, false);
       input?.removeEventListener("selectionchange", syncCaretPosition, false);
-      document.removeEventListener("keydown", autoFocusEventHandler, false);
+      document.removeEventListener("keydown", keyDownFocusEventHandler, false);
       document.removeEventListener("click", clickFocusEventHandler, false);
     };
   }, [syncCaretPosition]);
