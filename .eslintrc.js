@@ -6,6 +6,8 @@ module.exports = {
   extends: [
     "eslint:recommended",
     "plugin:react/recommended",
+    // new JSX transform (tsconfig "jsx": "react-jsx"): React need not be in scope
+    "plugin:react/jsx-runtime",
     "plugin:react-hooks/recommended",
     "plugin:@typescript-eslint/recommended",
     // must be last: disables stylistic rules and reports prettier diffs as eslint errors
