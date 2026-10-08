@@ -1,3 +1,4 @@
+import { StrictMode } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -9,26 +10,30 @@ import { createT } from "../../localization";
 import eng from "../../localization/dictionaries/eng.json";
 import { CaretMode } from "../../domain";
 import inputStyles from "../Input/styles.module.scss";
+import hintStyles from "../CommandsHint/style.module.scss";
 
 const t = createT(eng);
 
 // jsdom has no layout
 Element.prototype.scrollIntoView = () => undefined;
 
+// StrictMode as in main.tsx: effects run twice on mount in dev
 const renderConsole = (path = "/") => {
   render(
-    <AppContext.Provider
-      value={{
-        appState: { status: "ok", theme: "Black" },
-        appDispatch: () => undefined,
-      }}
-    >
-      <LocalizationContext.Provider
-        value={{ language: "eng", t, changeLanguage: () => Promise.resolve(t) }}
+    <StrictMode>
+      <AppContext.Provider
+        value={{
+          appState: { status: "ok", theme: "Black" },
+          appDispatch: () => undefined,
+        }}
       >
-        <RouterProvider router={createMemoryRouter(routes, { initialEntries: [path] })} />
-      </LocalizationContext.Provider>
-    </AppContext.Provider>,
+        <LocalizationContext.Provider
+          value={{ language: "eng", t, changeLanguage: () => Promise.resolve(t) }}
+        >
+          <RouterProvider router={createMemoryRouter(routes, { initialEntries: [path] })} />
+        </LocalizationContext.Provider>
+      </AppContext.Provider>
+    </StrictMode>,
   );
   return { user: userEvent.setup(), input: screen.getByRole("textbox") as HTMLInputElement };
 };
@@ -62,6 +67,35 @@ describe("console", () => {
     const { user, input } = renderConsole();
     await user.keyboard("edu{Tab}");
     expect(input.value).toBe("education");
+  });
+
+  it("logs the welcome text once under StrictMode (TASK-32)", async () => {
+    const { user } = renderConsole();
+    expect(getLogs()).toEqual([eng.welcome]);
+
+    await user.keyboard("settings{Enter}menu{Enter}");
+    expect(getLogs().filter((log) => log === eng.welcome)).toHaveLength(2);
+    expect(getLogs().filter((log) => log === eng.settingsWelcome)).toHaveLength(1);
+  });
+
+  it("lists Tab options only when there are several (TASK-37)", async () => {
+    const { user, input } = renderConsole();
+    const getHint = () =>
+      Array.from(document.getElementsByClassName(hintStyles.command), (item) => item.textContent);
+
+    await user.keyboard("e{Tab}");
+    expect(getHint()).toEqual(["education", "exit"]);
+    expect(input.value).toBe("e");
+
+    // cycling keeps the list
+    await user.keyboard("{Tab}{Tab}");
+    expect(input.value).toBe("exit");
+    expect(getHint()).toEqual(["education", "exit"]);
+
+    // a single option clears the shown list and is completed right away
+    await user.keyboard("{Backspace}{Backspace}{Backspace}d{Tab}");
+    expect(input.value).toBe("education");
+    expect(getHint()).toEqual([]);
   });
 });
 

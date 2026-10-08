@@ -2,6 +2,7 @@ import React from "react";
 import { Router } from "./router";
 import { reducer } from "./store/app/reducer";
 import { setStatus } from "./store/app/actions";
+import { AppState } from "./store/app/interfaces";
 import { createT, loadDictionary } from "./localization";
 import { Languages, TFunction } from "./localization/interfaces";
 import { htmlLangByLanguage } from "./localization/utils";
@@ -26,11 +27,14 @@ interface LocalizationState {
   t: TFunction;
 }
 
+// lazy: storage is read once, not on every render
+const createInitialState = (): AppState => ({
+  status: "init",
+  theme: storage.getThemeMode(),
+});
+
 const App: React.FC = () => {
-  const [state, dispatch] = React.useReducer(reducer, {
-    status: "init",
-    theme: storage.getThemeMode(),
-  });
+  const [state, dispatch] = React.useReducer(reducer, undefined, createInitialState);
   const [initialLanguage] = React.useState(storage.getLanguage);
   const [localization, setLocalization] = React.useState<LocalizationState | null>(null);
   // language switches run one after another, so the last requested language wins
@@ -81,6 +85,10 @@ const App: React.FC = () => {
     () => localization && { ...localization, changeLanguage },
     [localization, changeLanguage],
   );
+  const appContextValue = React.useMemo(
+    () => ({ appDispatch: dispatch, appState: state }),
+    [state],
+  );
 
   if (["init", "loading"].includes(state.status)) return <LoadingPage />;
   // no dictionary means no texts for the pages, so the router is not rendered at all;
@@ -92,7 +100,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <AppContext.Provider value={{ appDispatch: dispatch, appState: state }}>
+    <AppContext.Provider value={appContextValue}>
       <LocalizationContext.Provider value={localizationValue}>
         <Router />
       </LocalizationContext.Provider>

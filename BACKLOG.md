@@ -23,7 +23,7 @@
 | ✅ TASK-29 | P1 | S | **Статус `error` при загрузке словаря не обрабатывается** | При ошибке `initDictionary` всё равно рендерится Router → `getLocale` кидает «dictionary is empty». Показывать fallback/ErrorPage. [App.tsx:34-40](src/App.tsx#L34-L40) |
 | ✅ TASK-30 | P2 | S | **Невалидированные значения из localStorage** | `getLanguage`/`getCaretMode` кастят без проверки (в отличие от `getThemeMode`) → мусор в storage ломает загрузку словаря / класс каретки. Нет try/catch на доступ к storage (blocked storage кидает). [storage/index.ts](src/storage/index.ts) |
 | ✅ TASK-31 | P2 | S | **Неверный тип у `/settingsHelp`** | `SettingsHelpLocale` параметризован `MainCommands` вместо `SettingsCommands`. [localization/interfaces.ts:51](src/localization/interfaces.ts#L51) |
-| TASK-32 | P3 | S | Дубль welcome-сообщения в dev | `useEffect` + StrictMode → приветствие дважды. Некритично, но мешает отладке. [ConsolePage/index.tsx:32-34](src/pages/ConsolePage/index.tsx#L32-L34) |
+| ✅ TASK-32 | P3 | S | Дубль welcome-сообщения в dev | `useEffect` + StrictMode → приветствие дважды. Некритично, но мешает отладке. [ConsolePage/index.tsx:32-34](src/pages/ConsolePage/index.tsx#L32-L34) |
 
 ## 🏗 Архитектура и рефакторинг
 
@@ -33,8 +33,8 @@
 | ✅ TASK-34 | P2 | M | **Локализация как часть React-состояния** | Синглтон `Localization` вне React — смена языка не вызывает ререндер, `appState.language` мёртвый. Вынести в контекст/хук `useT()`; обновлять `<html lang>`. Механизм `$arg` через `String.replace` заменяет только первое вхождение и для help по сути просто срезает `$` — упростить. |
 | ✅ TASK-35 | P2 | S | **Разорвать циклические импорты** | `commandHandlers/utils` ↔ `WithMainHandler/WithSettingsHandler`; `localization/interfaces` → `WithGlobalHandler` → `localization`. Доменные типы (`CaretMode`, темы) живут в `components/Char` и импортируются в store/storage. Вынести в `src/domain` / `src/constants`. |
 | ✅ TASK-36 | P2 | S | **Удалить мёртвый код** | `logWrapper`, `addLog`, `setLanguage` action, `UserConfig`/`getInitialUserConfig`/`isConsoleMode`, `InputProps.setLogs` + `SetState`, пустой миксин `spaceChar` и `mixins.scss`, классы `.fancyInput`, `.tag`. |
-| TASK-37 | P3 | S | Типизация хуков | `any` в `useCommandsHint` (2 eslint-warning); логика «скрыть хинт при 1 варианте» спрятана в reducer — перенести в хук. |
-| TASK-38 | P3 | S | Стабильность рендеров | Значения контекстов и `commandHandler`/`allCommands` пересоздаются каждый рендер → лишние ререндеры всех потребителей. `useMemo`/`useCallback` или вычисление `allCommands` на уровне модуля. |
+| ✅ TASK-37 | P3 | S | Типизация хуков | `any` в `useCommandsHint` (2 eslint-warning); логика «скрыть хинт при 1 варианте» спрятана в reducer — перенести в хук. _(`any` убран ещё в TASK-26)_ |
+| ✅ TASK-38 | P3 | S | Стабильность рендеров | Значения контекстов и `commandHandler`/`allCommands` пересоздаются каждый рендер → лишние ререндеры всех потребителей. `useMemo`/`useCallback` или вычисление `allCommands` на уровне модуля. _(`allCommands` мемоизирован ещё в TASK-33)_ |
 
 ## ⚙️ Сборка, тулинг, инфраструктура
 

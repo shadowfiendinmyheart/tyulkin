@@ -15,6 +15,10 @@ export const useCommandsHint = (
   const isTabSwitchMode = React.useRef(false);
   const oldUserInputRef = React.useRef("");
 
+  // a single option is completed right away, so there is nothing to list
+  const showCommandsHint = (commands: string[]) =>
+    consoleDispatch(setCommandsHint(commands.length > 1 ? commands : []));
+
   React.useEffect(() => {
     if (!isTabSwitchMode.current) oldUserInputRef.current = inputValue;
   }, [inputValue]);
@@ -25,14 +29,13 @@ export const useCommandsHint = (
 
       const autocompleteCommands = getAutocompleteCommands(allCommands, oldUserInputRef.current);
 
-      if (autocompleteCommands.length > 1 && !isTabSwitchMode.current) {
-        consoleDispatch(setCommandsHint(autocompleteCommands));
+      // the options don't change while Tab cycles through them, so the hint is set once;
+      // several options are listed first and completed from the next Tab on
+      if (!isTabSwitchMode.current) {
         isTabSwitchMode.current = true;
-        return false;
+        showCommandsHint(autocompleteCommands);
+        if (autocompleteCommands.length > 1) return false;
       }
-      consoleDispatch(setCommandsHint(autocompleteCommands));
-
-      isTabSwitchMode.current = true;
 
       if (autocompleteCommands.length === 0) return false;
       let autocompletedCommand = autocompleteCommands[tabCounterRef.current];

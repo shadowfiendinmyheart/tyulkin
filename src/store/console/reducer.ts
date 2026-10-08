@@ -31,8 +31,6 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
     }
 
     case ConsoleActionKind.SetCommandsHint: {
-      if (action.payload.length === 1) return { ...state, commandsHint: [] };
-
       return {
         ...state,
         commandsHint: action.payload,

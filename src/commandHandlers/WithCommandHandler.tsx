@@ -29,35 +29,39 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
     [availableCommands],
   );
 
-  const commandHandler = (userCommand: string) => {
-    if (userCommand.trim() === "") return;
+  const commandHandler = React.useCallback(
+    (userCommand: string) => {
+      if (userCommand.trim() === "") return;
 
-    const log = (message: string) => consoleDispatch(addConsoleLog(message));
+      const log = (message: string) => consoleDispatch(addConsoleLog(message));
 
-    const separated = separateCommand(availableCommands, userCommand);
-    if (!separated) {
-      log(t({ key: "404command", args: { unknownCommand: userCommand } }));
-      return;
-    }
+      const separated = separateCommand(availableCommands, userCommand);
+      if (!separated) {
+        log(t({ key: "404command", args: { unknownCommand: userCommand } }));
+        return;
+      }
 
-    const ctx: CommandContext = {
-      log,
-      t,
-      changeLanguage,
-      consoleDispatch,
-      appDispatch,
-      navigate,
-      pathname,
-      commands: availableCommands,
-    };
-    separated.command.run(ctx, separated.params);
-  };
-
-  return (
-    <HandlerContext.Provider value={{ commandHandler, allCommands }}>
-      {children}
-    </HandlerContext.Provider>
+      const ctx: CommandContext = {
+        log,
+        t,
+        changeLanguage,
+        consoleDispatch,
+        appDispatch,
+        navigate,
+        pathname,
+        commands: availableCommands,
+      };
+      separated.command.run(ctx, separated.params);
+    },
+    [availableCommands, t, changeLanguage, consoleDispatch, appDispatch, navigate, pathname],
   );
+
+  const handlerContextValue = React.useMemo(
+    () => ({ commandHandler, allCommands }),
+    [commandHandler, allCommands],
+  );
+
+  return <HandlerContext.Provider value={handlerContextValue}>{children}</HandlerContext.Provider>;
 };
 
 export default WithCommandHandler;

@@ -38,8 +38,8 @@ describe("console reducer", () => {
     );
   });
 
-  it("hides the hint when there is a single option", () => {
+  it("sets the commands hint as is", () => {
     expect(reducer(initialState, setCommandsHint(["a", "b"])).commandsHint).toEqual(["a", "b"]);
-    expect(reducer(initialState, setCommandsHint(["a"])).commandsHint).toEqual([]);
+    expect(reducer(initialState, setCommandsHint(["a"])).commandsHint).toEqual(["a"]);
   });
 });

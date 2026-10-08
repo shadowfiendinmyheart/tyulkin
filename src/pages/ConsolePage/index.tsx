@@ -7,6 +7,7 @@ import { ConsoleContext } from "../../context/consoleContext";
 import { ROUTES } from "../../router/const";
 import { reducer } from "../../store/console/reducer";
 import { addConsoleLog } from "../../store/console/actions";
+import { ConsoleState } from "../../store/console/interfaces";
 import storage from "../../storage";
 import { useT } from "../../context/localizationContext";
 import { CommonDictionaryKeys } from "../../localization/interfaces";
@@ -19,17 +20,20 @@ const welcomeLocaleByRoute: { [key in RouteValues]: CommonDictionaryKeys } = {
   [ROUTES.SETTINGS]: "settingsWelcome",
 };
 
+// lazy: storage is read once, not on every render
+const createInitialState = (): ConsoleState => ({
+  logs: [],
+  history: [],
+  caretMode: storage.getCaretMode(),
+  commandsHint: [],
+});
+
 interface ConsolePageProps {
   route: RouteValues;
 }
 
 const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
-  const [state, dispatch] = React.useReducer(reducer, {
-    logs: [],
-    history: [],
-    caretMode: storage.getCaretMode(),
-    commandsHint: [],
-  });
+  const [state, dispatch] = React.useReducer(reducer, undefined, createInitialState);
   const { pathname, search, hash, state: locationState } = useLocation();
   const t = useT();
   // welcome text is logged on navigation only, not again after a language change
@@ -38,10 +42,19 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
     tRef.current = t;
   }, [t]);
 
-  // welcome text
+  // welcome text; StrictMode re-runs effects on mount, so the route that was already
+  // welcomed is remembered (refs survive the remount) to log it once
+  const welcomedRouteRef = React.useRef<RouteValues | null>(null);
   React.useEffect(() => {
+    if (welcomedRouteRef.current === route) return;
+    welcomedRouteRef.current = route;
     dispatch(addConsoleLog(tRef.current({ key: welcomeLocaleByRoute[route] })));
   }, [route]);
+
+  const consoleContextValue = React.useMemo(
+    () => ({ consoleState: state, consoleDispatch: dispatch }),
+    [state],
+  );
 
   // "/settings/" and "/Settings" match this route too: switch to the canonical path,
   // so the prompt, history and `back` see the same path the commands were picked for
@@ -50,12 +63,7 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
   }
 
   return (
-    <ConsoleContext.Provider
-      value={{
-        consoleState: state,
-        consoleDispatch: dispatch,
-      }}
-    >
+    <ConsoleContext.Provider value={consoleContextValue}>
       <WithCommandHandler commands={commandsByRoute[route]}>
         <div className={styles.wrapper}>
           <Console />
