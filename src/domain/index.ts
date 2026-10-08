@@ -9,3 +9,9 @@ export enum CaretMode {
 
 export const themeModes = ["White", "Black", "Light", "Dark", "Hacker"] as const;
 export type ThemeMode = (typeof themeModes)[number];
+
+export const caretModes = Object.values(CaretMode);
+
+// narrows an arbitrary (e.g. user- or storage-provided) value to one of the allowed ones
+export const oneOf = <T extends string>(allowed: readonly T[], value: unknown): T | undefined =>
+  allowed.find((item) => item === value);

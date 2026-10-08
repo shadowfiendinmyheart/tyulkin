@@ -1,5 +1,5 @@
-import { CaretMode, ThemeMode, themeModes } from "../domain";
-import { Languages } from "../localization/interfaces";
+import { CaretMode, caretModes, oneOf, ThemeMode, themeModes } from "../domain";
+import { Languages, languages } from "../localization/interfaces";
 
 enum StorageKeys {
   CaretMode = "caretMode",
@@ -7,33 +7,46 @@ enum StorageKeys {
   language = "language",
 }
 
+// storage access can throw (blocked cookies, Safari private mode, quota):
+// settings persistence is optional, so failures fall back silently
+const readItem = (key: StorageKeys): string | null => {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+
+const writeItem = (key: StorageKeys, value: string) => {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // ignore: the setting just won't survive a reload
+  }
+};
+
+// returns the stored value only if it is one of the allowed ones
+const readOneOf = <T extends string>(key: StorageKeys, allowed: readonly T[], fallback: T): T =>
+  oneOf(allowed, readItem(key)) ?? fallback;
+
 class Storage {
   setCaretMode = (mode: CaretMode) => {
-    localStorage.setItem(StorageKeys.CaretMode, mode);
+    writeItem(StorageKeys.CaretMode, mode);
   };
 
-  getCaretMode = (): CaretMode => {
-    const caretMode = localStorage.getItem(StorageKeys.CaretMode) as CaretMode | null;
-    return caretMode || CaretMode.Block;
-  };
+  getCaretMode = (): CaretMode => readOneOf(StorageKeys.CaretMode, caretModes, CaretMode.Block);
 
   setThemeMode = (theme: ThemeMode) => {
-    localStorage.setItem(StorageKeys.ThemeMode, theme);
+    writeItem(StorageKeys.ThemeMode, theme);
   };
 
-  getThemeMode = (): ThemeMode => {
-    const themeMode = localStorage.getItem(StorageKeys.ThemeMode);
-    return themeModes.find((theme) => theme === themeMode) || "Black";
-  };
+  getThemeMode = (): ThemeMode => readOneOf(StorageKeys.ThemeMode, themeModes, "Black");
 
   setLanguage = (language: Languages) => {
-    localStorage.setItem(StorageKeys.language, language);
+    writeItem(StorageKeys.language, language);
   };
 
-  getLanguage = () => {
-    const language = localStorage.getItem(StorageKeys.language) as Languages | null;
-    return language || "ru";
-  };
+  getLanguage = (): Languages => readOneOf(StorageKeys.language, languages, "ru");
 }
 
 export default new Storage();

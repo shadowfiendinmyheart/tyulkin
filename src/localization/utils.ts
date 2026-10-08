@@ -1,6 +1,7 @@
+import { oneOf } from "../domain";
 import { Languages, languages, LocaleWithArgs } from "./interfaces";
 
-export const checkLanguage = (x: string) => languages.find((language) => language === x);
+export const checkLanguage = (x: string) => oneOf(languages, x);
 
 // value of <html lang>: BCP 47 tag of the language
 export const htmlLangByLanguage: Record<Languages, string> = {

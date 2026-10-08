@@ -1,4 +1,4 @@
-import { CaretMode, ThemeMode, themeModes } from "../../domain";
+import { CaretMode, caretModes, ThemeMode, themeModes } from "../../domain";
 import { languages, TFunction } from "../../localization/interfaces";
 import { checkLanguage } from "../../localization/utils";
 import storage from "../../storage";
@@ -47,7 +47,7 @@ export const settingsCommands: Command[] = [
   },
   {
     name: "set caret",
-    params: Object.values(CaretMode),
+    params: caretModes,
     descriptionKey: "helpSetCaret",
     run: ({ log, t, consoleDispatch }, [param]) => {
       if (!param) {
