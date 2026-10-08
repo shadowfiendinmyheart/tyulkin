@@ -1,5 +1,5 @@
 import React from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, useLocation } from "react-router";
 import Console from "../../components/Console";
 import WithCommandHandler from "../../commandHandlers/WithCommandHandler";
 import { commandsByRoute } from "../../commandHandlers/commands";

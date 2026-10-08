@@ -33,7 +33,7 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Lint
-        run: npx eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0
+        run: npm run lint
 
       - name: Format
         run: npx prettier --check .

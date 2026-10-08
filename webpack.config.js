@@ -74,7 +74,15 @@ module.exports = (env, argv) => {
           // extracted CSS in production avoids FOUC; style-loader in dev for HMR
           use: [
             isProduction ? MiniCssExtractPlugin.loader : "style-loader",
-            "css-loader",
+            {
+              loader: "css-loader",
+              options: {
+                // css-loader 7 defaults to named exports; the code imports `styles` as the default export.
+                // auto: modules only for *.module.* (an options object alone enables them for all files);
+                // as-is: keep v6 class names (the default turns to camel-case-only without named exports)
+                modules: { auto: true, namedExport: false, exportLocalsConvention: "as-is" },
+              },
+            },
             "sass-loader",
           ],
         },

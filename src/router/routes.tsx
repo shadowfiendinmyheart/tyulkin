@@ -1,4 +1,4 @@
-import { RouteObject } from "react-router-dom";
+import { RouteObject } from "react-router";
 import ErrorPage from "../pages/ErrorPage";
 import ConsolePage from "../pages/ConsolePage";
 import { ROUTES } from "./const";

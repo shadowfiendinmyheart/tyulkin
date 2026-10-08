@@ -1,5 +1,5 @@
 import React from "react";
-import { useRouteError, isRouteErrorResponse } from "react-router-dom";
+import { useRouteError, isRouteErrorResponse } from "react-router";
 import styles from "./styles.module.scss";
 
 const errorAscii = ` _____ ____  ____   ___  ____

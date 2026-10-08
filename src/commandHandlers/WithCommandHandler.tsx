@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router";
 import { useAppContext } from "../context/appContext";
 import { useConsoleContext } from "../context/consoleContext";
 import { HandlerContext } from "../context/handlerContext";

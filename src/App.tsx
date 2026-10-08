@@ -61,7 +61,7 @@ const App: React.FC = () => {
         ]);
         setLocalization({ language: initialLanguage, t: createT(dictionary) });
         dispatch(setStatus("ok"));
-      } catch (error) {
+      } catch {
         dispatch(setStatus("error"));
       }
     })();

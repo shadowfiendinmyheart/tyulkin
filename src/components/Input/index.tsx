@@ -137,7 +137,7 @@ const Input: React.FC = () => {
     };
 
     const autoFocusEventHandler = () => {
-      inputRef.current && inputRef.current.focus();
+      inputRef.current?.focus();
     };
 
     // focus on click/tap opens the virtual keyboard on mobile (it must happen inside a user gesture)
@@ -199,6 +199,8 @@ const Input: React.FC = () => {
           <Char isCaret={true} className={styles.zeroChar} />
         ) : undefined}
         {inputValue.split("").map((char, index) => (
+          // characters repeat and have no identity of their own: the position is the key
+          // eslint-disable-next-line @eslint-react/no-array-index-key
           <Char key={index} isCaret={caretPosition === index}>
             {char}
           </Char>

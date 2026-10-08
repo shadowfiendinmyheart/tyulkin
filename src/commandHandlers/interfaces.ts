@@ -1,4 +1,4 @@
-import { NavigateFunction } from "react-router-dom";
+import { NavigateFunction } from "react-router";
 import { CommandDescriptionKeys, Languages, TFunction } from "../localization/interfaces";
 import { AppActionType } from "../store/app/interfaces";
 import { ConsoleActionType } from "../store/console/interfaces";

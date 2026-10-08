@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { createMemoryRouter, RouterProvider } from "react-router-dom";
+import { createMemoryRouter, RouterProvider } from "react-router";
 import { routes } from "../../router/routes";
 import { AppContext } from "../../context/appContext";
 import { LocalizationContext } from "../../context/localizationContext";
