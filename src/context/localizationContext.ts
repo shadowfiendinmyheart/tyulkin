@@ -14,8 +14,8 @@ export const useLocalization = () => {
   const localizationContext = React.useContext(LocalizationContext);
 
   if (!localizationContext) {
-    // null value: the dictionary failed to load
-    throw new Error("localization is not loaded or <LocalizationContext.Provider> is missing");
+    // App renders the provider only with a loaded dictionary
+    throw new Error("<LocalizationContext.Provider> is missing");
   }
 
   return localizationContext;

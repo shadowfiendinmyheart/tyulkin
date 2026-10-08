@@ -15,6 +15,25 @@ const promptByStatus: Record<string, string> = {
 };
 const defaultPrompt = "internal_error";
 
+interface ErrorScreenProps {
+  status: string;
+  message?: string;
+}
+
+// works without a router, e.g. when the app fails before the router is rendered
+export const ErrorScreen: React.FC<ErrorScreenProps> = ({ status, message }) => (
+  <div className={styles.wrapper}>
+    <pre className={styles.ascii}>{errorAscii}</pre>
+    <div className={styles.status}>{status}</div>
+    {message && <div className={styles.message}>{message}</div>}
+    <div className={styles.prompt}>
+      {promptByStatus[status] || defaultPrompt}
+      <span className={styles.cursor} />
+    </div>
+  </div>
+);
+
+// errorElement of the routes
 const ErrorPage: React.FC = () => {
   const error = useRouteError();
 
@@ -28,17 +47,7 @@ const ErrorPage: React.FC = () => {
     message = error.message;
   }
 
-  return (
-    <div className={styles.wrapper}>
-      <pre className={styles.ascii}>{errorAscii}</pre>
-      <div className={styles.status}>{status}</div>
-      {message && <div className={styles.message}>{message}</div>}
-      <div className={styles.prompt}>
-        {promptByStatus[status] || defaultPrompt}
-        <span className={styles.cursor} />
-      </div>
-    </div>
-  );
+  return <ErrorScreen status={status} message={message} />;
 };
 
 export default ErrorPage;

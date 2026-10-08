@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocation } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import Console from "../../components/Console";
 import WithCommandHandler from "../../commandHandlers/WithCommandHandler";
 import { commandsByRoute } from "../../commandHandlers/commands";
@@ -19,14 +19,18 @@ const welcomeLocaleByRoute: { [key in RouteValues]: CommonDictionaryKeys } = {
   [ROUTES.SETTINGS]: "settingsWelcome",
 };
 
-const ConsolePage: React.FC = () => {
+interface ConsolePageProps {
+  route: RouteValues;
+}
+
+const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
   const [state, dispatch] = React.useReducer(reducer, {
     logs: [],
     history: [],
     caretMode: storage.getCaretMode(),
     commandsHint: [],
   });
-  const pathname = useLocation().pathname as RouteValues;
+  const { pathname, search, hash, state: locationState } = useLocation();
   const t = useT();
   // welcome text is logged on navigation only, not again after a language change
   const tRef = React.useRef(t);
@@ -36,8 +40,14 @@ const ConsolePage: React.FC = () => {
 
   // welcome text
   React.useEffect(() => {
-    dispatch(addConsoleLog(tRef.current({ key: welcomeLocaleByRoute[pathname] })));
-  }, [pathname]);
+    dispatch(addConsoleLog(tRef.current({ key: welcomeLocaleByRoute[route] })));
+  }, [route]);
+
+  // "/settings/" and "/Settings" match this route too: switch to the canonical path,
+  // so the prompt, history and `back` see the same path the commands were picked for
+  if (pathname !== route) {
+    return <Navigate to={{ pathname: route, search, hash }} state={locationState} replace />;
+  }
 
   return (
     <ConsoleContext.Provider
@@ -46,7 +56,7 @@ const ConsolePage: React.FC = () => {
         consoleDispatch: dispatch,
       }}
     >
-      <WithCommandHandler commands={commandsByRoute[pathname]}>
+      <WithCommandHandler commands={commandsByRoute[route]}>
         <div className={styles.wrapper}>
           <Console />
         </div>

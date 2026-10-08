@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
-import ConsolePage from "../../pages/ConsolePage";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
+import { routes } from "../../router/routes";
 import { AppContext } from "../../context/appContext";
 import { LocalizationContext } from "../../context/localizationContext";
 import { createT } from "../../localization";
@@ -26,9 +26,7 @@ const renderConsole = (path = "/") => {
       <LocalizationContext.Provider
         value={{ language: "eng", t, changeLanguage: () => Promise.resolve(t) }}
       >
-        <MemoryRouter initialEntries={[path]}>
-          <ConsolePage />
-        </MemoryRouter>
+        <RouterProvider router={createMemoryRouter(routes, { initialEntries: [path] })} />
       </LocalizationContext.Provider>
     </AppContext.Provider>,
   );

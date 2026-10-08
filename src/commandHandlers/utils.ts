@@ -42,3 +42,9 @@ export const getAllCommandsWithParams = (commands: Command[]) => {
 export const getAutocompleteCommands = (commands: string[], userCommand: string) => {
   return commands.filter((x) => x.startsWith(userCommand));
 };
+
+// "/settings" and "/settings/" -> "/"; the root is its own parent
+export const getParentPath = (pathname: string) => {
+  const segments = pathname.split("/").filter(Boolean);
+  return `/${segments.slice(0, -1).join("/")}`;
+};

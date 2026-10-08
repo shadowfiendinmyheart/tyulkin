@@ -4,6 +4,7 @@ import {
   getAllCommandsWithParams,
   getAutocompleteCommands,
   getHelpLine,
+  getParentPath,
   separateCommand,
 } from "./utils";
 
@@ -96,5 +97,18 @@ describe("getHelpLine", () => {
   it("lists aliases next to the name", () => {
     expect(getHelpLine(back, "go back")).toBe("back (cd .., cd..) - go back");
     expect(getHelpLine(showThemes, "list themes")).toBe("show themes - list themes");
+  });
+});
+
+describe("getParentPath", () => {
+  it("drops the last segment, ignoring a trailing slash", () => {
+    expect(getParentPath("/settings")).toBe("/");
+    expect(getParentPath("/settings/")).toBe("/");
+    expect(getParentPath("/a/b")).toBe("/a");
+    expect(getParentPath("/a/b/")).toBe("/a");
+  });
+
+  it("keeps the root", () => {
+    expect(getParentPath("/")).toBe("/");
   });
 });

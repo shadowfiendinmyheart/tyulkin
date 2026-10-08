@@ -1,7 +1,7 @@
 import { ROUTES } from "../../router/const";
 import { clearLogs } from "../../store/console/actions";
 import { Command } from "../interfaces";
-import { getHelpLine } from "../utils";
+import { getHelpLine, getParentPath } from "../utils";
 
 export const globalCommands: Command[] = [
   {
@@ -9,8 +9,7 @@ export const globalCommands: Command[] = [
     aliases: ["cd ..", "cd.."],
     descriptionKey: "helpBack",
     run: ({ navigate, pathname }) => {
-      const prevLocation = pathname.split("/").at(-2) || "";
-      navigate(`/${prevLocation}`);
+      navigate(getParentPath(pathname));
     },
   },
   {

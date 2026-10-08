@@ -9,6 +9,7 @@ import { AppContext } from "./context/appContext";
 import { LocalizationContext, LocalizationContextType } from "./context/localizationContext";
 import storage from "./storage";
 import LoadingPage from "./pages/LoadingPage";
+import { ErrorScreen } from "./pages/ErrorPage";
 import { delay } from "./utils";
 
 // loading animation is shown at least this long, so it doesn't just flash
@@ -82,6 +83,13 @@ const App: React.FC = () => {
   );
 
   if (["init", "loading"].includes(state.status)) return <LoadingPage />;
+  // no dictionary means no texts for the pages, so the router is not rendered at all;
+  // the message is not translated for the same reason
+  if (state.status === "error") {
+    return (
+      <ErrorScreen status="500" message="failed to load the dictionary, try reloading the page" />
+    );
+  }
 
   return (
     <AppContext.Provider value={{ appDispatch: dispatch, appState: state }}>
