@@ -42,8 +42,8 @@
 |---|---|---|---|---|
 | ✅ TASK-39 | P1 | S | **Конфликт ESLint ↔ Prettier** | Правило `indent` в eslint противоречит prettier (switch/case) → `prettier --check` падает на 3 файлах. Убрать стилевые правила из eslint, подключить `plugin:prettier/recommended`, добавить `eslint-plugin-react-hooks`, `settings.react.version`. |
 | ✅ TASK-40 | P1 | M | **Нет тестов** | `npm test` — заглушка с `exit 1`. Добавить Vitest/Jest + RTL: юнит на `separateCommand`, `getAutocompleteCommands`, `getLocaleWithArgs`, reducers; интеграционные на ввод/историю/Tab (регрессы TASK-22/23/25). |
-| TASK-41 | P2 | S | **Мёртвая конфигурация Babel** | babel-loader применяется только к `.jsx?` (таких файлов нет), TS идёт через ts-loader; `useBuiltIns: usage` + `corejs` без установленного `core-js`. Либо удалить babel, либо перейти на один пайплайн. |
-| TASK-42 | P2 | S | **Чистка зависимостей** | `history` не используется; `@types/react-router-dom@5` для RR v6 не нужен; `react`/`react-dom` в devDependencies; `package.json`: `name: "gradeexam"`, пустые description/main. |
+| ✅ TASK-41 | P2 | S | **Мёртвая конфигурация Babel** | babel-loader применяется только к `.jsx?` (таких файлов нет), TS идёт через ts-loader; `useBuiltIns: usage` + `corejs` без установленного `core-js`. Либо удалить babel, либо перейти на один пайплайн. |
+| ✅ TASK-42 | P2 | S | **Чистка зависимостей** | `history` не используется; `@types/react-router-dom@5` для RR v6 не нужен; `react`/`react-dom` в devDependencies; `package.json`: `name: "gradeexam"`, пустые description/main. |
 | ✅ TASK-43 | P2 | M | **Прод-сборка webpack** | Нет `[contenthash]` в именах (кеш-бастинг), CSS через `style-loader` в проде (FOUC) → `MiniCssExtractPlugin`; `devServer.static: ./dist` лишний; `tsconfig`: опечатка `"includes"` (должно быть `include`), лишние `allowJs/outDir/sourceMap`, `jsx: react` → `react-jsx`. |
 | TASK-44 | P3 | M | Обновить стек | TS 4.9, ESLint 8 (EOL), Prettier 2, RR 6.8. Рассмотреть миграцию webpack → Vite (проще конфиг, быстрый dev). |
 | ✅ TASK-45 | P2 | S | **CI** | GitHub Actions: `tsc --noEmit`, `eslint`, `prettier --check`, тесты, build на каждый PR. |

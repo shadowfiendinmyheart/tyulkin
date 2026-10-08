@@ -31,11 +31,6 @@ module.exports = (env, argv) => {
     module: {
       rules: [
         {
-          test: /\.jsx?$/,
-          exclude: /node_modules/,
-          loader: "babel-loader",
-        },
-        {
           test: /\.(css|scss)$/,
           // extracted CSS in production avoids FOUC; style-loader in dev for HMR
           use: [
@@ -56,7 +51,7 @@ module.exports = (env, argv) => {
       ],
     },
     resolve: {
-      extensions: [".tsx", ".jsx", ".ts", ".js"],
+      extensions: [".tsx", ".ts", ".js"],
     },
     plugins: [
       new HtmlWebpackPlugin({
