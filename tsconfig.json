@@ -90,13 +90,7 @@
     // "allowUnreachableCode": true,                     /* Disable error reporting for unreachable code. */
     /* Completeness */
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
-    "skipLibCheck": true /* Skip type checking all .d.ts files. */,
-    /* Plugins */
-    "plugins": [
-      {
-        "name": "typescript-plugin-css-modules"
-      }
-    ]
+    "skipLibCheck": true /* Skip type checking all .d.ts files. */
   },
-  "include": ["src", "vitest.config.mts"]
+  "include": ["src", "vitest.config.mts", "typed-scss-modules.config.ts"]
 }

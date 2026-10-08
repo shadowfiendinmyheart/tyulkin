@@ -1,7 +1,15 @@
-export declare const blink: string;
-export declare const blinkText: string;
-export declare const block: string;
-export declare const char: string;
-export declare const line: string;
-export declare const spaceChar: string;
-export declare const underline: string;
+export type Styles = {
+  blink: string;
+  blinkText: string;
+  block: string;
+  char: string;
+  line: string;
+  spaceChar: string;
+  underline: string;
+};
+
+export type ClassNames = keyof Styles;
+
+declare const styles: Styles;
+
+export default styles;

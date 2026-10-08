@@ -27,7 +27,7 @@ jobs:
       - run: npm ci
 
       - name: SCSS module typings up to date
-        run: npx typed-scss-modules src --listDifferent
+        run: npx typed-scss-modules "src/**/*.module.scss" --listDifferent
 
       - name: Typecheck
         run: npx tsc --noEmit

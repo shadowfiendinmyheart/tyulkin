@@ -5,7 +5,7 @@
   "scripts": {
     "test": "vitest run",
     "start": "webpack-dev-server --open --mode development --hot",
-    "typed-styles": "npx typed-scss-modules src --watch",
+    "typed-styles": "npx typed-scss-modules \"src/**/*.module.scss\" --watch",
     "dev": "concurrently \"npm run start\" \"npm run typed-styles\"",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
@@ -44,7 +44,6 @@
     "typed-scss-modules": "^8.1.1",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.71.1",
-    "typescript-plugin-css-modules": "^5.2.0",
     "vitest": "^5.0.3",
     "webpack": "^5.111.1",
     "webpack-cli": "^7.2.3",

@@ -1,6 +1,14 @@
-export declare const chars: string;
-export declare const hint: string;
-export declare const locator: string;
-export declare const nativeInput: string;
-export declare const wrapper: string;
-export declare const zeroChar: string;
+export type Styles = {
+  chars: string;
+  hint: string;
+  locator: string;
+  nativeInput: string;
+  wrapper: string;
+  zeroChar: string;
+};
+
+export type ClassNames = keyof Styles;
+
+declare const styles: Styles;
+
+export default styles;

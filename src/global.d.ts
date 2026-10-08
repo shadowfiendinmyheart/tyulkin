@@ -1,17 +1,9 @@
-declare module "*.module.css" {
-  const classes: { [key: string]: string };
-  export default classes;
-}
+// class names of CSS modules are typed only by the generated *.module.scss.d.ts files
+// (typed-scss-modules, see typed-scss-modules.config.ts; CI fails if they are stale or missing).
+// Global (non-module) styles are imported for side effects only; under noUncheckedSideEffectImports (TS 6)
+// such an import needs a declaration. It is deliberately narrow: a *.module.scss without its generated
+// .d.ts stays "Cannot find module" instead of being silently typed
+declare module "*/main.scss" {}
 
-declare module "*.module.scss" {
-  const classes: { [key: string]: string };
-  export default classes;
-}
-
-declare module "*.module.sass" {
-  const classes: { [key: string]: string };
-  export default classes;
-}
-
-// fontsource CSS entry (side-effect import in main.tsx): checked since TS 6 (noUncheckedSideEffectImports)
+// fontsource CSS entry (side-effect import in main.tsx)
 declare module "@fontsource/ibm-plex-mono/400";

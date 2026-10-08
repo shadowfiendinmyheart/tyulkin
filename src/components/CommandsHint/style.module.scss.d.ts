@@ -1,3 +1,11 @@
-export declare const command: string;
-export declare const commandsHint: string;
-export declare const hide: string;
+export type Styles = {
+  command: string;
+  commandsHint: string;
+  hide: string;
+};
+
+export type ClassNames = keyof Styles;
+
+declare const styles: Styles;
+
+export default styles;
