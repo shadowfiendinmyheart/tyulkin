@@ -13,7 +13,7 @@ $caret-color: var(--caret-color);
   &::after {
     @include afterCaret();
     bottom: 0;
-    left: 9px;
+    left: 1ch;
     width: 100%;
     border: 1px solid $caret-color;
   }
@@ -37,7 +37,7 @@ $caret-color: var(--caret-color);
   &::after {
     @include afterCaret();
     top: 0;
-    left: 9px;
+    left: 1ch;
     height: 100%;
     width: 100%;
     background-color: $caret-color;
@@ -73,7 +73,7 @@ $caret-color: var(--caret-color);
 
 .spaceChar {
   display: inline-block;
-  width: 9.6px;
+  width: 1ch; // one monospace cell of the current font, fallback included
   height: 100%;
 }
 

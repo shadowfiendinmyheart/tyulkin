@@ -1,5 +1,5 @@
 .locator {
-  margin-right: 9px;
+  margin-right: 1ch;
 }
 
 .wrapper {
@@ -18,7 +18,7 @@
 
 .zeroChar {
   position: absolute;
-  left: -10px;
+  left: -1ch; // its caret is drawn 1ch to the right, i.e. over the first char cell
 }
 
 // visually hidden, but still focusable on mobile (zero-sized inputs may not open the keyboard)
