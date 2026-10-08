@@ -112,7 +112,11 @@ module.exports = (env, argv) => {
         template: "./src/index.html",
         templateParameters: {
           about: toHtmlLines(eng.about),
+          experience: toHtmlLines(eng.experience),
+          skills: toHtmlLines(eng.skills),
+          projects: toHtmlLines(eng.projects),
           education: toHtmlLines(eng.education),
+          contacts: toHtmlLines(eng.contacts),
         },
       }),
       new FontPreloadPlugin(),

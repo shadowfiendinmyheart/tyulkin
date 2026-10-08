@@ -3,6 +3,10 @@ export interface CommonDictionary {
   settingsWelcome: string;
   education: string;
   about: string;
+  experience: string;
+  skills: string;
+  projects: string;
+  contacts: string;
   loading: string;
   // accessible name of the command line input
   inputLabel: string;
@@ -19,6 +23,10 @@ export interface CommandDescriptionDictionary {
   helpLs: string;
   helpEducation: string;
   helpAbout: string;
+  helpExperience: string;
+  helpSkills: string;
+  helpProjects: string;
+  helpContacts: string;
   helpSettings: string;
   helpSetTheme: string;
   helpShowThemes: string;

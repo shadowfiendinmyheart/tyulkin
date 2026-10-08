@@ -57,6 +57,32 @@ describe("console", () => {
     expect(getLogs()).toContain(eng.about);
   });
 
+  it("renders links in contacts (TASK-48)", async () => {
+    const { user } = renderConsole();
+    await user.keyboard("contacts{Enter}");
+    expect(getLogs()).toContain(eng.contacts);
+    const github = screen.getByRole("link", { name: "https://github.com/shadowfiendinmyheart" });
+    expect(github.getAttribute("href")).toBe("https://github.com/shadowfiendinmyheart");
+    expect(github.getAttribute("target")).toBe("_blank");
+    const email = screen.getByRole("link", { name: "tyulkindev@yandex.ru" });
+    expect(email.getAttribute("href")).toBe("mailto:tyulkindev@yandex.ru");
+  });
+
+  it("does not focus the input on a link click (TASK-48)", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("contacts{Enter}");
+    input.blur();
+    await user.click(screen.getByRole("link", { name: "tyulkindev@yandex.ru" }));
+    expect(document.activeElement).not.toBe(input);
+  });
+
+  it("does not turn typed input into links (TASK-48)", async () => {
+    const { user } = renderConsole();
+    await user.keyboard("https://example.com{Enter}");
+    expect(getLogs()).toContain("cv> https://example.com");
+    expect(screen.queryByRole("link")).toBeNull();
+  });
+
   it("reports an unknown command and respects word boundaries (TASK-25)", async () => {
     const { user } = renderConsole("/settings");
     await user.keyboard("set themeblack{Enter}");
@@ -83,14 +109,14 @@ describe("console", () => {
     const getHint = () =>
       Array.from(document.getElementsByClassName(hintStyles.command), (item) => item.textContent);
 
-    await user.keyboard("e{Tab}");
-    expect(getHint()).toEqual(["education", "exit"]);
-    expect(input.value).toBe("e");
+    await user.keyboard("ex{Tab}");
+    expect(getHint()).toEqual(["experience", "exit"]);
+    expect(input.value).toBe("ex");
 
     // cycling keeps the list
     await user.keyboard("{Tab}{Tab}");
     expect(input.value).toBe("exit");
-    expect(getHint()).toEqual(["education", "exit"]);
+    expect(getHint()).toEqual(["experience", "exit"]);
 
     // a single option clears the shown list and is completed right away
     await user.keyboard("{Backspace}{Backspace}{Backspace}d{Tab}");
@@ -112,7 +138,9 @@ describe("command registry (TASK-33)", () => {
   it("generates ls from page and global commands", async () => {
     const { user } = renderConsole();
     await user.keyboard("ls{Enter}");
-    expect(getLogs().at(-1)).toBe("about   back   clear   education   help   ls   menu   settings");
+    expect(getLogs().at(-1)).toBe(
+      "about   back   clear   contacts   education   experience   help   ls   menu   projects   settings   skills",
+    );
   });
 
   it("runs and autocompletes aliases", async () => {

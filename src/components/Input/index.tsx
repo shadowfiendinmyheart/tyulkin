@@ -141,8 +141,10 @@ const Input: React.FC = () => {
     };
 
     // focus on click/tap opens the virtual keyboard on mobile (it must happen inside a user gesture)
-    const clickFocusEventHandler = () => {
+    const clickFocusEventHandler = (e: MouseEvent) => {
       if (isTextSelected()) return; // don't break copying text from logs
+      // a link in logs opens a new tab: don't pop up the virtual keyboard and scroll to the prompt
+      if (e.target instanceof Element && e.target.closest("a")) return;
       autoFocusEventHandler();
     };
 

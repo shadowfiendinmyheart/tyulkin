@@ -3,6 +3,9 @@ import { ActionTypeGenerator } from "../interfaces";
 
 export interface NewLog {
   message: string;
+  // URLs, emails and phones in the message are clickable; only for the owner's texts,
+  // never for echoed input, so a visitor can't make a link that looks like part of the CV
+  withLinks?: boolean;
 }
 export interface Log extends NewLog {
   // stable React key: logs are dropped from the start (MAX_LOGS), so indexes shift

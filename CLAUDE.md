@@ -23,7 +23,8 @@ npm run build
   (иначе падает `dictionaries.test.ts`). Любой текст для пользователя — только через словари.
 - Темы/каретки/`oneOf` — `src/domain`; значения из `localStorage` читаются только через
   `src/storage` (валидация). Маршруты — `src/router/const.ts`.
-- Тексты резюме (`about`, `education`) из `eng.json` также попадают в `<noscript>` при сборке.
+- Тексты резюме (`about`, `experience`, `skills`, `projects`, `education`, `contacts`) из `eng.json`
+  также попадают в `<noscript>` при сборке.
   Не выдумывать факты о владельце резюме — контент только от пользователя.
 - Переводы строк LF (`.gitattributes`, Prettier `endOfLine: lf`).
 

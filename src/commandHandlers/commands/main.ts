@@ -13,6 +13,26 @@ export const mainCommands: Command[] = [
     run: ({ log, t }) => log(t({ key: "about" })),
   },
   {
+    name: "experience",
+    descriptionKey: "helpExperience",
+    run: ({ log, t }) => log(t({ key: "experience" })),
+  },
+  {
+    name: "skills",
+    descriptionKey: "helpSkills",
+    run: ({ log, t }) => log(t({ key: "skills" })),
+  },
+  {
+    name: "projects",
+    descriptionKey: "helpProjects",
+    run: ({ log, t }) => log(t({ key: "projects" }), { withLinks: true }),
+  },
+  {
+    name: "contacts",
+    descriptionKey: "helpContacts",
+    run: ({ log, t }) => log(t({ key: "contacts" }), { withLinks: true }),
+  },
+  {
     name: "settings",
     aliases: ["cd settings"],
     descriptionKey: "helpSettings",

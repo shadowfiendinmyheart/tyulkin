@@ -33,7 +33,8 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
     (userCommand: string) => {
       if (userCommand.trim() === "") return;
 
-      const log = (message: string) => consoleDispatch(addConsoleLog(message));
+      const log: CommandContext["log"] = (message, { withLinks } = {}) =>
+        consoleDispatch(addConsoleLog(message, withLinks));
 
       const separated = separateCommand(availableCommands, userCommand);
       if (!separated) {

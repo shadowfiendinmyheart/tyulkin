@@ -1,6 +1,6 @@
 # tyulkin
 
-Интерактивное резюме в виде терминала: посетитель вводит команды (`help`, `about`, `education`,
+Интерактивное резюме в виде терминала: посетитель вводит команды (`help`, `about`, `experience`,
 `settings` …) и получает ответы в консоли. React 18 + TypeScript 6, сборка webpack 5, без бэкенда.
 
 ## Запуск
@@ -145,7 +145,8 @@ BCP 47-тег в `htmlLangByLanguage` ([`localization/utils.ts`](src/localizatio
 - `[contenthash]` в именах JS, CSS и шрифтов в проде;
 - шрифт IBM Plex Mono самохостится из `@fontsource/ibm-plex-mono`; собственный `FontPreloadPlugin`
   добавляет `<link rel="preload">` для латинского подмножества и роняет сборку, если файл не найден;
-- `<noscript>` в `index.html` заполняется текстами `about` и `education` из `eng.json`.
+- `<noscript>` в `index.html` заполняется текстами разделов резюме из `eng.json` (`about`,
+  `experience`, `skills`, `projects`, `education`, `contacts`).
 
 ### Тулинг
 

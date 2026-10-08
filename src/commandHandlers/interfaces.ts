@@ -4,7 +4,7 @@ import { AppActionType } from "../store/app/interfaces";
 import { ConsoleActionType } from "../store/console/interfaces";
 
 export interface CommandContext {
-  log: (message: string) => void;
+  log: (message: string, options?: { withLinks?: boolean }) => void;
   t: TFunction;
   changeLanguage: (language: Languages) => Promise<TFunction>;
   consoleDispatch: (action: ConsoleActionType) => void;

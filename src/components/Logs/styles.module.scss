@@ -6,5 +6,11 @@
   white-space: pre-wrap;
   margin-bottom: 5px;
   list-style-type: none;
-  word-break: break-all;
+  // prose wraps by words; only overlong tokens (URLs) are broken
+  overflow-wrap: anywhere;
+}
+
+.link {
+  color: inherit;
+  text-decoration: underline;
 }

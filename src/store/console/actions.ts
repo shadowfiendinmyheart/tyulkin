@@ -8,10 +8,10 @@ import {
   ConsoleActionKind,
 } from "./interfaces";
 
-export const addConsoleLog = (message: string): ActionAddLogs => {
+export const addConsoleLog = (message: string, withLinks = false): ActionAddLogs => {
   return {
     type: ConsoleActionKind.AddLogs,
-    payload: { message },
+    payload: withLinks ? { message, withLinks } : { message },
   };
 };
 export const addUserLog = (message: string, location: string): ActionAddLogs => ({

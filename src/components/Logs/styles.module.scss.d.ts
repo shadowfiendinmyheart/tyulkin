@@ -1,4 +1,5 @@
 export type Styles = {
+  link: string;
   list: string;
   log: string;
 };

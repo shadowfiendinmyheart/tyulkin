@@ -1,6 +1,7 @@
 import React from "react";
 import { useConsoleContext } from "../../context/consoleContext";
 import styles from "./styles.module.scss";
+import { splitLinks } from "./utils";
 
 const Logs: React.FC = () => {
   const { consoleState } = useConsoleContext();
@@ -14,7 +15,23 @@ const Logs: React.FC = () => {
             item's text, and the live region could announce them all again */}
         {logs.map((log) => (
           <li key={log.id} className={styles.log}>
-            {log.message}
+            {log.withLinks
+              ? splitLinks(log.message).map(({ text, start, href }) =>
+                  href ? (
+                    <a
+                      key={start}
+                      className={styles.link}
+                      href={href}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {text}
+                    </a>
+                  ) : (
+                    <React.Fragment key={start}>{text}</React.Fragment>
+                  ),
+                )
+              : log.message}
           </li>
         ))}
       </ul>
