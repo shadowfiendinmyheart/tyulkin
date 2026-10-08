@@ -76,3 +76,14 @@ $caret-color: var(--caret-color);
   width: 9.6px;
   height: 100%;
 }
+
+// steady caret: paused on the first keyframe, where the caret is drawn
+// and the char under the block caret is inverted
+@media (prefers-reduced-motion: reduce) {
+  .underline::after,
+  .line::after,
+  .block::after,
+  .block + .char {
+    animation-play-state: paused;
+  }
+}

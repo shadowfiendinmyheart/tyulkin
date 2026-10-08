@@ -11,6 +11,8 @@
   flex-grow: 1;
 }
 
+// empty, but not display: none — a live region must stay in the accessibility tree
+// for its first content to be announced
 .hide {
-  display: none;
+  margin-top: 0;
 }

@@ -4,6 +4,10 @@ export interface CommonDictionary {
   education: string;
   about: string;
   loading: string;
+  // accessible name of the command line input
+  inputLabel: string;
+  // shown next to the empty command line until the first command is executed
+  inputHint: string;
 }
 
 // one line of `help` per command, see commandHandlers/commands

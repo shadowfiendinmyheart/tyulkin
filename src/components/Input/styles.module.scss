@@ -35,3 +35,12 @@
   pointer-events: none;
   font-size: 16px; // iOS zooms the page on focus when font-size < 16px
 }
+
+// starts after the drawn zero-position caret; on narrow screens the text wraps
+// next to the prompt instead of the whole hint dropping to its own line
+.hint {
+  flex: 1 1 0;
+  min-width: 0;
+  margin-left: 2ch;
+  color: var(--muted-color);
+}

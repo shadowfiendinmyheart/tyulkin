@@ -19,6 +19,8 @@
   "helpShowLanguages": "list languages",
   "404command": "Command $unknownCommand not found\nType help or ls to see the available commands",
   "loading": "loading",
+  "inputLabel": "command line",
+  "inputHint": "type help to see the available commands",
   "wrongCaret": "Cursor $caretName not found",
   "changeCaret": "Cursor successfully changed to $caretName",
   "caretList": "Available cursors: $carets",

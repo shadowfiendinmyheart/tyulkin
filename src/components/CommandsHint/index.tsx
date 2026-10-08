@@ -9,7 +9,11 @@ const CommandsHint: React.FC = () => {
   const { commandsHint } = consoleState;
 
   return (
-    <div className={cn([styles.commandsHint, commandsHint.length === 0 && styles.hide])}>
+    // Tab suggestions are announced like logs
+    <div
+      className={cn([styles.commandsHint, commandsHint.length === 0 && styles.hide])}
+      aria-live="polite"
+    >
       {commandsHint.map((command) => {
         return (
           <span key={command} className={styles.command}>

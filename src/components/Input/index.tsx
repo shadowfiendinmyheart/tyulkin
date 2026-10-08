@@ -6,6 +6,7 @@ import { addHistoryCommand, addUserLog } from "../../store/console/actions";
 import { usePathnameLocation } from "../../hooks/usePathnameLocation";
 import { useCommandsHint } from "./hooks/useCommandsHint";
 import { useHistoryCommands } from "./hooks/useHistoryCommands";
+import { useT } from "../../context/localizationContext";
 
 import styles from "./styles.module.scss";
 
@@ -26,6 +27,10 @@ const Input: React.FC = () => {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const consoleInputRef = React.useRef<HTMLDivElement>(null);
   const pathnameLocation = usePathnameLocation();
+  const t = useT();
+  const hintId = React.useId();
+  // a newcomer sees how to start until the first command is executed
+  const isHintShown = history.length === 0 && inputValue.length === 0;
 
   // programmatic line replacement (Tab autocomplete, history): the caret goes to the end
   const replaceInputValue = (value: string) => {
@@ -131,6 +136,8 @@ const Input: React.FC = () => {
       <input
         className={styles.nativeInput}
         type="text"
+        aria-label={t({ key: "inputLabel" })}
+        aria-describedby={isHintShown ? hintId : undefined}
         value={inputValue}
         onChange={handleChangeInput}
         onKeyDown={handleKeyDownInput}
@@ -154,6 +161,11 @@ const Input: React.FC = () => {
           </Char>
         ))}
       </div>
+      {isHintShown && (
+        <span id={hintId} className={styles.hint}>
+          {t({ key: "inputHint" })}
+        </span>
+      )}
     </div>
   );
 };

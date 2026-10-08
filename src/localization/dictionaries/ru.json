@@ -19,6 +19,8 @@
   "helpShowLanguages": "посмотреть список языков",
   "404command": "Команда: $unknownCommand не найдена\nВведите help или ls чтобы получить список доступных команд",
   "loading": "загрузка",
+  "inputLabel": "командная строка",
+  "inputHint": "введите help, чтобы увидеть список команд",
   "wrongCaret": "Курсор $caretName не найден",
   "changeCaret": "Курсор $caretName успешно установлен",
   "caretList": "Доступные курсоры: $carets",

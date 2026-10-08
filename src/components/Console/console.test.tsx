@@ -8,6 +8,7 @@ import { LocalizationContext } from "../../context/localizationContext";
 import { createT } from "../../localization";
 import eng from "../../localization/dictionaries/eng.json";
 import { CaretMode } from "../../domain";
+import inputStyles from "../Input/styles.module.scss";
 
 const t = createT(eng);
 
@@ -184,7 +185,10 @@ describe("caret (TASK-26)", () => {
 
   // drawn caret as a native selection offset: the number of chars before it
   const getDrawnCaret = (input: HTMLInputElement) => {
-    const chars = Array.from(input.parentElement?.lastElementChild?.children ?? []);
+    // not lastElementChild: the help hint (TASK-49) may follow the chars
+    const chars = Array.from(
+      input.parentElement?.querySelector(`.${inputStyles.chars}`)?.children ?? [],
+    );
     const carets = chars.filter((char) => caretClass.test(char.className));
     if (carets.length !== 1) throw new Error(`expected one drawn caret, got ${carets.length}`);
     const caretIndex = chars.indexOf(carets[0]);
@@ -263,5 +267,36 @@ describe("caret (TASK-26)", () => {
     expect(input.selectionStart).toBe(2);
     expect(input.selectionEnd).toBe(2);
     expect(getDrawnCaret(input)).toBe(2);
+  });
+});
+
+describe("accessibility (TASK-49)", () => {
+  it("labels the command line", () => {
+    renderConsole();
+    expect(screen.getByRole("textbox", { name: eng.inputLabel })).toBeTruthy();
+  });
+
+  it("announces logs in a live region", async () => {
+    const { user } = renderConsole();
+    await user.keyboard("about{Enter}");
+    const log = screen.getByRole("log");
+    expect(log.getAttribute("aria-live")).toBe("polite");
+    expect(log.textContent).toContain(eng.about);
+  });
+
+  it("shows the help hint until the first command is executed", async () => {
+    const { user, input } = renderConsole();
+    expect(screen.getByText(eng.inputHint)).toBeTruthy();
+    expect(input.getAttribute("aria-describedby")).toBe(screen.getByText(eng.inputHint).id);
+
+    await user.keyboard("h");
+    expect(screen.queryByText(eng.inputHint)).toBeNull();
+    expect(input.hasAttribute("aria-describedby")).toBe(false);
+
+    await user.keyboard("{Backspace}");
+    expect(screen.getByText(eng.inputHint)).toBeTruthy();
+
+    await user.keyboard("help{Enter}");
+    expect(screen.queryByText(eng.inputHint)).toBeNull();
   });
 });

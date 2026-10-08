@@ -7,7 +7,8 @@ const Logs: React.FC = () => {
   const { logs } = consoleState;
 
   return (
-    <div className={styles.list}>
+    // role="log" is a polite live region: screen readers announce new logs (command output)
+    <div className={styles.list} role="log" aria-live="polite">
       <ul>
         {logs.map((log, index) => (
           <li key={index} className={styles.log}>
