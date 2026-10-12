@@ -1,4 +1,8 @@
-import { ROUTES } from "./const";
+import { CONSOLE_ROUTES } from "./const";
 
-export type RouteKeys = keyof typeof ROUTES;
-export type RouteValues = (typeof ROUTES)[RouteKeys];
+export type ConsoleRouteValues = (typeof CONSOLE_ROUTES)[keyof typeof CONSOLE_ROUTES];
+
+// navigation state of the gui page: `cv --download` opens it with the print dialog
+export interface GuiLocationState {
+  print?: boolean;
+}

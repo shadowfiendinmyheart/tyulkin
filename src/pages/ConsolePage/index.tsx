@@ -1,13 +1,13 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router";
 import Console from "../../components/Console";
+import ViewSwitch from "../../components/ViewSwitch";
 import WithCommandHandler from "../../commandHandlers/WithCommandHandler";
 import { commandsByRoute } from "../../commandHandlers/commands";
-import { ConsoleContext } from "../../context/consoleContext";
+import { useConsoleContext } from "../../context/consoleContext";
 import { ROUTES } from "../../router/const";
-import { reducer } from "../../store/console/reducer";
 import { addConsoleLog } from "../../store/console/actions";
-import { ConsoleState } from "../../store/console/interfaces";
+import { withNode } from "../../store/console/logNodes";
 import storage from "../../storage";
 import { useLocalization } from "../../context/localizationContext";
 import { useAppContext } from "../../context/appContext";
@@ -17,9 +17,9 @@ import { htmlLangByLanguage } from "../../localization/utils";
 import { prefersReducedMotion } from "../../utils";
 
 import styles from "./styles.module.scss";
-import { RouteValues } from "../../router/interfaces";
+import { ConsoleRouteValues } from "../../router/interfaces";
 
-const welcomeLocaleByRoute: { [key in RouteValues]: CommonDictionaryKeys } = {
+const welcomeLocaleByRoute: { [key in ConsoleRouteValues]: CommonDictionaryKeys } = {
   [ROUTES.MAIN]: "welcome",
   [ROUTES.SETTINGS]: "settingsWelcome",
 };
@@ -55,23 +55,18 @@ const startSession = (): { lastLogin: Date | null } | undefined => {
   return { lastLogin };
 };
 
-// lazy: storage is read once, not on every render
-const createInitialState = (): ConsoleState => ({
-  logs: [],
-  nextLogId: 0,
-  typedLogId: 0,
-  history: [],
-  typedCommandsCount: 0,
-  caretMode: storage.getCaretMode(),
-  commandsHint: [],
-});
+// a visitor who has done nothing for this long is offered the regular view
+export const GUI_HINT_DELAY_MS = 15_000;
+// what counts as doing something: typing, clicking or tapping, scrolling the console
+const ACTIVITY_EVENTS = ["keydown", "pointerdown", "wheel", "touchmove"] as const;
 
 interface ConsolePageProps {
-  route: RouteValues;
+  route: ConsoleRouteValues;
 }
 
 const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
-  const [state, dispatch] = React.useReducer(reducer, undefined, createInitialState);
+  // the session state is kept by ConsoleSessionLayout, see router/routes.tsx
+  const { consoleState: state, consoleDispatch: dispatch } = useConsoleContext();
   const { pathname, search, hash, state: locationState } = useLocation();
   const localization = useLocalization();
   const { theme } = useAppContext().appState;
@@ -84,7 +79,7 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
 
   // welcome text; StrictMode re-runs effects on mount, so the route that was already
   // welcomed is remembered (refs survive the remount) to log it once
-  const welcomedRouteRef = React.useRef<RouteValues | null>(null);
+  const welcomedRouteRef = React.useRef<ConsoleRouteValues | null>(null);
   React.useEffect(() => {
     if (welcomedRouteRef.current === route) return;
     welcomedRouteRef.current = route;
@@ -98,12 +93,44 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
     if (route === ROUTES.MAIN)
       dispatch(addConsoleLog(getNeofetch({ t, language, theme, caretMode, now: new Date() })));
     dispatch(addConsoleLog(t({ key: welcomeLocaleByRoute[route] })));
-  }, [route]);
+  }, [route, dispatch]);
 
-  const consoleContextValue = React.useMemo(
-    () => ({ consoleState: state, consoleDispatch: dispatch }),
-    [state],
-  );
+  // the regular view is offered on the main page to a visitor who hasn't run a command and has
+  // done nothing for a while (no key, click, tap or scrolling); once per session (storage.isGuiOffered)
+  const hasCommands = state.history.length > 0;
+  React.useEffect(() => {
+    if (route !== ROUTES.MAIN || hasCommands || storage.isGuiOffered()) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const offerGui = () => {
+      storage.setGuiOffered();
+      const { t } = welcomeParamsRef.current.localization;
+      dispatch(
+        addConsoleLog(
+          withNode(
+            (command) => t({ key: "guiHint", args: { command, link: t({ key: "switchToGui" }) } }),
+            { type: "command", command: "gui" },
+          ),
+        ),
+      );
+    };
+    // activity only moves the timestamp (scrolling fires many events); the timer re-checks it
+    let lastActivity = Date.now();
+    const markActivity = () => {
+      lastActivity = Date.now();
+    };
+    const checkIdle = () => {
+      const idleMs = Date.now() - lastActivity;
+      if (idleMs >= GUI_HINT_DELAY_MS) offerGui();
+      else timer = setTimeout(checkIdle, GUI_HINT_DELAY_MS - idleMs);
+    };
+    timer = setTimeout(checkIdle, GUI_HINT_DELAY_MS);
+    const options = { capture: true, passive: true };
+    ACTIVITY_EVENTS.forEach((type) => document.addEventListener(type, markActivity, options));
+    return () => {
+      clearTimeout(timer);
+      ACTIVITY_EVENTS.forEach((type) => document.removeEventListener(type, markActivity, options));
+    };
+  }, [route, hasCommands, dispatch]);
 
   // "/settings/" and "/Settings" match this route too: switch to the canonical path,
   // so the prompt, history and `back` see the same path the commands were picked for
@@ -112,13 +139,14 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
   }
 
   return (
-    <ConsoleContext.Provider value={consoleContextValue}>
-      <WithCommandHandler commands={commandsByRoute[route]}>
-        <div className={styles.wrapper}>
-          <Console />
-        </div>
-      </WithCommandHandler>
-    </ConsoleContext.Provider>
+    <WithCommandHandler commands={commandsByRoute[route]}>
+      <nav className={styles.toolbar}>
+        <ViewSwitch to="gui" />
+      </nav>
+      <div className={styles.wrapper}>
+        <Console />
+      </div>
+    </WithCommandHandler>
   );
 };
 

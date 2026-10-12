@@ -128,3 +128,48 @@ test.describe("boot animation (TASK-53)", () => {
     await expect(log).not.toContainText(firstBootLine);
   });
 });
+
+test.describe("regular view (TASK-59)", () => {
+  test("switches terminal ⇄ gui and prints the CV by cv --download", async ({ page }) => {
+    // the print dialog would block the page: counted instead
+    await page.addInitScript(() => {
+      const w = window as unknown as { printCalls: number };
+      w.printCalls = 0;
+      window.print = () => {
+        w.printCalls++;
+      };
+    });
+    await open(page);
+    await page.getByRole("link", { name: eng.switchToGui }).click();
+    await expect(page).toHaveURL(`${BASE_PATH}gui`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Ivan Tyulkin");
+    await expect(page.getByRole("heading", { name: eng.guiExperience })).toBeVisible();
+
+    await page.getByRole("link", { name: eng.switchToTerminal }).click();
+    await expect(page.getByRole("log")).toContainText(eng.welcome);
+    await page.keyboard.type("cv --download");
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(`${BASE_PATH}gui`);
+    await expect
+      .poll(() => page.evaluate(() => (window as unknown as { printCalls: number }).printCalls))
+      .toBe(1);
+
+    // a reload doesn't print again; the page marks the session in an effect that runs
+    // together with the print one, so the check waits for the effects
+    await page.evaluate(() => sessionStorage.removeItem("guiOffered"));
+    await page.reload();
+    await expect.poll(() => page.evaluate(() => sessionStorage.getItem("guiOffered"))).toBe("true");
+    expect(
+      await page.evaluate(() => (window as unknown as { printCalls: number }).printCalls),
+    ).toBe(0);
+  });
+
+  test("fits a phone screen @mobile", async ({ page }) => {
+    await page.goto("gui");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBe(0);
+  });
+});

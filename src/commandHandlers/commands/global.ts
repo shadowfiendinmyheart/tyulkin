@@ -50,6 +50,11 @@ export const globalCommands: Command[] = [
     },
   },
   {
+    name: "gui",
+    descriptionKey: "helpGui",
+    run: ({ navigate }) => navigate(ROUTES.GUI),
+  },
+  {
     name: "neofetch",
     descriptionKey: "helpNeofetch",
     run: ({ log, t, language, theme, caretMode }) =>

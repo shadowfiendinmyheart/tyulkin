@@ -1,0 +1,19 @@
+.switch {
+  padding: 2px 1ch;
+  border: 1px solid var(--muted-color);
+  border-radius: 4px;
+  font: inherit;
+  color: var(--accent-color);
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--accent-color);
+  }
+}
+
+@media print {
+  .switch {
+    display: none;
+  }
+}

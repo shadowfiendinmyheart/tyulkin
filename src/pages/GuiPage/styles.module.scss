@@ -1,0 +1,121 @@
+// a regular page: the theme colors of the terminal, but a proportional font
+.page {
+  min-height: 100vh;
+  padding: 0 16px 32px;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif;
+  line-height: 1.5;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 12px 0;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.header,
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid var(--muted-color);
+  border-radius: 8px;
+}
+
+.name {
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+.title {
+  font-size: 1.25rem;
+  color: var(--accent-color);
+}
+
+.paragraph {
+  white-space: pre-wrap;
+  // prose wraps by words; only overlong tokens (URLs) are broken
+  overflow-wrap: anywhere;
+}
+
+.paragraphTitle {
+  font-weight: 600;
+}
+
+.link {
+  color: var(--accent-color);
+}
+
+.print {
+  align-self: flex-start;
+  padding: 6px 2ch;
+  border: 1px solid var(--accent-color);
+  border-radius: 4px;
+  background: none;
+  font: inherit;
+  color: var(--accent-color);
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    background-color: var(--accent-color);
+    color: var(--bg-color);
+  }
+}
+
+// the printed page is the PDF version of the CV: no controls, no frames, black on white
+// (colors and page margins are global, see styles/themes.scss)
+@media print {
+  .page {
+    min-height: 0;
+    padding: 0;
+  }
+
+  .toolbar,
+  .print {
+    display: none;
+  }
+
+  .main {
+    max-width: none;
+    gap: 0;
+  }
+
+  .header,
+  .card {
+    padding: 0 0 12px;
+    border: none;
+    border-radius: 0;
+  }
+
+  .title {
+    padding-bottom: 2px;
+    border-bottom: 1px solid currentColor;
+    break-after: avoid;
+  }
+
+  .paragraph {
+    break-inside: avoid;
+  }
+
+  .link {
+    color: inherit;
+  }
+}

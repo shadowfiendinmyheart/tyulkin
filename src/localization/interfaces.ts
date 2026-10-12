@@ -9,6 +9,17 @@ export interface CommonDictionary {
   skills: string;
   projects: string;
   contacts: string;
+  // section titles of the regular (gui) view of the CV
+  guiContacts: string;
+  guiExperience: string;
+  guiSkills: string;
+  guiProjects: string;
+  guiEducation: string;
+  // the print button of the gui view: printing is how the CV is saved as PDF
+  guiPrint: string;
+  // the terminal ⇄ gui switch
+  switchToGui: string;
+  switchToTerminal: string;
   loading: string;
   // accessible name of the command line input
   inputLabel: string;
@@ -37,6 +48,8 @@ export interface CommandDescriptionDictionary {
   helpSetLanguage: string;
   helpShowLanguages: string;
   helpNeofetch: string;
+  helpGui: string;
+  helpCv: string;
 }
 
 export interface DictionaryWithArgs {
@@ -47,6 +60,10 @@ export interface DictionaryWithArgs {
   bootLastLogin: string;
   // the closest command when an unknown one is typed
   didYouMean: string;
+  // offered to a visitor who has done nothing for a while; $link is the label of the switch
+  guiHint: string;
+  // `cv` without --download: how to use it
+  cvUsage: string;
   wrongCaret: string;
   changeCaret: string;
   caretList: string;
@@ -77,6 +94,9 @@ type CommonLocale = { key: CommonDictionaryKeys | CommandDescriptionKeys };
 type NotFoundLocale = LocaleWithArgsGenerator<"404command", "unknownCommand" | "help" | "ls">;
 type InputHintLocale = LocaleWithArgsGenerator<"inputHint", "help">;
 type DidYouMeanLocale = LocaleWithArgsGenerator<"didYouMean", "command">;
+type GuiHintLocale = LocaleWithArgsGenerator<"guiHint", "command" | "link">;
+// download and gui are command placeholders, see withNodes
+type CvUsageLocale = LocaleWithArgsGenerator<"cvUsage", "download" | "gui">;
 type BootLastLoginLocale = LocaleWithArgsGenerator<"bootLastLogin", "date">;
 type WrongCaretLocale = LocaleWithArgsGenerator<"wrongCaret", "caretName">;
 type ChangeCaretLocale = LocaleWithArgsGenerator<"changeCaret", "caretName">;
@@ -97,6 +117,8 @@ export type LocaleWithArgs =
   | NotFoundLocale
   | InputHintLocale
   | DidYouMeanLocale
+  | GuiHintLocale
+  | CvUsageLocale
   | BootLastLoginLocale
   | WrongCaretLocale
   | ChangeCaretLocale

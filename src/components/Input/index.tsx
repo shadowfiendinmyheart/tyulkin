@@ -152,8 +152,9 @@ const Input: React.FC = () => {
     // focusing the input drops the page selection: keep it for Ctrl/Cmd+C on selected logs
     const keyDownFocusEventHandler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && isTextSelected()) return;
-      // Enter/Space on a focused command button press it
+      // Enter/Space on a focused command button press it, Enter on a link follows it
       if (e.target instanceof HTMLButtonElement && (e.key === "Enter" || e.key === " ")) return;
+      if (e.target instanceof HTMLAnchorElement && e.key === "Enter") return;
       autoFocusEventHandler();
     };
 

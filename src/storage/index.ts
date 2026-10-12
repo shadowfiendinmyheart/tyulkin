@@ -13,6 +13,8 @@ enum StorageKeys {
 // kept for the browser tab only: a new tab or window is a new session
 enum SessionStorageKeys {
   SessionStarted = "sessionStarted",
+  // the visitor has been offered (or has opened) the regular view of the CV
+  GuiOffered = "guiOffered",
 }
 
 // the area getter is called inside try: touching `localStorage` itself can throw
@@ -41,8 +43,15 @@ const writeItem = (key: StorageKeys | SessionStorageKeys, value: string, area = 
   }
 };
 
-// without sessionStorage the session lasts until a reload, not until any navigation
-let isSessionStartedInMemory = false;
+// without sessionStorage session flags last until a reload, not until any navigation
+const sessionFlagsInMemory = new Set<SessionStorageKeys>();
+
+const setSessionFlag = (key: SessionStorageKeys) => {
+  if (!writeItem(key, "true", session)) sessionFlagsInMemory.add(key);
+};
+
+const getSessionFlag = (key: SessionStorageKeys) =>
+  sessionFlagsInMemory.has(key) || readItem(key, session) === "true";
 
 // returns the stored value only if it is one of the allowed ones
 const readOneOf = <T extends string>(key: StorageKeys, allowed: readonly T[], fallback: T): T =>
@@ -95,14 +104,14 @@ class Storage {
   };
 
   // the boot animation plays once per session (browser tab)
-  setSessionStarted = () => {
-    if (!writeItem(SessionStorageKeys.SessionStarted, "true", session)) {
-      isSessionStartedInMemory = true;
-    }
-  };
+  setSessionStarted = () => setSessionFlag(SessionStorageKeys.SessionStarted);
 
-  isSessionStarted = (): boolean =>
-    isSessionStartedInMemory || readItem(SessionStorageKeys.SessionStarted, session) === "true";
+  isSessionStarted = (): boolean => getSessionFlag(SessionStorageKeys.SessionStarted);
+
+  // the terminal offers the regular view once per session, and not after it has been opened
+  setGuiOffered = () => setSessionFlag(SessionStorageKeys.GuiOffered);
+
+  isGuiOffered = (): boolean => getSessionFlag(SessionStorageKeys.GuiOffered);
 }
 
 export default new Storage();

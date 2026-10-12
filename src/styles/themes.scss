@@ -44,3 +44,21 @@
   --accent-color: #b3ffb3;
   --error-color: #ff4d4d;
 }
+
+// whatever the theme, paper is white: printing (the PDF version of the CV) is black on white
+@media print {
+  html[data-theme],
+  :root {
+    --bg-color: #fff;
+    --text-color: #000;
+    --muted-color: #555;
+    --caret-color: #000;
+    --accent-color: #000;
+    --error-color: #000;
+  }
+}
+
+// at-rules are global anyway, so the page margins of printing live here too
+@page {
+  margin: 15mm;
+}

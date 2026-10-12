@@ -1,6 +1,7 @@
 import React from "react";
 import { useConsoleContext } from "../../context/consoleContext";
 import CommandButton from "../CommandButton";
+import TextLink from "../TextLink";
 import { Log, LogColor, LogNode } from "../../store/console/interfaces";
 import { getNodesLength, sliceNodes } from "../../store/console/logNodes";
 import { finishTyping, skipTyping } from "../../store/console/actions";
@@ -56,15 +57,10 @@ const renderNode = (node: LogNode): React.ReactNode => {
         </span>
       );
     case "link":
-      // mailto: and tel: open an app, a new tab would stay blank
-      return /^https?:/.test(node.href) ? (
-        <a className={styles.link} href={node.href} target="_blank" rel="noreferrer">
+      return (
+        <TextLink className={styles.link} href={node.href}>
           {node.text}
-        </a>
-      ) : (
-        <a className={styles.link} href={node.href}>
-          {node.text}
-        </a>
+        </TextLink>
       );
     case "command":
       return <CommandButton command={node.command} />;

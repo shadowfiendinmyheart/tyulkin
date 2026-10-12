@@ -1,4 +1,5 @@
 export type Styles = {
+  toolbar: string;
   wrapper: string;
 };
 

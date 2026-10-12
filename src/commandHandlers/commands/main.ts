@@ -1,5 +1,6 @@
 import { ROUTES } from "../../router/const";
-import { linkify } from "../../store/console/logNodes";
+import { GuiLocationState } from "../../router/interfaces";
+import { linkify, withNodes } from "../../store/console/logNodes";
 import { Command } from "../interfaces";
 
 export const mainCommands: Command[] = [
@@ -32,6 +33,28 @@ export const mainCommands: Command[] = [
     name: "contacts",
     descriptionKey: "helpContacts",
     run: ({ log, t }) => log(linkify(t({ key: "contacts" }))),
+  },
+  {
+    // the CV is saved as PDF by printing its regular (gui) view; opening the view alone is `gui`
+    name: "cv",
+    params: ["--download"],
+    descriptionKey: "helpCv",
+    run: ({ log, t, navigate }, [param]) => {
+      if (param?.toLowerCase() !== "--download") {
+        log(
+          withNodes(
+            ([download, gui]) => t({ key: "cvUsage", args: { download, gui } }),
+            [
+              { type: "command", command: "cv --download" },
+              { type: "command", command: "gui" },
+            ],
+          ),
+        );
+        return;
+      }
+      const state: GuiLocationState = { print: true };
+      navigate(ROUTES.GUI, { state });
+    },
   },
   {
     name: "settings",

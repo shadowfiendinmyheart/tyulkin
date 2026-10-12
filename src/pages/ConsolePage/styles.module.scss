@@ -1,6 +1,18 @@
+// the terminal ⇄ gui switch in the top corner, over the console
+$toolbar-height: 40px;
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 80%;
+  height: $toolbar-height;
+  margin: auto;
+}
+
 .wrapper {
   width: 80%;
-  height: 90vh;
+  height: calc(90vh - #{$toolbar-height});
   overflow: scroll;
   margin: auto;
   -ms-overflow-style: none; /* hide scroll for IE and Edge */

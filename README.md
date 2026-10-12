@@ -64,8 +64,8 @@ src/
   main.tsx              точка входа: React root, шрифт, глобальные стили
   App.tsx               загрузка словаря, тема, <html lang>, провайдеры контекстов
   index.html            шаблон: мета-теги, <noscript> с текстом резюме
-  router/               ROUTES (const.ts), routes.tsx — по странице-консоли на каждый маршрут
-  pages/                ConsolePage, ErrorPage, LoadingPage
+  router/               ROUTES (const.ts), routes.tsx — страницы-консоли и обычный вид /gui
+  pages/                ConsolePage, GuiPage, ErrorPage, LoadingPage
   components/           Console, Input (+ хуки истории и подсказок), Logs, Char, CommandsHint
   commandHandlers/      реестр команд (commands/), разбор ввода (utils.ts), WithCommandHandler
   context/              React-контексты: app, console, handler, localization
@@ -96,7 +96,7 @@ src/
 Реестр — [`src/commandHandlers/commands/`](src/commandHandlers/commands):
 
 - `global.ts` — команды, доступные на любой странице (`help`, `ls`, `clear`, `back`, `menu`,
-  `neofetch`);
+  `neofetch`, `gui`);
 - `main.ts`, `settings.ts` — команды страниц;
 - `index.ts` — `commandsByRoute`: какие команды у какого маршрута.
 
@@ -149,11 +149,21 @@ BCP 47-тег в `htmlLangByLanguage` ([`localization/utils.ts`](src/localizatio
 
 ### Маршруты
 
-Маршруты — `ROUTES` в [`router/const.ts`](src/router/const.ts);
-[`router/routes.tsx`](src/router/routes.tsx) строит из них по `ConsolePage` на маршрут. Новый маршрут
-требует записи в `commandsByRoute` и в `welcomeLocaleByRoute`
+Маршруты — `ROUTES` в [`router/const.ts`](src/router/const.ts): страницы терминала (`CONSOLE_ROUTES`)
+и `/gui`. [`router/routes.tsx`](src/router/routes.tsx) строит по `ConsolePage` на каждый маршрут
+терминала, все страницы — внутри `ConsoleSessionLayout`, который держит состояние консоли (логи,
+история), чтобы оно переживало переход в `/gui` и обратно. Новый маршрут терминала требует записи в `commandsByRoute` и в `welcomeLocaleByRoute`
 ([`pages/ConsolePage`](src/pages/ConsolePage/index.tsx)) — оба типизированы как `Record` по
 маршрутам, так что `tsc` не даст забыть.
+
+### Обычный вид (`/gui`)
+
+[`pages/GuiPage`](src/pages/GuiPage/index.tsx) — резюме обычной страницей из тех же словарей
+(`about`, `contacts`, `experience`, `skills`, `projects`, `education`; абзацы разделены пустой
+строкой). Открывается командой `gui` и переключателем terminal ⇄ gui вверху страницы; посетителю,
+который ~15 с ничего не нажимал на главной, обычный вид предлагается в консоли (раз за сессию).
+PDF-версия — это печать страницы: кнопка «Download PDF» и `cv --download` открывают диалог печати,
+print-стили убирают управление и красят всё чёрным по белому.
 
 ### Стили и типизация SCSS-модулей
 

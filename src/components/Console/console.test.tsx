@@ -12,6 +12,7 @@ import { CaretMode } from "../../domain";
 import inputStyles from "../Input/styles.module.scss";
 import hintStyles from "../CommandsHint/style.module.scss";
 import { QUICK_COMMANDS, QUICK_COMMANDS_TYPED_LIMIT } from "../QuickCommands";
+import { GUI_HINT_DELAY_MS } from "../../pages/ConsolePage";
 
 const t = createT(eng);
 
@@ -95,7 +96,7 @@ describe("console", () => {
     const { user } = renderConsole();
     await user.keyboard("https://example.com{Enter}");
     expect(getLogs()).toContain("cv> https://example.com");
-    expect(screen.queryByRole("link")).toBeNull();
+    expect(within(screen.getByRole("log")).queryByRole("link")).toBeNull();
   });
 
   it("reports an unknown command and respects word boundaries (TASK-25)", async () => {
@@ -177,7 +178,7 @@ describe("command registry (TASK-33)", () => {
     const { user } = renderConsole();
     await user.keyboard("ls{Enter}");
     expect(getLogs().at(-1)).toBe(
-      "about   back   clear   contacts   education   experience   help   ls   menu   neofetch   projects   settings   skills",
+      "about   back   clear   contacts   cv   education   experience   gui   help   ls   menu   neofetch   projects   settings   skills",
     );
   });
 
@@ -586,6 +587,8 @@ describe("UX shortcuts (TASK-52)", () => {
 describe("boot and typing out (TASK-53)", () => {
   beforeEach(() => {
     vi.stubGlobal("matchMedia", () => ({ matches: false }));
+    // typing out takes long fake seconds: the offer of the regular view would join the logs
+    sessionStorage.setItem("guiOffered", "true");
     vi.useFakeTimers();
   });
   afterEach(() => {
@@ -667,5 +670,92 @@ describe("boot and typing out (TASK-53)", () => {
     vi.stubGlobal("matchMedia", () => ({ matches: true }));
     renderConsole();
     expect(getLogs()).toEqual(mainWelcome);
+  });
+});
+
+describe("regular view (TASK-59)", () => {
+  const guiHint = 'Prefer a regular view? Type gui or click "regular view" at the top';
+
+  it("opens the regular view by gui and the switch, the terminal session survives", async () => {
+    const { user } = renderConsole();
+    await user.keyboard("about{Enter}");
+    await user.keyboard("gui{Enter}");
+    expect(await screen.findByRole("heading", { level: 1, name: "Ivan Tyulkin" })).toBeTruthy();
+
+    await user.click(screen.getByRole("link", { name: eng.switchToTerminal }));
+    const input = (await screen.findByRole("textbox")) as HTMLInputElement;
+    // the earlier output and history are kept, the page greets again
+    expect(getLogs()).toEqual([...mainWelcome, "cv> about", eng.about, "cv> gui", ...mainWelcome]);
+    await user.keyboard("{ArrowUp}{ArrowUp}");
+    expect(input.value).toBe("about");
+
+    await user.click(screen.getByRole("link", { name: eng.switchToGui }));
+    expect(await screen.findByRole("heading", { name: eng.guiExperience })).toBeTruthy();
+  });
+
+  it("prints the regular view by cv --download (TASK-48)", async () => {
+    const print = vi.spyOn(window, "print").mockImplementation(() => undefined);
+    try {
+      const { user } = renderConsole();
+      await user.keyboard("cv --DOWNLOAD{Enter}");
+      await screen.findByRole("heading", { level: 1 });
+      // once, though StrictMode runs effects twice
+      expect(print).toHaveBeenCalledTimes(1);
+    } finally {
+      print.mockRestore();
+    }
+  });
+
+  it("explains cv without --download", async () => {
+    const { user } = renderConsole();
+    await user.keyboard("cv{Enter}");
+    const usage = "Type cv --download to save the CV as PDF or gui to open it as a regular page";
+    expect(getLogs().at(-1)).toBe(usage);
+    await user.keyboard("cv --pdf{Enter}");
+    expect(getLogs().at(-1)).toBe(usage);
+    expect(screen.getByRole("textbox")).toBeTruthy();
+  });
+
+  describe("offer to an idle visitor", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("is logged once after a while without keys, clicks and commands", () => {
+      renderConsole();
+      act(() => vi.advanceTimersByTime(GUI_HINT_DELAY_MS - 1000));
+      // activity restarts the wait
+      fireEvent.keyDown(document.body, { key: "a" });
+      act(() => vi.advanceTimersByTime(GUI_HINT_DELAY_MS - 1000));
+      fireEvent.pointerDown(document.body);
+      act(() => vi.advanceTimersByTime(GUI_HINT_DELAY_MS - 1000));
+      expect(getLogs()).toEqual(mainWelcome);
+
+      act(() => vi.advanceTimersByTime(1000));
+      expect(getLogs()).toEqual([...mainWelcome, guiHint]);
+      expect(within(screen.getByRole("log")).getByRole("button", { name: "gui" })).toBeTruthy();
+
+      // once per session
+      cleanup();
+      renderConsole();
+      act(() => vi.advanceTimersByTime(GUI_HINT_DELAY_MS * 4));
+      expect(getLogs()).toEqual(mainWelcome);
+    });
+
+    it("is not logged after a command or on the settings page", () => {
+      const { input } = renderConsole();
+      fireEvent.change(input, { target: { value: "about" } });
+      fireEvent.keyDown(input, { key: "Enter" });
+      act(() => vi.advanceTimersByTime(GUI_HINT_DELAY_MS * 4));
+      expect(getLogs()).not.toContain(guiHint);
+
+      cleanup();
+      renderConsole("/settings");
+      act(() => vi.advanceTimersByTime(GUI_HINT_DELAY_MS * 4));
+      expect(getLogs()).toEqual([eng.settingsWelcome]);
+    });
   });
 });
