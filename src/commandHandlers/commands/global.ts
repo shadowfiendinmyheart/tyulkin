@@ -3,6 +3,7 @@ import { clearLogs } from "../../store/console/actions";
 import { LogNode } from "../../store/console/interfaces";
 import { joinNodes } from "../../store/console/logNodes";
 import { Command } from "../interfaces";
+import { getNeofetch } from "../neofetch";
 import { getHelpRow, getParentPath } from "../utils";
 
 export const globalCommands: Command[] = [
@@ -47,5 +48,11 @@ export const globalCommands: Command[] = [
         ),
       );
     },
+  },
+  {
+    name: "neofetch",
+    descriptionKey: "helpNeofetch",
+    run: ({ log, t, language, theme, caretMode }) =>
+      log(getNeofetch({ t, language, theme, caretMode, now: new Date() })),
   },
 ];

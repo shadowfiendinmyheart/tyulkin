@@ -105,4 +105,11 @@ describe("sliceNodes (TASK-53)", () => {
     expect(sliceNodes([table], 3)).toEqual([{ type: "table", rows: [[["ab"], ["c"]]] }]);
     expect(sliceNodes([table], 5)).toEqual([{ type: "table", rows: [[["ab"], ["cd"]], [["e"]]] }]);
   });
+
+  it("shows decorative art at once (TASK-54)", () => {
+    const art: LogNode = { type: "pre", text: "|_|", decorative: true };
+    const neofetch: LogNode = { type: "table", rows: [[[art], ["abc"]]] };
+    expect(getNodesLength([neofetch])).toBe(3);
+    expect(sliceNodes([neofetch], 1)).toEqual([{ type: "table", rows: [[[art], ["a"]]] }]);
+  });
 });

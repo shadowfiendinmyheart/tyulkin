@@ -40,6 +40,10 @@ const renderConsole = (path = "/") => {
 
 const getLogs = () => screen.queryAllByRole("listitem").map((item) => item.textContent);
 
+// the main page greets with neofetch, then the welcome text (TASK-54)
+const neofetch = expect.stringContaining("Uptime: ");
+const mainWelcome = [neofetch, eng.welcome];
+
 beforeEach(() => {
   localStorage.clear();
   sessionStorage.clear();
@@ -55,7 +59,7 @@ describe("console", () => {
   it("does not crash on Enter before the first input (TASK-22)", async () => {
     const { user } = renderConsole();
     await user.keyboard("{Enter}");
-    expect(getLogs()).toEqual(["Hi everyone!", "cv> "]);
+    expect(getLogs()).toEqual([...mainWelcome, "cv> "]);
   });
 
   it("runs a command", async () => {
@@ -116,7 +120,7 @@ describe("console", () => {
 
   it("logs the welcome text once under StrictMode (TASK-32)", async () => {
     const { user } = renderConsole();
-    expect(getLogs()).toEqual([eng.welcome]);
+    expect(getLogs()).toEqual(mainWelcome);
 
     await user.keyboard("settings{Enter}menu{Enter}");
     expect(getLogs().filter((log) => log === eng.welcome)).toHaveLength(2);
@@ -144,6 +148,17 @@ describe("console", () => {
   });
 });
 
+describe("neofetch (TASK-54)", () => {
+  it("shows the current settings, also on the settings page", async () => {
+    const { user } = renderConsole("/settings");
+    await user.keyboard("set caret line{Enter}neofetch{Enter}");
+    const log = getLogs().at(-1);
+    expect(log).toContain("Theme: Black");
+    expect(log).toContain("Caret: line");
+    expect(log).toContain("Language: eng");
+  });
+});
+
 describe("command registry (TASK-33)", () => {
   it("generates help from page and global commands", async () => {
     const { user } = renderConsole("/settings");
@@ -154,14 +169,14 @@ describe("command registry (TASK-33)", () => {
     expect(help[0]).toEqual(["set theme", "set the theme"]);
     expect(help).toContainEqual(["show languages", "list languages"]);
     expect(help).toContainEqual(["back (cd .., cd..)", "go back"]);
-    expect(help.at(-1)).toEqual(["ls", "list commands"]);
+    expect(help.at(-1)).toEqual(["neofetch", "a short summary about me and the terminal"]);
   });
 
   it("generates ls from page and global commands", async () => {
     const { user } = renderConsole();
     await user.keyboard("ls{Enter}");
     expect(getLogs().at(-1)).toBe(
-      "about   back   clear   contacts   education   experience   help   ls   menu   projects   settings   skills",
+      "about   back   clear   contacts   education   experience   help   ls   menu   neofetch   projects   settings   skills",
     );
   });
 
@@ -548,7 +563,7 @@ describe("boot and typing out (TASK-53)", () => {
     expect(getLogs()).toEqual([
       eng.bootLastLogin.replace("$date", date),
       ...bootLines,
-      eng.welcome,
+      ...mainWelcome,
     ]);
     expect(screen.getByRole("log").getAttribute("aria-busy")).toBe("false");
     // this visit is the last login of the next session
@@ -557,13 +572,13 @@ describe("boot and typing out (TASK-53)", () => {
     cleanup();
     renderConsole();
     typeOut();
-    expect(getLogs()).toEqual([eng.welcome]);
+    expect(getLogs()).toEqual(mainWelcome);
   });
 
   it("leaves out the last login on the first visit", () => {
     renderConsole();
     typeOut();
-    expect(getLogs()).toEqual([...bootLines, eng.welcome]);
+    expect(getLogs()).toEqual([...bootLines, ...mainWelcome]);
   });
 
   it("shows everything at once on any key, the key still goes to the input", () => {
@@ -572,7 +587,7 @@ describe("boot and typing out (TASK-53)", () => {
     expect(getLogs()).toHaveLength(1);
 
     fireEvent.keyDown(input, { key: "a" });
-    expect(getLogs()).toEqual([...bootLines, eng.welcome]);
+    expect(getLogs()).toEqual([...bootLines, ...mainWelcome]);
     expect(getLogs().at(-1)).toBe(eng.welcome);
     fireEvent.change(input, { target: { value: "a" } });
     expect(input.value).toBe("a");
@@ -603,6 +618,6 @@ describe("boot and typing out (TASK-53)", () => {
   it("does not boot with reduced motion", () => {
     vi.stubGlobal("matchMedia", () => ({ matches: true }));
     renderConsole();
-    expect(getLogs()).toEqual([eng.welcome]);
+    expect(getLogs()).toEqual(mainWelcome);
   });
 });

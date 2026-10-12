@@ -15,6 +15,10 @@
   text-decoration: underline;
 }
 
+.text {
+  color: var(--text-color);
+}
+
 .accent {
   color: var(--accent-color);
 }
@@ -46,4 +50,13 @@
   white-space: pre;
   overflow-wrap: normal;
   overflow-x: auto;
+}
+
+// decorative ASCII art (the neofetch logo next to its text) gives its room to the text on a phone
+@media (max-width: 520px) {
+  .art,
+  // without the empty cell's padding too; where :has is unsupported only the art is hidden
+  .table td:has(> .art) {
+    display: none;
+  }
 }

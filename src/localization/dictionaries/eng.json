@@ -26,6 +26,7 @@
   "helpShowCarets": "list text cursors",
   "helpSetLanguage": "set the language",
   "helpShowLanguages": "list languages",
+  "helpNeofetch": "a short summary about me and the terminal",
   "404command": "Command $unknownCommand not found\nType $help or $ls to see the available commands",
   "loading": "loading",
   "inputLabel": "command line",
@@ -41,5 +42,6 @@
   "languageList": "Available languages: $languages",
   "wrongTheme": "Theme $themeName not found",
   "changeTheme": "Theme successfully changed to $themeName",
-  "themeList": "Available themes: $themes"
+  "themeList": "Available themes: $themes",
+  "neofetch": "Ivan Tyulkin\nRole: Frontend developer\nLocation: Saint Petersburg\nStack: React, TypeScript\nUptime: $uptime\nTheme: $theme\nCaret: $caret\nLanguage: $language"
 }

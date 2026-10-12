@@ -1,4 +1,5 @@
 import { NavigateFunction } from "react-router";
+import { CaretMode, ThemeMode } from "../domain";
 import { CommandDescriptionKeys, Languages, TFunction } from "../localization/interfaces";
 import { AppActionType } from "../store/app/interfaces";
 import { ConsoleActionType, LogContent } from "../store/console/interfaces";
@@ -6,6 +7,9 @@ import { ConsoleActionType, LogContent } from "../store/console/interfaces";
 export interface CommandContext {
   log: (content: LogContent) => void;
   t: TFunction;
+  language: Languages;
+  theme: ThemeMode;
+  caretMode: CaretMode;
   changeLanguage: (language: Languages) => Promise<TFunction>;
   consoleDispatch: (action: ConsoleActionType) => void;
   appDispatch: (action: AppActionType) => void;

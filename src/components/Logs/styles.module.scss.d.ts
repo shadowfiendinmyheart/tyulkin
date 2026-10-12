@@ -1,5 +1,6 @@
 export type Styles = {
   accent: string;
+  art: string;
   error: string;
   link: string;
   list: string;
@@ -7,6 +8,7 @@ export type Styles = {
   muted: string;
   pre: string;
   table: string;
+  text: string;
 };
 
 export type ClassNames = keyof Styles;

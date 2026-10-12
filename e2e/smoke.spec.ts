@@ -97,6 +97,17 @@ test("focuses the input by a tap on the console @mobile", async ({ page }) => {
   await expect(lastLog(page)).toContainText("Ivan Tyulkin");
 });
 
+test("fits the neofetch welcome into a phone screen @mobile", async ({ page }) => {
+  await open(page);
+  await expect(page.getByRole("log")).toContainText("Uptime: ");
+  // the logo gives its room to the text
+  await expect(page.getByRole("log").locator("pre")).toBeHidden();
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBe(0);
+});
+
 test.describe("boot animation (TASK-53)", () => {
   test.use({ reducedMotion: "no-preference" });
 

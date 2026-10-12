@@ -52,9 +52,11 @@ export const withNodes = (
 export const withNode = (getText: (placeholder: string) => string, node: LogNode): LogNode[] =>
   withNodes(([placeholder]) => getText(placeholder), [node]);
 
-// visible characters of a node: what typing out goes through
+// visible characters of a node: what typing out goes through; decorative nodes (ASCII art)
+// are not typed out but shown at once, and may be hidden on a phone, so they count for nothing
 const getNodeLength = (node: LogNode): number => {
   if (typeof node === "string") return node.length;
+  if ("decorative" in node && node.decorative) return 0;
   switch (node.type) {
     case "command":
       return node.command.length;

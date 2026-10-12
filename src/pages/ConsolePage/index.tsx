@@ -10,6 +10,8 @@ import { addConsoleLog } from "../../store/console/actions";
 import { ConsoleState } from "../../store/console/interfaces";
 import storage from "../../storage";
 import { useLocalization } from "../../context/localizationContext";
+import { useAppContext } from "../../context/appContext";
+import { getNeofetch } from "../../commandHandlers/neofetch";
 import { CommonDictionaryKeys, Languages, TFunction } from "../../localization/interfaces";
 import { htmlLangByLanguage } from "../../localization/utils";
 import { prefersReducedMotion } from "../../utils";
@@ -71,11 +73,13 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
   const [state, dispatch] = React.useReducer(reducer, undefined, createInitialState);
   const { pathname, search, hash, state: locationState } = useLocation();
   const localization = useLocalization();
-  // welcome text is logged on navigation only, not again after a language change
-  const localizationRef = React.useRef(localization);
+  const { theme } = useAppContext().appState;
+  // welcome text is logged on navigation only, not again after a language, theme or caret change
+  const { caretMode } = state;
+  const welcomeParamsRef = React.useRef({ localization, theme, caretMode });
   React.useLayoutEffect(() => {
-    localizationRef.current = localization;
-  }, [localization]);
+    welcomeParamsRef.current = { localization, theme, caretMode };
+  }, [localization, theme, caretMode]);
 
   // welcome text; StrictMode re-runs effects on mount, so the route that was already
   // welcomed is remembered (refs survive the remount) to log it once
@@ -83,11 +87,15 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
   React.useEffect(() => {
     if (welcomedRouteRef.current === route) return;
     welcomedRouteRef.current = route;
-    const { t, language } = localizationRef.current;
+    const { localization, theme, caretMode } = welcomeParamsRef.current;
+    const { t, language } = localization;
     // the boot plays once per session; with reduced motion the welcome comes at once
     const session = startSession();
     if (session && !prefersReducedMotion())
       getBootLogs(t, language, session.lastLogin).forEach((action) => dispatch(action));
+    // the main page greets with neofetch (TASK-54)
+    if (route === ROUTES.MAIN)
+      dispatch(addConsoleLog(getNeofetch({ t, language, theme, caretMode, now: new Date() })));
     dispatch(addConsoleLog(t({ key: welcomeLocaleByRoute[route] })));
   }, [route]);
 

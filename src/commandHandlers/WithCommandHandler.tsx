@@ -24,10 +24,12 @@ interface WithCommandHandlerProps {
 }
 
 const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, children }) => {
-  const { consoleDispatch } = useConsoleContext();
+  const { consoleState, consoleDispatch } = useConsoleContext();
+  const { caretMode } = consoleState;
   const pathnameLocation = usePathnameLocation();
-  const { appDispatch } = useAppContext();
-  const { t, changeLanguage } = useLocalization();
+  const { appState, appDispatch } = useAppContext();
+  const { theme } = appState;
+  const { t, language, changeLanguage } = useLocalization();
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
@@ -70,6 +72,9 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
       const ctx: CommandContext = {
         log,
         t,
+        language,
+        theme,
+        caretMode,
         changeLanguage,
         consoleDispatch,
         appDispatch,
@@ -79,7 +84,18 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
       };
       separated.command.run(ctx, separated.params);
     },
-    [availableCommands, t, changeLanguage, consoleDispatch, appDispatch, navigate, pathname],
+    [
+      availableCommands,
+      t,
+      language,
+      theme,
+      caretMode,
+      changeLanguage,
+      consoleDispatch,
+      appDispatch,
+      navigate,
+      pathname,
+    ],
   );
 
   // shared by Enter in the input and clicks on commands in logs

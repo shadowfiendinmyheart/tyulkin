@@ -84,7 +84,8 @@ src/
 ([`commandHandlers/interfaces.ts`](src/commandHandlers/interfaces.ts)) с полями `name`,
 необязательными `aliases` и `params` (значения единственного аргумента, участвуют в
 автодополнении), `descriptionKey` (строка в `help`) и `run(ctx, args)`. `ctx` даёт `log`, `t`,
-`navigate`, диспатчеры сторов, `changeLanguage` и список доступных команд.
+`navigate`, диспатчеры сторов, `changeLanguage`, текущие язык, тему и каретку и список доступных
+команд.
 
 `log` принимает `LogNode` или их массив
 ([`store/console/interfaces.ts`](src/store/console/interfaces.ts)): строку (простой текст),
@@ -94,11 +95,16 @@ src/
 
 Реестр — [`src/commandHandlers/commands/`](src/commandHandlers/commands):
 
-- `global.ts` — команды, доступные на любой странице (`help`, `ls`, `clear`, `back`, `menu`);
+- `global.ts` — команды, доступные на любой странице (`help`, `ls`, `clear`, `back`, `menu`,
+  `neofetch`);
 - `main.ts`, `settings.ts` — команды страниц;
 - `index.ts` — `commandsByRoute`: какие команды у какого маршрута.
 
 Ввод регистронезависим; команды страницы имеют приоритет над глобальными.
+
+Сводку в стиле neofetch (логотип, `ключ: значение`, полоска цветов темы) строит
+[`commandHandlers/neofetch.ts`](src/commandHandlers/neofetch.ts): её выводит команда `neofetch`, ею
+же приветствует главная страница.
 
 **Добавить команду:**
 

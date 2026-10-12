@@ -34,6 +34,7 @@ export interface CommandDescriptionDictionary {
   helpShowCarets: string;
   helpSetLanguage: string;
   helpShowLanguages: string;
+  helpNeofetch: string;
 }
 
 export interface DictionaryWithArgs {
@@ -54,6 +55,8 @@ export interface DictionaryWithArgs {
   wrongTheme: string;
   changeTheme: string;
   themeList: string;
+  // "key: value" lines of neofetch, the first line is the title
+  neofetch: string;
 }
 
 export type Dictionary = CommonDictionary & CommandDescriptionDictionary & DictionaryWithArgs;
@@ -83,6 +86,10 @@ type LanguageListLocale = LocaleWithArgsGenerator<"languageList", "languages">;
 type WrongThemeLocale = LocaleWithArgsGenerator<"wrongTheme", "themeName">;
 type ChangeThemeLocale = LocaleWithArgsGenerator<"changeTheme", "themeName">;
 type ThemeListLocale = LocaleWithArgsGenerator<"themeList", "themes">;
+type NeofetchLocale = LocaleWithArgsGenerator<
+  "neofetch",
+  "uptime" | "theme" | "caret" | "language"
+>;
 
 export type LocaleWithArgs =
   | NotFoundLocale
@@ -98,7 +105,8 @@ export type LocaleWithArgs =
   | LanguageListLocale
   | WrongThemeLocale
   | ChangeThemeLocale
-  | ThemeListLocale;
+  | ThemeListLocale
+  | NeofetchLocale;
 export type LocaleParams = CommonLocale | LocaleWithArgs;
 
 export const languages = ["ru", "eng"] as const;

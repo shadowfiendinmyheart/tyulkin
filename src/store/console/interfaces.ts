@@ -2,12 +2,13 @@ import { CaretMode } from "../../domain";
 import { ActionTypeGenerator } from "../interfaces";
 
 // theme colors of a text, see styles/themes.scss
-export type LogColor = "muted" | "accent" | "error";
+export type LogColor = "text" | "muted" | "accent" | "error";
 
 // a piece of a log; a plain string is text
 export type LogNode =
   | string
-  | { type: "text"; text: string; color: LogColor }
+  // decorative: hidden from screen readers (the palette strip of neofetch)
+  | { type: "text"; text: string; color: LogColor; decorative?: boolean }
   // only for the owner's texts (see linkify), never for echoed input, so a visitor
   // can't make a link that looks like part of the CV
   | { type: "link"; text: string; href: string }
@@ -16,7 +17,7 @@ export type LogNode =
   // rows of cells, a cell is a list of nodes
   | { type: "table"; rows: LogNode[][][] }
   // kept as is: no wrapping, scrolls horizontally (ASCII art, aligned columns)
-  | { type: "pre"; text: string };
+  | { type: "pre"; text: string; decorative?: boolean };
 
 // what is logged: one node or several in a row
 export type LogContent = LogNode | LogNode[];

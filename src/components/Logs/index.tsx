@@ -39,6 +39,7 @@ const useTypedLength = (log: Log | undefined, onTyped: (log: Log) => void) => {
 };
 
 const colorClassNames: Record<LogColor, string> = {
+  text: styles.text,
   muted: styles.muted,
   accent: styles.accent,
   error: styles.error,
@@ -49,7 +50,11 @@ const renderNode = (node: LogNode): React.ReactNode => {
 
   switch (node.type) {
     case "text":
-      return <span className={colorClassNames[node.color]}>{node.text}</span>;
+      return (
+        <span className={colorClassNames[node.color]} aria-hidden={node.decorative || undefined}>
+          {node.text}
+        </span>
+      );
     case "link":
       // mailto: and tel: open an app, a new tab would stay blank
       return /^https?:/.test(node.href) ? (
@@ -80,7 +85,14 @@ const renderNode = (node: LogNode): React.ReactNode => {
         </table>
       );
     case "pre":
-      return <pre className={styles.pre}>{node.text}</pre>;
+      return (
+        <pre
+          className={node.decorative ? `${styles.pre} ${styles.art}` : styles.pre}
+          aria-hidden={node.decorative || undefined}
+        >
+          {node.text}
+        </pre>
+      );
   }
 };
 

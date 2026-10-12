@@ -26,6 +26,7 @@
   "helpShowCarets": "посмотреть список текстовых курсоров",
   "helpSetLanguage": "назначить язык",
   "helpShowLanguages": "посмотреть список языков",
+  "helpNeofetch": "краткая сводка обо мне и о терминале",
   "404command": "Команда: $unknownCommand не найдена\nВведите $help или $ls, чтобы получить список доступных команд",
   "loading": "загрузка",
   "inputLabel": "командная строка",
@@ -41,5 +42,6 @@
   "languageList": "Доступные языки: $languages",
   "wrongTheme": "Тема $themeName не найдена",
   "changeTheme": "Тема $themeName успешно установлена",
-  "themeList": "Доступные темы: $themes"
+  "themeList": "Доступные темы: $themes",
+  "neofetch": "Иван Тюлькин\nРоль: Frontend-разработчик\nГород: Санкт-Петербург\nСтек: React, TypeScript\nСтаж: $uptime\nТема: $theme\nКурсор: $caret\nЯзык: $language"
 }
