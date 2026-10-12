@@ -9,8 +9,10 @@ import { reducer } from "../../store/console/reducer";
 import { addConsoleLog } from "../../store/console/actions";
 import { ConsoleState } from "../../store/console/interfaces";
 import storage from "../../storage";
-import { useT } from "../../context/localizationContext";
-import { CommonDictionaryKeys } from "../../localization/interfaces";
+import { useLocalization } from "../../context/localizationContext";
+import { CommonDictionaryKeys, Languages, TFunction } from "../../localization/interfaces";
+import { htmlLangByLanguage } from "../../localization/utils";
+import { prefersReducedMotion } from "../../utils";
 
 import styles from "./styles.module.scss";
 import { RouteValues } from "../../router/interfaces";
@@ -20,10 +22,42 @@ const welcomeLocaleByRoute: { [key in RouteValues]: CommonDictionaryKeys } = {
   [ROUTES.SETTINGS]: "settingsWelcome",
 };
 
+// imitation of an ssh login, typed out before the first welcome of the session;
+// "Last login" is left out on the first visit, as in ssh
+const getBootLogs = (t: TFunction, language: Languages, lastLogin: Date | null) => {
+  const lastLoginLines = lastLogin
+    ? [
+        t({
+          key: "bootLastLogin",
+          args: {
+            date: lastLogin.toLocaleString(htmlLangByLanguage[language], {
+              dateStyle: "medium",
+              timeStyle: "medium",
+            }),
+          },
+        }),
+      ]
+    : [];
+  const lines = [...lastLoginLines, ...t({ key: "bootLines" }).split("\n")];
+  // a log per line: each one is typed out after the previous
+  return lines.map((text) => addConsoleLog({ type: "text", text, color: "muted" }));
+};
+
+// on the first welcome of a session (browser tab) remembers the visit and returns the previous
+// one (null on the first visit); undefined when the session has already started
+const startSession = (): { lastLogin: Date | null } | undefined => {
+  if (storage.isSessionStarted()) return undefined;
+  storage.setSessionStarted();
+  const lastLogin = storage.getLastLogin();
+  storage.setLastLogin(new Date());
+  return { lastLogin };
+};
+
 // lazy: storage is read once, not on every render
 const createInitialState = (): ConsoleState => ({
   logs: [],
   nextLogId: 0,
+  typedLogId: 0,
   history: [],
   caretMode: storage.getCaretMode(),
   commandsHint: [],
@@ -36,12 +70,12 @@ interface ConsolePageProps {
 const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
   const [state, dispatch] = React.useReducer(reducer, undefined, createInitialState);
   const { pathname, search, hash, state: locationState } = useLocation();
-  const t = useT();
+  const localization = useLocalization();
   // welcome text is logged on navigation only, not again after a language change
-  const tRef = React.useRef(t);
+  const localizationRef = React.useRef(localization);
   React.useLayoutEffect(() => {
-    tRef.current = t;
-  }, [t]);
+    localizationRef.current = localization;
+  }, [localization]);
 
   // welcome text; StrictMode re-runs effects on mount, so the route that was already
   // welcomed is remembered (refs survive the remount) to log it once
@@ -49,7 +83,12 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
   React.useEffect(() => {
     if (welcomedRouteRef.current === route) return;
     welcomedRouteRef.current = route;
-    dispatch(addConsoleLog(tRef.current({ key: welcomeLocaleByRoute[route] })));
+    const { t, language } = localizationRef.current;
+    // the boot plays once per session; with reduced motion the welcome comes at once
+    const session = startSession();
+    if (session && !prefersReducedMotion())
+      getBootLogs(t, language, session.lastLogin).forEach((action) => dispatch(action));
+    dispatch(addConsoleLog(t({ key: welcomeLocaleByRoute[route] })));
   }, [route]);
 
   const consoleContextValue = React.useMemo(

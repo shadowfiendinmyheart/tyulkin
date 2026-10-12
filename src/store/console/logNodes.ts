@@ -51,3 +51,59 @@ export const withNodes = (
 // withNode((value) => t({ …, args: { command: value } }), node)
 export const withNode = (getText: (placeholder: string) => string, node: LogNode): LogNode[] =>
   withNodes(([placeholder]) => getText(placeholder), [node]);
+
+// visible characters of a node: what typing out goes through
+const getNodeLength = (node: LogNode): number => {
+  if (typeof node === "string") return node.length;
+  switch (node.type) {
+    case "command":
+      return node.command.length;
+    case "table":
+      return node.rows.flat().reduce((sum, cell) => sum + getNodesLength(cell), 0);
+    default:
+      return node.text.length;
+  }
+};
+
+export const getNodesLength = (nodes: LogNode[]): number =>
+  nodes.reduce((sum, node) => sum + getNodeLength(node), 0);
+
+// the node cut to its first `length` visible characters (0 < length < its length)
+const sliceNode = (node: LogNode, length: number): LogNode => {
+  if (typeof node === "string") return node.slice(0, length);
+  switch (node.type) {
+    // plain text until typed out in full: a click must not run a half-typed command
+    case "command":
+      return node.command.slice(0, length);
+    case "table": {
+      const rows: LogNode[][][] = [];
+      let left = length;
+      for (const row of node.rows) {
+        if (left <= 0) break;
+        const cells: LogNode[][] = [];
+        for (const cell of row) {
+          if (left <= 0) break;
+          cells.push(sliceNodes(cell, left));
+          left -= getNodesLength(cell);
+        }
+        rows.push(cells);
+      }
+      return { ...node, rows };
+    }
+    default:
+      return { ...node, text: node.text.slice(0, length) };
+  }
+};
+
+// the first `length` visible characters of nodes: a log being typed out
+export const sliceNodes = (nodes: LogNode[], length: number): LogNode[] => {
+  const sliced: LogNode[] = [];
+  let left = length;
+  for (const node of nodes) {
+    if (left <= 0) break;
+    const nodeLength = getNodeLength(node);
+    sliced.push(nodeLength <= left ? node : sliceNode(node, left));
+    left -= nodeLength;
+  }
+  return sliced;
+};

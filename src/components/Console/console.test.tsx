@@ -1,6 +1,6 @@
 import { StrictMode } from "react";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { routes } from "../../router/routes";
@@ -38,10 +38,18 @@ const renderConsole = (path = "/") => {
   return { user: userEvent.setup(), input: screen.getByRole("textbox") as HTMLInputElement };
 };
 
-const getLogs = () => screen.getAllByRole("listitem").map((item) => item.textContent);
+const getLogs = () => screen.queryAllByRole("listitem").map((item) => item.textContent);
 
-beforeEach(() => localStorage.clear());
-afterEach(cleanup);
+beforeEach(() => {
+  localStorage.clear();
+  sessionStorage.clear();
+  // jsdom has no matchMedia; reduced motion: no boot, logs are not typed out (see TASK-53 tests)
+  vi.stubGlobal("matchMedia", () => ({ matches: true }));
+});
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 describe("console", () => {
   it("does not crash on Enter before the first input (TASK-22)", async () => {
@@ -509,5 +517,92 @@ describe("UX shortcuts (TASK-52)", () => {
     fireEvent.change(input, { target: { value: "ab" } });
     fireEvent.keyDown(input, { key: "Process", code: "KeyC", ctrlKey: true, isComposing: true });
     expect(input.value).toBe("ab");
+  });
+});
+
+describe("boot and typing out (TASK-53)", () => {
+  beforeEach(() => {
+    vi.stubGlobal("matchMedia", () => ({ matches: false }));
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  // a log at a time: the next one starts typing after a render
+  const typeOut = () => {
+    for (let i = 0; i < 20; i++) act(() => vi.advanceTimersByTime(1000));
+  };
+  const bootLines = eng.bootLines.split("\n");
+
+  it("types out the boot before the welcome once per session", () => {
+    const lastLogin = new Date(2026, 0, 2, 3, 4, 5);
+    localStorage.setItem("lastLogin", String(lastLogin.getTime()));
+    renderConsole();
+    // typing out: nothing yet, the live region waits
+    expect(getLogs()).toEqual([]);
+    expect(screen.getByRole("log").getAttribute("aria-busy")).toBe("true");
+
+    typeOut();
+    const date = lastLogin.toLocaleString("en", { dateStyle: "medium", timeStyle: "medium" });
+    expect(getLogs()).toEqual([
+      eng.bootLastLogin.replace("$date", date),
+      ...bootLines,
+      eng.welcome,
+    ]);
+    expect(screen.getByRole("log").getAttribute("aria-busy")).toBe("false");
+    // this visit is the last login of the next session
+    expect(Number(localStorage.getItem("lastLogin"))).toBeGreaterThan(lastLogin.getTime());
+
+    cleanup();
+    renderConsole();
+    typeOut();
+    expect(getLogs()).toEqual([eng.welcome]);
+  });
+
+  it("leaves out the last login on the first visit", () => {
+    renderConsole();
+    typeOut();
+    expect(getLogs()).toEqual([...bootLines, eng.welcome]);
+  });
+
+  it("shows everything at once on any key, the key still goes to the input", () => {
+    const { input } = renderConsole();
+    act(() => vi.advanceTimersByTime(100));
+    expect(getLogs()).toHaveLength(1);
+
+    fireEvent.keyDown(input, { key: "a" });
+    expect(getLogs()).toEqual([...bootLines, eng.welcome]);
+    expect(getLogs().at(-1)).toBe(eng.welcome);
+    fireEvent.change(input, { target: { value: "a" } });
+    expect(input.value).toBe("a");
+  });
+
+  it("shows everything at once on a click or tap", () => {
+    renderConsole();
+    fireEvent.click(document.body);
+    expect(getLogs().at(-1)).toBe(eng.welcome);
+  });
+
+  it("echoes the command at once and types out its output", () => {
+    const { input } = renderConsole();
+    fireEvent.keyDown(input, { key: "a" });
+    fireEvent.change(input, { target: { value: "about" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+    act(() => vi.advanceTimersByTime(50));
+
+    expect(getLogs().at(-2)).toBe("cv> about");
+    const typed = getLogs().at(-1) ?? "";
+    expect(typed.length).toBeLessThan(eng.about.length);
+    expect(eng.about.startsWith(typed)).toBe(true);
+
+    typeOut();
+    expect(getLogs().at(-1)).toBe(eng.about);
+  });
+
+  it("does not boot with reduced motion", () => {
+    vi.stubGlobal("matchMedia", () => ({ matches: true }));
+    renderConsole();
+    expect(getLogs()).toEqual([eng.welcome]);
   });
 });

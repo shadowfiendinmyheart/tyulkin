@@ -4,6 +4,7 @@ import storage from ".";
 
 afterEach(() => {
   localStorage.clear();
+  sessionStorage.clear();
 });
 
 describe("storage", () => {
@@ -78,5 +79,25 @@ describe("language by browser (TASK-72)", () => {
     mockBrowserLanguages(["ru-RU"]);
     storage.setLanguage("eng");
     expect(storage.getLanguage()).toBe("eng");
+  });
+});
+
+describe("session and last login (TASK-53)", () => {
+  it("remembers the session start in the session storage", () => {
+    expect(storage.isSessionStarted()).toBe(false);
+    storage.setSessionStarted();
+    expect(storage.isSessionStarted()).toBe(true);
+    expect(localStorage.length).toBe(0);
+  });
+
+  it("round-trips the last login and rejects garbage", () => {
+    expect(storage.getLastLogin()).toBeNull();
+    const date = new Date(2026, 0, 2);
+    storage.setLastLogin(date);
+    expect(storage.getLastLogin()).toEqual(date);
+    for (const value of ["", "abc", "-5", "Infinity", "1e20"]) {
+      localStorage.setItem("lastLogin", value);
+      expect(storage.getLastLogin()).toBeNull();
+    }
   });
 });

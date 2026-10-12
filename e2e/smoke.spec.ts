@@ -96,3 +96,24 @@ test("focuses the input by a tap on the console @mobile", async ({ page }) => {
   await page.keyboard.press("Enter");
   await expect(lastLog(page)).toContainText("Ivan Tyulkin");
 });
+
+test.describe("boot animation (TASK-53)", () => {
+  test.use({ reducedMotion: "no-preference" });
+
+  test("types out the boot, skips it by a key, plays once per session", async ({ page }) => {
+    await page.goto("");
+    const log = page.getByRole("log");
+    const [firstBootLine] = eng.bootLines.split("\n");
+    await expect(log).toContainText(firstBootLine);
+
+    // the whole boot takes ~2 s to type out; a key shows it at once and still reaches the input
+    await page.keyboard.press("a");
+    await expect(log).toContainText(eng.welcome, { timeout: 1000 });
+    await expect(input(page)).toHaveValue("a");
+    await expect(log).toHaveAttribute("aria-busy", "false");
+
+    await page.reload();
+    await expect(log).toContainText(eng.welcome);
+    await expect(log).not.toContainText(firstBootLine);
+  });
+});

@@ -8,13 +8,16 @@ export const MAX_LOGS = 500;
 export function reducer(state: ConsoleState, action: ConsoleActionType): ConsoleState {
   switch (action.type) {
     case ConsoleActionKind.AddLogs: {
-      const log = { ...action.payload, id: state.nextLogId };
+      const { content, instant } = action.payload;
+      const log = { content, id: state.nextLogId };
       const keptLogs =
         state.logs.length >= MAX_LOGS ? state.logs.slice(-(MAX_LOGS - 1)) : state.logs;
       return {
         ...state,
         logs: [...keptLogs, log],
-        nextLogId: state.nextLogId + 1,
+        nextLogId: log.id + 1,
+        // a dropped log can't be typed out: typing goes on from the oldest kept one
+        typedLogId: instant ? log.id + 1 : Math.max(state.typedLogId, keptLogs[0]?.id ?? log.id),
       };
     }
 
@@ -22,6 +25,7 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
       return {
         ...state,
         logs: [],
+        typedLogId: state.nextLogId,
       };
     }
 
@@ -38,6 +42,23 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
       return {
         ...state,
         caretMode: action.payload,
+      };
+    }
+
+    case ConsoleActionKind.FinishTyping: {
+      // a late timer of an already skipped log changes nothing
+      if (action.payload < state.typedLogId) return state;
+      return {
+        ...state,
+        typedLogId: action.payload + 1,
+      };
+    }
+
+    case ConsoleActionKind.SkipTyping: {
+      if (state.typedLogId === state.nextLogId) return state;
+      return {
+        ...state,
+        typedLogId: state.nextLogId,
       };
     }
 

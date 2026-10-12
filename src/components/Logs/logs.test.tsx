@@ -17,6 +17,7 @@ const renderLog = (content: LogNode[]) => {
         consoleState: {
           logs: [{ id: 0, content }],
           nextLogId: 1,
+          typedLogId: 1,
           history: [],
           caretMode: CaretMode.Block,
           commandsHint: [],

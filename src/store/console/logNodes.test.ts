@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { joinNodes, linkify, withNode, withNodes } from "./logNodes";
+import { getNodesLength, joinNodes, linkify, sliceNodes, withNode, withNodes } from "./logNodes";
+import { LogNode } from "./interfaces";
 
 describe("joinNodes", () => {
   it("puts the separator between nodes only", () => {
@@ -75,5 +76,33 @@ describe("linkify", () => {
       { type: "link", text: "https://example.com/иван", href: "https://example.com/иван" },
       " end",
     ]);
+  });
+});
+
+describe("sliceNodes (TASK-53)", () => {
+  const link = { type: "link", text: "site", href: "https://example.com" } as const;
+  const help = { type: "command", command: "help" } as const;
+  const table: LogNode = { type: "table", rows: [[["ab"], ["cd"]], [["ef"]]] };
+
+  it("counts visible characters", () => {
+    expect(getNodesLength(["ab", link, help])).toBe(10);
+    expect(getNodesLength([table])).toBe(6);
+  });
+
+  it("cuts nodes to the visible length, keeping their kind", () => {
+    expect(sliceNodes(["ab", link], 4)).toEqual(["ab", { ...link, text: "si" }]);
+    expect(sliceNodes(["ab", link], 2)).toEqual(["ab"]);
+    expect(sliceNodes(["ab", link], 0)).toEqual([]);
+    expect(sliceNodes(["ab", link], 100)).toEqual(["ab", link]);
+  });
+
+  it("keeps a half-typed command as plain text", () => {
+    expect(sliceNodes([help], 2)).toEqual(["he"]);
+    expect(sliceNodes([help], 4)).toEqual([help]);
+  });
+
+  it("types a table cell by cell", () => {
+    expect(sliceNodes([table], 3)).toEqual([{ type: "table", rows: [[["ab"], ["c"]]] }]);
+    expect(sliceNodes([table], 5)).toEqual([{ type: "table", rows: [[["ab"], ["cd"]], [["e"]]] }]);
   });
 });

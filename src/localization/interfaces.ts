@@ -1,6 +1,8 @@
 export interface CommonDictionary {
   welcome: string;
   settingsWelcome: string;
+  // lines typed out before the first welcome of a session, one per line
+  bootLines: string;
   education: string;
   about: string;
   experience: string;
@@ -38,6 +40,8 @@ export interface DictionaryWithArgs {
   ["404command"]: string;
   // shown next to the empty command line until the first command is executed
   inputHint: string;
+  // the first line of the boot, $date is the previous visit
+  bootLastLogin: string;
   // the closest command when an unknown one is typed
   didYouMean: string;
   wrongCaret: string;
@@ -68,6 +72,7 @@ type CommonLocale = { key: CommonDictionaryKeys | CommandDescriptionKeys };
 type NotFoundLocale = LocaleWithArgsGenerator<"404command", "unknownCommand" | "help" | "ls">;
 type InputHintLocale = LocaleWithArgsGenerator<"inputHint", "help">;
 type DidYouMeanLocale = LocaleWithArgsGenerator<"didYouMean", "command">;
+type BootLastLoginLocale = LocaleWithArgsGenerator<"bootLastLogin", "date">;
 type WrongCaretLocale = LocaleWithArgsGenerator<"wrongCaret", "caretName">;
 type ChangeCaretLocale = LocaleWithArgsGenerator<"changeCaret", "caretName">;
 type CaretListLocale = LocaleWithArgsGenerator<"caretList", "carets">;
@@ -83,6 +88,7 @@ export type LocaleWithArgs =
   | NotFoundLocale
   | InputHintLocale
   | DidYouMeanLocale
+  | BootLastLoginLocale
   | WrongCaretLocale
   | ChangeCaretLocale
   | CaretListLocale

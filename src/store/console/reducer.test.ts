@@ -5,8 +5,10 @@ import {
   addHistoryCommand,
   addUserLog,
   clearLogs,
+  finishTyping,
   setCaretMode,
   setCommandsHint,
+  skipTyping,
 } from "./actions";
 import { ConsoleState } from "./interfaces";
 import { MAX_LOGS, reducer } from "./reducer";
@@ -14,6 +16,7 @@ import { MAX_LOGS, reducer } from "./reducer";
 const initialState: ConsoleState = {
   logs: [],
   nextLogId: 0,
+  typedLogId: 0,
   history: [],
   caretMode: CaretMode.Block,
   commandsHint: [],
@@ -66,5 +69,38 @@ describe("console reducer", () => {
   it("sets the commands hint as is", () => {
     expect(reducer(initialState, setCommandsHint(["a", "b"])).commandsHint).toEqual(["a", "b"]);
     expect(reducer(initialState, setCommandsHint(["a"])).commandsHint).toEqual(["a"]);
+  });
+
+  describe("typing out (TASK-53)", () => {
+    it("types logs one after another", () => {
+      let state = reducer(initialState, addConsoleLog("a"));
+      state = reducer(state, addConsoleLog("b"));
+      expect(state.typedLogId).toBe(0);
+      state = reducer(state, finishTyping(0));
+      expect(state.typedLogId).toBe(1);
+      // a late timer of an already typed log
+      expect(reducer(state, finishTyping(0))).toBe(state);
+    });
+
+    it("goes on from the oldest kept log when the typed one is dropped", () => {
+      let state = initialState;
+      for (let i = 0; i < MAX_LOGS + 2; i++) state = reducer(state, addConsoleLog(`log ${i}`));
+      expect(state.typedLogId).toBe(state.logs[0].id);
+    });
+
+    it("shows the echoed input and everything before it at once", () => {
+      let state = reducer(initialState, addConsoleLog("a"));
+      state = reducer(state, addUserLog("ls", "~"));
+      expect(state.typedLogId).toBe(2);
+    });
+
+    it("skips typing and has nothing to type after clear", () => {
+      let state = reducer(initialState, addConsoleLog("a"));
+      state = reducer(state, addConsoleLog("b"));
+      expect(reducer(state, skipTyping()).typedLogId).toBe(2);
+      expect(reducer(state, clearLogs()).typedLogId).toBe(2);
+      const skipped = reducer(state, skipTyping());
+      expect(reducer(skipped, skipTyping())).toBe(skipped);
+    });
   });
 });

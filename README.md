@@ -136,7 +136,8 @@ BCP 47-тег в `htmlLangByLanguage` ([`localization/utils.ts`](src/localizatio
 
 ### Хранилище
 
-[`src/storage`](src/storage/index.ts) сохраняет тему, каретку и язык в `localStorage`. Прочитанное
+[`src/storage`](src/storage/index.ts) сохраняет тему, каретку, язык и время прошлого визита в
+`localStorage`, а флаг начатой сессии (boot-анимация — раз за вкладку) — в `sessionStorage`. Прочитанное
 значение проходит через `oneOf` — мусор или устаревшее значение заменяется дефолтом; ошибки доступа к
 `localStorage` (приватный режим, квота) молча игнорируются.
 

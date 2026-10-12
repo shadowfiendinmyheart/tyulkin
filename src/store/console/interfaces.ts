@@ -21,12 +21,15 @@ export type LogNode =
 // what is logged: one node or several in a row
 export type LogContent = LogNode | LogNode[];
 
-export interface NewLog {
+export interface Log {
   content: LogNode[];
-}
-export interface Log extends NewLog {
   // stable React key: logs are dropped from the start (MAX_LOGS), so indexes shift
   id: number;
+}
+export interface NewLog {
+  content: LogNode[];
+  // shown at once, not typed out (the echoed input); everything typed before it is shown too
+  instant?: boolean;
 }
 export type Logs = Array<Log>;
 
@@ -35,6 +38,9 @@ export interface ConsoleState {
   logs: Logs;
   // id of the next added log; never reset, so ids stay unique after clear
   nextLogId: number;
+  // logs with a smaller id are shown in full; the log with this id is being typed out,
+  // later ones wait for it (see Logs)
+  typedLogId: number;
   // executed commands, newest first
   history: string[];
   caretMode: CaretMode;
@@ -46,10 +52,15 @@ export type ConsoleActionType =
   | ActionClearLogs
   | ActionAddHistoryCommand
   | ActionSetCaretMode
-  | ActionSetCommandsHint;
+  | ActionSetCommandsHint
+  | ActionFinishTyping
+  | ActionSkipTyping;
 
 export type ActionAddLogs = ActionTypeGenerator<ConsoleActionKind.AddLogs, NewLog>;
 export type ActionClearLogs = ActionTypeGenerator<ConsoleActionKind.ClearLogs>;
+// payload: id of the typed out log
+export type ActionFinishTyping = ActionTypeGenerator<ConsoleActionKind.FinishTyping, number>;
+export type ActionSkipTyping = ActionTypeGenerator<ConsoleActionKind.SkipTyping>;
 export type ActionAddHistoryCommand = ActionTypeGenerator<
   ConsoleActionKind.AddHistoryCommand,
   string
@@ -66,4 +77,6 @@ export enum ConsoleActionKind {
   AddHistoryCommand = "addHistoryCommand",
   SetCaretMode = "setCaretMode",
   SetCommandsHint = "setCommandsHint",
+  FinishTyping = "finishTyping",
+  SkipTyping = "skipTyping",
 }

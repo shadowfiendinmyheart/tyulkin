@@ -11,15 +11,12 @@ import { LocalizationContext, LocalizationContextType } from "./context/localiza
 import storage from "./storage";
 import LoadingPage from "./pages/LoadingPage";
 import { ErrorScreen } from "./pages/ErrorPage";
-import { delay } from "./utils";
+import { delay, prefersReducedMotion } from "./utils";
 
 // loading animation is shown at least this long, so it doesn't just flash
 const MIN_LOADING_ANIMATION_MS = 1000;
 
-const getLoadingAnimationTime = () => {
-  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  return prefersReducedMotion ? 0 : MIN_LOADING_ANIMATION_MS;
-};
+const getLoadingAnimationTime = () => (prefersReducedMotion() ? 0 : MIN_LOADING_ANIMATION_MS);
 
 // language and its translations change together, so they live in one state
 interface LocalizationState {
