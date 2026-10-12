@@ -13,15 +13,16 @@ npm run dev     # dev-сервер с HMR + пересборка типов SCSS
 npm run build   # прод-сборка в dist/
 ```
 
-| Скрипт                      | Что делает                                                                           |
-| --------------------------- | ------------------------------------------------------------------------------------ |
-| `npm start`                 | только `webpack-dev-server` (открывает браузер, HMR)                                 |
-| `npm run typed-styles`      | `typed-scss-modules "src/**/*.module.scss" --watch` — генерация `*.module.scss.d.ts` |
-| `npm run dev`               | `start` и `typed-styles` параллельно (`concurrently`)                                |
-| `npm run build`             | `webpack --mode production`                                                          |
-| `npm test`                  | `vitest run` (jsdom, файлы `src/**/*.test.{ts,tsx}`)                                 |
-| `npm run lint` / `lint:fix` | ESLint по всему репо, `--max-warnings 0`                                             |
-| `npm run prettier`          | `prettier --write .`                                                                 |
+| Скрипт                      | Что делает                                                                                                           |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `npm start`                 | только `webpack-dev-server` (открывает браузер, HMR)                                                                 |
+| `npm run typed-styles`      | `typed-scss-modules "src/**/*.module.scss" --watch` — генерация `*.module.scss.d.ts`                                 |
+| `npm run dev`               | `start` и `typed-styles` параллельно (`concurrently`)                                                                |
+| `npm run build`             | `webpack --mode production`                                                                                          |
+| `npm test`                  | `vitest run` (jsdom, файлы `src/**/*.test.{ts,tsx}`)                                                                 |
+| `npm run test:e2e`          | Playwright: прод-сборка под `/tyulkin/` в `dist-e2e/` + сценарии из `e2e/` (нужен `npx playwright install chromium`) |
+| `npm run lint` / `lint:fix` | ESLint по всему репо, `--max-warnings 0`                                                                             |
+| `npm run prettier`          | `prettier --write .`                                                                                                 |
 
 ### Проверки (как в CI)
 
@@ -36,6 +37,25 @@ npx prettier --check .
 npm test
 npm run build
 ```
+
+Параллельно идёт job `e2e` (`npm run test:e2e`), а после зелёных `check` и `e2e` на `master` —
+`deploy`.
+
+## Деплой
+
+Сайт публикуется на GitHub Pages job-ом `deploy` в [`ci.yml`](.github/workflows/ci.yml) на каждый
+push в `master`, если прошли проверки и e2e. В настройках репозитория (Settings → Pages) источником
+должен быть выбран **GitHub Actions**.
+
+- Сайт проекта живёт в подкаталоге (`https://<user>.github.io/tyulkin/`), поэтому сборка принимает
+  `--env basePath=/tyulkin/`: из него берутся `publicPath` ассетов и `basename` роутера
+  (`__BASE_PATH__` через `DefinePlugin`). По умолчанию — `/`.
+- SPA-фолбэк: Pages отвечает `404.html` на любой неизвестный путь, а прод-сборка кладёт туда копию
+  `index.html` — прямой заход на `/tyulkin/settings` открывает приложение (со статусом 404).
+- Публикуется ровно та сборка, которую проверили e2e: `npm run test:e2e` собирает `dist-e2e/` под
+  `E2E_BASE_PATH` (по умолчанию `/tyulkin/`, в CI — `/<имя репо>/`), а
+  [`e2e/server.mjs`](e2e/server.mjs) раздаёт её как Pages (подкаталог, `404.html`, редирект
+  `/tyulkin` → `/tyulkin/`). Со своим доменом в `ci.yml` достаточно поставить `E2E_BASE_PATH: /`.
 
 ## Структура
 
@@ -161,4 +181,6 @@ BCP 47-тег в `htmlLangByLanguage` ([`localization/utils.ts`](src/localizatio
   `@eslint-react`, `react-hooks`, `eslint-plugin-prettier` последним;
 - Prettier 3 ([`.prettierrc`](.prettierrc)), `BACKLOG.md` и `.claude` исключены;
 - Vitest + Testing Library ([`vitest.config.mts`](vitest.config.mts)), тесты лежат рядом с кодом;
+- Playwright ([`playwright.config.ts`](playwright.config.ts)), e2e-сценарии в `e2e/`: десктопный
+  Chromium и мобильный вьюпорт с тачем (только тесты с тегом `@mobile`);
 - переводы строк — LF везде ([`.gitattributes`](.gitattributes)), Prettier требует `endOfLine: lf`.

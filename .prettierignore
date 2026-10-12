@@ -1,5 +1,8 @@
 node_modules
 dist
+dist-e2e
+test-results
+playwright-report
 # markdown tables are maintained by hand and by /backlog, /task skills
 BACKLOG.md
 .claude

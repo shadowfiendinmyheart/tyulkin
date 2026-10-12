@@ -92,5 +92,11 @@
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true /* Skip type checking all .d.ts files. */
   },
-  "include": ["src", "vitest.config.mts", "typed-scss-modules.config.ts"]
+  "include": [
+    "src",
+    "e2e",
+    "vitest.config.mts",
+    "playwright.config.ts",
+    "typed-scss-modules.config.ts"
+  ]
 }

@@ -7,7 +7,7 @@ import reactHooks from "eslint-plugin-react-hooks";
 import prettierRecommended from "eslint-plugin-prettier/recommended";
 
 export default defineConfig([
-  globalIgnores(["dist", "webpack.config.js"]),
+  globalIgnores(["dist", "dist-e2e", "playwright-report", "test-results", "webpack.config.js"]),
   js.configs.recommended,
   tseslint.configs.recommended,
   // replaces eslint-plugin-react, which does not support ESLint 10; no React-in-scope rule (new JSX transform)
@@ -24,6 +24,11 @@ export default defineConfig([
       "@eslint-react/dom-no-unsafe-target-blank": "error",
       "@eslint-react/dom-no-unknown-property": "error",
     },
+  },
+  // node scripts: the e2e static server and tool configs
+  {
+    files: ["e2e/*.mjs", "*.config.{ts,mts}"],
+    languageOptions: { globals: globals.node },
   },
   // must be last: disables stylistic rules and reports prettier diffs as eslint errors
   prettierRecommended,

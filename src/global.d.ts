@@ -7,3 +7,6 @@ declare module "*/main.scss" {}
 
 // fontsource CSS entry (side-effect import in main.tsx)
 declare module "@fontsource/ibm-plex-mono/400";
+
+// public path of the site, "/" or "/<subpath>/" (DefinePlugin in webpack.config.js, `define` in vitest)
+declare const __BASE_PATH__: string;

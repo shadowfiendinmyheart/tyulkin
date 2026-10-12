@@ -1,4 +1,7 @@
 .vscode
 node_modules
 dist
+dist-e2e
 .claude/fuck-tokens.json
+test-results
+playwright-report

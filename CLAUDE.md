@@ -11,6 +11,7 @@ npm run lint            # --max-warnings 0
 npx prettier --check .  # .md тоже проверяются; BACKLOG.md и .claude исключены
 npm test
 npm run build
+npm run test:e2e        # Playwright; один раз: npx playwright install chromium
 ```
 
 ## Неочевидное
@@ -26,6 +27,8 @@ npm run build
 - Тексты резюме (`about`, `experience`, `skills`, `projects`, `education`, `contacts`) из `eng.json`
   также попадают в `<noscript>` при сборке.
   Не выдумывать факты о владельце резюме — контент только от пользователя.
+- Сайт живёт в подкаталоге GitHub Pages (`/tyulkin/`): внутренние пути — только через роутер
+  (`basename` = `__BASE_PATH__`), без абсолютных `href="/…"`; e2e-тесты гоняют именно такую сборку.
 - Переводы строк LF (`.gitattributes`, Prettier `endOfLine: lf`).
 
 ## Процесс

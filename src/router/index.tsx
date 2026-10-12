@@ -4,7 +4,9 @@ import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import { routes } from "./routes";
 
-const router = createBrowserRouter(routes);
+// the site may be served from a subpath (GitHub Pages: /tyulkin/), see basePath in webpack.config.js
+// without the trailing slash: with "/tyulkin/" the router would not match "/tyulkin"
+const router = createBrowserRouter(routes, { basename: __BASE_PATH__.replace(/\/$/, "") || "/" });
 
 export const Router: React.FC = () => {
   return <RouterProvider router={router} />;

@@ -1,6 +1,7 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const { DefinePlugin } = require("webpack");
 const eng = require("./src/localization/dictionaries/eng.json");
 
 // static CV text for crawlers and no-JS visitors, taken from the dictionary (single source)
@@ -47,10 +48,32 @@ class FontPreloadPlugin {
   }
 }
 
+// "tyulkin", "/tyulkin" or "/tyulkin/" -> "/tyulkin/"; nothing -> "/"
+const normalizeBasePath = (basePath) => {
+  // `--env basePath` without a value gives `true`
+  const trimmed = (typeof basePath === "string" ? basePath : "").replace(/^\/+|\/+$/g, "");
+  return trimmed ? `/${trimmed}/` : "/";
+};
+
 module.exports = (env, argv) => {
   const mode = argv.mode || "development";
   const isProduction = mode === "production";
   const devtool = isProduction ? false : "inline-source-map";
+  // the site may live in a subpath (GitHub Pages project site): `webpack --env basePath=/tyulkin/`;
+  // asset URLs and the router basename both come from it
+  const basePath = normalizeBasePath(env.basePath);
+
+  const htmlOptions = {
+    template: "./src/index.html",
+    templateParameters: {
+      about: toHtmlLines(eng.about),
+      experience: toHtmlLines(eng.experience),
+      skills: toHtmlLines(eng.skills),
+      projects: toHtmlLines(eng.projects),
+      education: toHtmlLines(eng.education),
+      contacts: toHtmlLines(eng.contacts),
+    },
+  };
 
   return {
     mode,
@@ -61,11 +84,11 @@ module.exports = (env, argv) => {
       // content hash in production for cache busting; stable names keep dev simple
       filename: isProduction ? "[name].[contenthash].js" : "[name].js",
       // absolute asset URLs so nested routes served via historyApiFallback (/settings/foo) still load
-      publicPath: "/",
+      publicPath: basePath,
       clean: true,
     },
     devServer: {
-      historyApiFallback: true,
+      historyApiFallback: { index: basePath },
     },
     module: {
       rules: [
@@ -108,17 +131,11 @@ module.exports = (env, argv) => {
       extensions: [".tsx", ".ts", ".js"],
     },
     plugins: [
-      new HtmlWebpackPlugin({
-        template: "./src/index.html",
-        templateParameters: {
-          about: toHtmlLines(eng.about),
-          experience: toHtmlLines(eng.experience),
-          skills: toHtmlLines(eng.skills),
-          projects: toHtmlLines(eng.projects),
-          education: toHtmlLines(eng.education),
-          contacts: toHtmlLines(eng.contacts),
-        },
-      }),
+      new HtmlWebpackPlugin(htmlOptions),
+      // SPA fallback for static hosting without rewrites (GitHub Pages serves 404.html for any
+      // unknown path): a direct visit to /settings gets the same app, and the router picks the page
+      ...(isProduction ? [new HtmlWebpackPlugin({ ...htmlOptions, filename: "404.html" })] : []),
+      new DefinePlugin({ __BASE_PATH__: JSON.stringify(basePath) }),
       new FontPreloadPlugin(),
       ...(isProduction ? [new MiniCssExtractPlugin({ filename: "[name].[contenthash].css" })] : []),
     ],
