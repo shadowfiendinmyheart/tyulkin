@@ -3,11 +3,10 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { DefinePlugin } = require("webpack");
 const eng = require("./src/localization/dictionaries/eng.json");
+const { OG_IMAGE, escapeXml, getOgImageAlt, renderOgImage } = require("./scripts/og-image.cjs");
 
 // static CV text for crawlers and no-JS visitors, taken from the dictionary (single source)
-const escapeHtml = (text) =>
-  text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const toHtmlLines = (text) => escapeHtml(text).split("\n").join("<br />");
+const toHtmlLines = (text) => escapeXml(text).split("\n").join("<br />");
 
 // the prompt and commands are Latin in every language, so the Latin subset is preloaded;
 // the Cyrillic one is fetched on demand (unicode-range) only when Russian text is shown
@@ -48,11 +47,75 @@ class FontPreloadPlugin {
   }
 }
 
+// emits the link preview card (scripts/og-image.cjs) and, when the absolute site URL is known,
+// the tags that need it: canonical, og:url, og:image (scrapers ignore a relative one)
+class OgImagePlugin {
+  constructor(siteUrl) {
+    this.siteUrl = siteUrl;
+  }
+
+  apply(compiler) {
+    const { RawSource } = compiler.webpack.sources;
+    compiler.hooks.thisCompilation.tap("OgImagePlugin", (compilation) => {
+      compilation.hooks.processAssets.tap(
+        {
+          name: "OgImagePlugin",
+          stage: compiler.webpack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL,
+        },
+        () => {
+          // drawn once: the texts are read at config load anyway (as for <noscript>)
+          this.image = this.image || renderOgImage();
+          compilation.emitAsset(OG_IMAGE.fileName, new RawSource(this.image));
+        },
+      );
+      HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tap("OgImagePlugin", (data) => {
+        const tag = (tagName, attributes) =>
+          HtmlWebpackPlugin.createHtmlTagObject(tagName, attributes);
+        const meta = (property, content) => tag("meta", { property, content });
+        if (!this.siteUrl) {
+          data.headTags.push(tag("meta", { name: "twitter:card", content: "summary" }));
+          return data;
+        }
+        // 404.html is served for every deep link (/gui, /settings): it can't claim to be the root
+        if (data.outputName === "index.html") {
+          data.headTags.push(
+            tag("link", { rel: "canonical", href: this.siteUrl }),
+            meta("og:url", this.siteUrl),
+          );
+        }
+        data.headTags.push(
+          meta("og:image", this.siteUrl + OG_IMAGE.fileName),
+          meta("og:image:type", "image/png"),
+          meta("og:image:width", String(OG_IMAGE.width)),
+          meta("og:image:height", String(OG_IMAGE.height)),
+          meta("og:image:alt", getOgImageAlt()),
+          tag("meta", { name: "twitter:card", content: "summary_large_image" }),
+        );
+        return data;
+      });
+    });
+  }
+}
+
 // "tyulkin", "/tyulkin" or "/tyulkin/" -> "/tyulkin/"; nothing -> "/"
 const normalizeBasePath = (basePath) => {
   // `--env basePath` without a value gives `true`
   const trimmed = (typeof basePath === "string" ? basePath : "").replace(/^\/+|\/+$/g, "");
   return trimmed ? `/${trimmed}/` : "/";
+};
+
+// the absolute URL of the deployed site from SITE_URL (CI sets it for the published build), with a
+// trailing slash; it must end with the base path the build is made for. Not set: no absolute tags
+const getSiteUrl = (basePath) => {
+  if (!process.env.SITE_URL) return undefined;
+  const url = new URL(process.env.SITE_URL);
+  url.search = "";
+  url.hash = "";
+  if (!url.pathname.endsWith("/")) url.pathname += "/";
+  if (url.pathname !== basePath) {
+    throw new Error(`SITE_URL path "${url.pathname}" doesn't match the base path "${basePath}"`);
+  }
+  return url.href;
 };
 
 module.exports = (env, argv) => {
@@ -137,6 +200,8 @@ module.exports = (env, argv) => {
       ...(isProduction ? [new HtmlWebpackPlugin({ ...htmlOptions, filename: "404.html" })] : []),
       new DefinePlugin({ __BASE_PATH__: JSON.stringify(basePath) }),
       new FontPreloadPlugin(),
+      // the card is for the published site: the dev server skips the render
+      ...(isProduction ? [new OgImagePlugin(getSiteUrl(basePath))] : []),
       ...(isProduction ? [new MiniCssExtractPlugin({ filename: "[name].[contenthash].css" })] : []),
     ],
   };

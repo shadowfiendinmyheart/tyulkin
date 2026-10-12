@@ -30,6 +30,12 @@ export default defineConfig([
     files: ["e2e/*.mjs", "*.config.{ts,mts}"],
     languageOptions: { globals: globals.node },
   },
+  // build-time scripts loaded by webpack.config.js (CommonJS)
+  {
+    files: ["scripts/*.cjs"],
+    languageOptions: { sourceType: "commonjs", globals: globals.node },
+    rules: { "@typescript-eslint/no-require-imports": "off" },
+  },
   // must be last: disables stylistic rules and reports prettier diffs as eslint errors
   prettierRecommended,
 ]);

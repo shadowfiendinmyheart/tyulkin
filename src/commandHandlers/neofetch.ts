@@ -2,16 +2,11 @@ import { CaretMode, ThemeMode } from "../domain";
 import { Languages, TFunction } from "../localization/interfaces";
 import { htmlLangByLanguage } from "../localization/utils";
 import { LogColor, LogNode } from "../store/console/interfaces";
+import logo from "./neofetchLogo.json";
 
-// the logo: initials, as neofetch shows the distro logo
-const LOGO = [
-  " _____ _______",
-  "|_   _|__   __|",
-  "  | |    | |",
-  "  | |    | |",
-  " _| |_   | |",
-  "|_____|  |_|",
-].join("\n");
+// the logo: initials, as neofetch shows the distro logo; the og:image draws it too
+// (scripts/og-image.cjs)
+const LOGO = logo.join("\n");
 
 // the first commercial job (July 2022, see `experience` in the dictionaries): "uptime" counts from it
 const CAREER_START_YEAR = 2022;

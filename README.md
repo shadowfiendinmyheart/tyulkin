@@ -198,6 +198,14 @@ print-стили убирают управление и красят всё чё
   добавляет `<link rel="preload">` для латинского подмножества и роняет сборку, если файл не найден;
 - `<noscript>` в `index.html` заполняется текстами разделов резюме из `eng.json` (`about`,
   `experience`, `skills`, `projects`, `education`, `contacts`).
+- картинка превью ссылки `og-image.png` (1200×630) рисуется при продакшен-сборке
+  ([`scripts/og-image.cjs`](scripts/og-image.cjs)): терминал с `neofetch` — тексты из `eng.json`,
+  логотип из `src/commandHandlers/neofetchLogo.json`, SVG → PNG через `@resvg/resvg-js` шрифтом сайта.
+  Сборка падает, если строка не влезает в карточку или выходит за латинское подмножество шрифта.
+  Абсолютные `og:image`, `og:url` и `canonical` добавляются, только если задан `SITE_URL` (полный
+  адрес сайта, его путь должен совпадать с `basePath`); `og:url` и `canonical` — только в
+  `index.html`, не в `404.html`, которым отвечают глубокие ссылки. В CI `SITE_URL` — адрес GitHub
+  Pages; при своём домене поменяйте его вместе с `E2E_BASE_PATH`.
 
 ### Тулинг
 

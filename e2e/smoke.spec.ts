@@ -192,3 +192,23 @@ test.describe("regular view (TASK-59)", () => {
     expect(overflow).toBe(0);
   });
 });
+
+test("serves the link preview card (TASK-75)", async ({ page, request }) => {
+  const response = await request.get("og-image.png");
+  expect(response.status()).toBe(200);
+  expect(response.headers()["content-type"]).toBe("image/png");
+  // PNG IHDR: the width and the height right after the signature and the chunk header
+  const png = await response.body();
+  expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([1200, 630]);
+
+  // absolute URLs only when the build knows where it is published (SITE_URL, set in CI)
+  await page.goto("");
+  const ogImage = page.locator('meta[property="og:image"]');
+  if (process.env.SITE_URL) {
+    const siteUrl = new URL(process.env.SITE_URL.replace(/\/?$/, "/")).href;
+    await expect(ogImage).toHaveAttribute("content", new URL("og-image.png", siteUrl).href);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", siteUrl);
+  } else {
+    await expect(ogImage).toHaveCount(0);
+  }
+});

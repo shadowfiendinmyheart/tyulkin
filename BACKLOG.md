@@ -58,7 +58,7 @@
 | ✅ TASK-48 | P1 | M | **Наполнить резюме** | Сейчас только `about` и `education`. Команды `experience`, `skills`, `projects`, `contacts` (GitHub/Telegram/email-ссылки кликабельны), `cv --download` (PDF). Возраст «23 y.o.» захардкожен — вычислять или убрать. |
 | ✅ TASK-49 | P2 | M | **Доступность** | Логи без `aria-live`, у input нет label, мигание без `prefers-reduced-motion`, нет видимой подсказки «введите help» для новичка. |
 | ✅ TASK-50 | P2 | S | **Метрики шрифта захардкожены** | Ширина пробела `9.6px`, смещение каретки `left: 9px` завязаны на IBM Plex Mono — до загрузки шрифта/при fallback каретка съезжает. Перейти на `1ch`. Шрифт с Google Fonts → self-host + `preload`. |
-| TASK-51 | P2 | S | **SEO / мета** | Контент виден только после команд — краулер и превью в мессенджерах видят пустую страницу. `meta description`, Open Graph, favicon, статичный `<noscript>`/скрытый текст с ключевой инфой. _(частично: нет og:url/og:image/canonical — нужен домен сайта и картинка превью)_ |
+| ✅ TASK-51 | P2 | S | **SEO / мета** | Контент виден только после команд — краулер и превью в мессенджерах видят пустую страницу. `meta description`, Open Graph, favicon, статичный `<noscript>`/скрытый текст с ключевой инфой. _(остаток закрыт TASK-75: og:image, og:url, canonical — по адресу GitHub Pages из `SITE_URL` в CI)_ |
 | ✅ TASK-52 | P3 | S | Мелочи UX | Регистронезависимые команды (`Help`), `Ctrl+L` = clear, `Ctrl+C` = сброс строки, автодополнение алиасов, ограничение длины лога. |
 
 ## 🚀 Персональный сайт: фичи
@@ -119,8 +119,8 @@
 
 | ID | Pri | Est | Задача | Суть |
 |---|---|---|---|---|
-| TASK-74 | P1 | M | **Деплой и домен** | Автодеплой из CI (GitHub Pages / Cloudflare Pages / Vercel), свой домен, HTTPS, SPA-фолбэк (прямой заход на `/settings`, `/gui` не даёт 404). Разблокирует TASK-51 (og:url, canonical) и TASK-75. _(частично: деплой на GitHub Pages из CI в `/tyulkin/` есть; нет своего домена — тогда `CNAME` и `E2E_BASE_PATH: /` в `ci.yml`)_ |
-| TASK-75 | P2 | M | **Картинка превью (og:image)** | Генерация при сборке PNG 1200×630 в стиле терминала (промпт + `neofetch`-блок) — красивая карточка в Telegram/LinkedIn/Slack. Закрывает остаток TASK-51. |
+| TASK-74 | P1 | M | **Деплой и домен** | Автодеплой из CI (GitHub Pages / Cloudflare Pages / Vercel), свой домен, HTTPS, SPA-фолбэк (прямой заход на `/settings`, `/gui` не даёт 404). Разблокирует TASK-51 (og:url, canonical) и TASK-75. _(частично: деплой на GitHub Pages из CI в `/tyulkin/` есть; нет своего домена — тогда `CNAME`, `E2E_BASE_PATH: /` и `SITE_URL` в `ci.yml`)_ |
+| ✅ TASK-75 | P2 | M | **Картинка превью (og:image)** | Генерация при сборке PNG 1200×630 в стиле терминала (промпт + `neofetch`-блок) — красивая карточка в Telegram/LinkedIn/Slack. Закрывает остаток TASK-51. |
 | TASK-76 | P2 | S | **Аналитика без cookies** | Umami / Plausible / GoatCounter: визиты + события «какая команда введена» и «какая не найдена» — подскажет, какие алиасы и разделы добавить. Без персональных данных, не нужен cookie-баннер. |
 | TASK-77 | P3 | M | **PWA и Lighthouse 100** | manifest, иконки, service worker (офлайн-доступ, «установить терминал» на телефон); цель — 100 во всех категориях Lighthouse, бейдж в README. |
 
