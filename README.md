@@ -214,6 +214,8 @@ print-стили убирают управление и красят всё чё
   `@eslint-react`, `react-hooks`, `eslint-plugin-prettier` последним;
 - Prettier 3 ([`.prettierrc`](.prettierrc)), `BACKLOG.md` и `.claude` исключены;
 - Vitest + Testing Library ([`vitest.config.mts`](vitest.config.mts)), тесты лежат рядом с кодом;
+  таймауты `findBy*`/`waitFor` ([`src/setupTests.ts`](src/setupTests.ts)) и теста подняты: первый
+  рендер приложения вне `act` под нагрузкой полного прогона идёт дольше секунды;
 - Playwright ([`playwright.config.ts`](playwright.config.ts)), e2e-сценарии в `e2e/`: десктопный
   Chromium и мобильный вьюпорт с тачем (только тесты с тегом `@mobile`);
 - переводы строк — LF везде ([`.gitattributes`](.gitattributes)), Prettier требует `endOfLine: lf`.

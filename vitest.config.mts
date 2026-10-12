@@ -6,6 +6,10 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     include: ["src/**/*.test.{ts,tsx}"],
+    setupFiles: ["src/setupTests.ts"],
+    // above asyncUtilTimeout (src/setupTests.ts): a test may wait several times, and
+    // App.routing.test re-imports the whole app per test, which takes seconds under load
+    testTimeout: 20_000,
     restoreMocks: true,
   },
 });
