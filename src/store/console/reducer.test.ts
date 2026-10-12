@@ -9,6 +9,7 @@ import {
   finishTyping,
   setCaretMode,
   setCommandsHint,
+  setCrtMode,
   skipTyping,
 } from "./actions";
 import { ConsoleState } from "./interfaces";
@@ -21,6 +22,7 @@ const initialState: ConsoleState = {
   history: [],
   typedCommandsCount: 0,
   caretMode: CaretMode.Block,
+  crtMode: "off",
   commandsHint: [],
   isMatrixShown: false,
 };
@@ -72,6 +74,10 @@ describe("console reducer", () => {
     expect(reducer(initialState, setCaretMode(CaretMode.Underline)).caretMode).toBe(
       CaretMode.Underline,
     );
+  });
+
+  it("sets the crt mode (TASK-64)", () => {
+    expect(reducer(initialState, setCrtMode("on")).crtMode).toBe("on");
   });
 
   it("sets the commands hint as is", () => {

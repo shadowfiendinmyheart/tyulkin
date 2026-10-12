@@ -12,7 +12,9 @@ describe("storage", () => {
     storage.setCaretMode(CaretMode.Line);
     storage.setThemeMode("Hacker");
     storage.setLanguage("ru");
+    storage.setCrtMode("on");
     expect(storage.getCaretMode()).toBe(CaretMode.Line);
+    expect(storage.getCrtMode()).toBe("on");
     expect(storage.getThemeMode()).toBe("Hacker");
     expect(storage.getLanguage()).toBe("ru");
   });
@@ -24,6 +26,7 @@ describe("storage", () => {
 
   it("falls back to defaults on missing values", () => {
     expect(storage.getCaretMode()).toBe(CaretMode.Block);
+    expect(storage.getCrtMode()).toBe("off");
     expect(storage.getThemeMode()).toBe("Black");
     expect(storage.getLanguage()).toBe("eng");
   });
@@ -32,7 +35,9 @@ describe("storage", () => {
     localStorage.setItem("caretMode", "Line");
     localStorage.setItem("themeMode", "neon");
     localStorage.setItem("language", "de");
+    localStorage.setItem("crtMode", "true");
     expect(storage.getCaretMode()).toBe(CaretMode.Block);
+    expect(storage.getCrtMode()).toBe("off");
     expect(storage.getThemeMode()).toBe("Black");
     expect(storage.getLanguage()).toBe("eng");
   });

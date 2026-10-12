@@ -165,6 +165,11 @@ BCP 47-тег в `htmlLangByLanguage` ([`localization/utils.ts`](src/localizatio
 `matrix` закрывает страницу «цифровым дождём» на canvas в цветах темы
 ([`components/MatrixRain`](src/components/MatrixRain/index.tsx)), выход — любая клавиша или тап.
 
+`set crt on|off` (по умолчанию выкл., `crtModes` в `src/domain`, хранится в storage) включает
+CRT-эффект терминала: свечение текста и слой поверх страницы со scanlines, виньеткой и мерцанием
+([`pages/ConsolePage`](src/pages/ConsolePage/styles.module.scss)); при `prefers-reduced-motion` —
+без мерцания. На обычный вид резюме (`/gui`) и печать не влияет.
+
 ### Хранилище
 
 [`src/storage`](src/storage/index.ts) сохраняет тему, каретку, язык и время прошлого визита в

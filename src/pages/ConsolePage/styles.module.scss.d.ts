@@ -1,4 +1,7 @@
 export type Styles = {
+  crt: string;
+  crtFlicker: string;
+  crtGlow: string;
   toolbar: string;
   wrapper: string;
 };

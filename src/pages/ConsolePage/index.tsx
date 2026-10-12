@@ -1,4 +1,5 @@
 import React from "react";
+import cn from "clsx";
 import { Navigate, useLocation } from "react-router";
 import Console from "../../components/Console";
 import DeepLinkCommand from "../../components/DeepLinkCommand";
@@ -152,6 +153,7 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
     }, [appDispatch, dispatch]),
   );
 
+  const isCrt = state.crtMode === "on";
   const exitMatrix = React.useCallback(() => dispatch(setMatrixShown(false)), [dispatch]);
 
   // "/settings/" and "/Settings" match this route too: switch to the canonical path,
@@ -162,14 +164,15 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
 
   return (
     <WithCommandHandler commands={commandsByRoute[route]}>
-      <nav className={styles.toolbar}>
+      <nav className={cn(styles.toolbar, isCrt && styles.crtGlow)}>
         <ViewSwitch to="gui" />
       </nav>
-      <div className={styles.wrapper}>
+      <div className={cn(styles.wrapper, isCrt && styles.crtGlow)}>
         <Console />
       </div>
       <DeepLinkCommand />
       {state.isMatrixShown && <MatrixRain onExit={exitMatrix} />}
+      {isCrt && <div className={styles.crt} aria-hidden="true" />}
     </WithCommandHandler>
   );
 };

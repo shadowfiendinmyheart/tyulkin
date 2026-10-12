@@ -16,6 +16,10 @@ export type ThemeMode = (typeof allThemeModes)[number];
 
 export const caretModes = Object.values(CaretMode);
 
+// the CRT monitor effect over the console (TASK-64): scanlines, glow, vignette, flicker
+export const crtModes = ["on", "off"] as const;
+export type CrtMode = (typeof crtModes)[number];
+
 // narrows an arbitrary (e.g. user- or storage-provided) value to one of the allowed ones
 export const oneOf = <T extends string>(allowed: readonly T[], value: unknown): T | undefined =>
   allowed.find((item) => item === value);

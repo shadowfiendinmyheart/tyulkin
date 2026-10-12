@@ -43,6 +43,9 @@ export interface CommonDictionary {
   coffee: string;
   // how the Konami code is listed by `secrets`
   secretKonami: string;
+  // the state of the CRT effect in `set crt` messages
+  crtOn: string;
+  crtOff: string;
 }
 
 // one line of `help` per command, see commandHandlers/commands
@@ -63,6 +66,7 @@ export interface CommandDescriptionDictionary {
   helpShowThemes: string;
   helpSetCaret: string;
   helpShowCarets: string;
+  helpSetCrt: string;
   helpSetLanguage: string;
   helpShowLanguages: string;
   helpNeofetch: string;
@@ -94,6 +98,10 @@ export interface DictionaryWithArgs {
   wrongCaret: string;
   changeCaret: string;
   caretList: string;
+  // `set crt` (TASK-64): $state is on or off, $modes lists both
+  crtStatus: string;
+  wrongCrt: string;
+  changeCrt: string;
   wrongLanguage: string;
   changeLanguage: string;
   changeLanguageError: string;
@@ -147,6 +155,9 @@ type BootLastLoginLocale = LocaleWithArgsGenerator<"bootLastLogin", "date">;
 type WrongCaretLocale = LocaleWithArgsGenerator<"wrongCaret", "caretName">;
 type ChangeCaretLocale = LocaleWithArgsGenerator<"changeCaret", "caretName">;
 type CaretListLocale = LocaleWithArgsGenerator<"caretList", "carets">;
+type CrtStatusLocale = LocaleWithArgsGenerator<"crtStatus", "state" | "modes">;
+type WrongCrtLocale = LocaleWithArgsGenerator<"wrongCrt", "crtName" | "modes">;
+type ChangeCrtLocale = LocaleWithArgsGenerator<"changeCrt", "state">;
 type WrongLanguageLocale = LocaleWithArgsGenerator<"wrongLanguage", "languageName">;
 type ChangeLanguageLocale = LocaleWithArgsGenerator<"changeLanguage", "languageName">;
 type ChangeLanguageErrorLocale = LocaleWithArgsGenerator<"changeLanguageError", "languageName">;
@@ -181,6 +192,9 @@ export type LocaleWithArgs =
   | WrongCaretLocale
   | ChangeCaretLocale
   | CaretListLocale
+  | CrtStatusLocale
+  | WrongCrtLocale
+  | ChangeCrtLocale
   | WrongLanguageLocale
   | ChangeLanguageLocale
   | ChangeLanguageErrorLocale

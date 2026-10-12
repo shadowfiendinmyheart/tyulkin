@@ -10,12 +10,13 @@ import { KONAMI_CODE } from "../../hooks/useKonamiCode";
 import { LocalizationContext } from "../../context/localizationContext";
 import { createT } from "../../localization";
 import eng from "../../localization/dictionaries/eng.json";
-import { CaretMode, secretIds, themeModes } from "../../domain";
+import { CaretMode, crtModes, secretIds, themeModes } from "../../domain";
 import { getParamsString } from "../../commandHandlers/utils";
 import inputStyles from "../Input/styles.module.scss";
 import hintStyles from "../CommandsHint/style.module.scss";
 import { QUICK_COMMANDS, QUICK_COMMANDS_TYPED_LIMIT } from "../QuickCommands";
 import { GUI_HINT_DELAY_MS } from "../../pages/ConsolePage";
+import pageStyles from "../../pages/ConsolePage/styles.module.scss";
 
 const t = createT(eng);
 
@@ -169,6 +170,37 @@ describe("neofetch (TASK-54)", () => {
     expect(log).toContain("Theme: Black");
     expect(log).toContain("Caret: line");
     expect(log).toContain("Language: eng");
+  });
+});
+
+describe("crt effect (TASK-64)", () => {
+  const getCrt = () => document.querySelector(`.${pageStyles.crt}`);
+
+  it("is off by default, turned on and off by set crt and kept in storage", async () => {
+    const { user } = renderConsole("/settings");
+    expect(getCrt()).toBeNull();
+    await user.keyboard("set crt{Enter}");
+    expect(getLogs().at(-1)).toBe(
+      t({ key: "crtStatus", args: { state: eng.crtOff, modes: getParamsString(crtModes) } }),
+    );
+
+    await user.keyboard("set crt ON{Enter}");
+    expect(getCrt()).not.toBeNull();
+    expect(getLogs().at(-1)).toBe(t({ key: "changeCrt", args: { state: eng.crtOn } }));
+    expect(localStorage.getItem("crtMode")).toBe("on");
+
+    await user.keyboard("set crt off{Enter}");
+    expect(getCrt()).toBeNull();
+    expect(localStorage.getItem("crtMode")).toBe("off");
+  });
+
+  it("rejects an unknown mode", async () => {
+    const { user } = renderConsole("/settings");
+    await user.keyboard("set crt maybe{Enter}");
+    expect(getLogs().at(-1)).toBe(
+      t({ key: "wrongCrt", args: { crtName: "maybe", modes: getParamsString(crtModes) } }),
+    );
+    expect(getCrt()).toBeNull();
   });
 });
 

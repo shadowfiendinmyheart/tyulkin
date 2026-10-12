@@ -1,4 +1,4 @@
-import { CaretMode } from "../../domain";
+import { CaretMode, CrtMode } from "../../domain";
 import { ActionTypeGenerator } from "../interfaces";
 
 // theme colors of a text, see styles/themes.scss
@@ -47,6 +47,8 @@ export interface ConsoleState {
   // commands the visitor typed and entered, not clicked: the quick commands hide after a few
   typedCommandsCount: number;
   caretMode: CaretMode;
+  // the CRT monitor effect over the console (`set crt on|off`)
+  crtMode: CrtMode;
   commandsHint: string[];
   // the `matrix` digital rain covers the console until any key or tap
   isMatrixShown: boolean;
@@ -58,6 +60,7 @@ export type ConsoleActionType =
   | ActionAddHistoryCommand
   | ActionCountTypedCommand
   | ActionSetCaretMode
+  | ActionSetCrtMode
   | ActionSetCommandsHint
   | ActionFinishTyping
   | ActionSkipTyping
@@ -75,6 +78,7 @@ export type ActionAddHistoryCommand = ActionTypeGenerator<
 >;
 export type ActionCountTypedCommand = ActionTypeGenerator<ConsoleActionKind.CountTypedCommand>;
 export type ActionSetCaretMode = ActionTypeGenerator<ConsoleActionKind.SetCaretMode, CaretMode>;
+export type ActionSetCrtMode = ActionTypeGenerator<ConsoleActionKind.SetCrtMode, CrtMode>;
 export type ActionSetCommandsHint = ActionTypeGenerator<
   ConsoleActionKind.SetCommandsHint,
   string[]
@@ -86,6 +90,7 @@ export enum ConsoleActionKind {
   AddHistoryCommand = "addHistoryCommand",
   CountTypedCommand = "countTypedCommand",
   SetCaretMode = "setCaretMode",
+  SetCrtMode = "setCrtMode",
   SetCommandsHint = "setCommandsHint",
   FinishTyping = "finishTyping",
   SkipTyping = "skipTyping",

@@ -28,7 +28,7 @@ interface WithCommandHandlerProps {
 
 const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, children }) => {
   const { consoleState, consoleDispatch } = useConsoleContext();
-  const { caretMode, history } = consoleState;
+  const { caretMode, crtMode, history } = consoleState;
   // read by `share` only: kept out of the deps, so the handlers don't change after every command
   const historyRef = React.useRef(history);
   React.useLayoutEffect(() => {
@@ -92,6 +92,7 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
         language,
         theme,
         caretMode,
+        crtMode,
         changeLanguage,
         consoleDispatch,
         appDispatch,
@@ -114,6 +115,7 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
       language,
       theme,
       caretMode,
+      crtMode,
       changeLanguage,
       consoleDispatch,
       appDispatch,

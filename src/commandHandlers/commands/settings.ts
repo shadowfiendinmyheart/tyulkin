@@ -1,9 +1,9 @@
-import { CaretMode, caretModes, oneOf, themeModes } from "../../domain";
+import { CaretMode, caretModes, CrtMode, crtModes, oneOf, themeModes } from "../../domain";
 import { languages, TFunction } from "../../localization/interfaces";
 import { checkLanguage } from "../../localization/utils";
 import storage from "../../storage";
 import { setTheme } from "../../store/app/actions";
-import { setCaretMode } from "../../store/console/actions";
+import { setCaretMode, setCrtMode } from "../../store/console/actions";
 import { makeCapitalize } from "../../utils";
 import { Command } from "../interfaces";
 import { getParamsString } from "../utils";
@@ -16,6 +16,12 @@ const getLanguageListLocale = (t: TFunction) =>
 
 const getThemeListLocale = (t: TFunction) =>
   t({ key: "themeList", args: { themes: getParamsString(themeModes) } });
+
+const CRT_MODES = getParamsString(crtModes);
+
+// the state in words of the language: "on" / "включён"
+const getCrtStateLocale = (t: TFunction, mode: CrtMode) =>
+  t({ key: mode === "on" ? "crtOn" : "crtOff" });
 
 export const settingsCommands: Command[] = [
   {
@@ -73,6 +79,30 @@ export const settingsCommands: Command[] = [
     name: "show carets",
     descriptionKey: "helpShowCarets",
     run: ({ log, t }) => log(getCaretListLocale(t)),
+  },
+  {
+    name: "set crt",
+    params: crtModes,
+    descriptionKey: "helpSetCrt",
+    run: ({ log, t, crtMode, consoleDispatch }, [param]) => {
+      if (!param) {
+        log(
+          t({ key: "crtStatus", args: { state: getCrtStateLocale(t, crtMode), modes: CRT_MODES } }),
+        );
+        return;
+      }
+
+      const mode = oneOf(crtModes, param.toLowerCase());
+
+      if (!mode) {
+        log(t({ key: "wrongCrt", args: { crtName: param, modes: CRT_MODES } }));
+        return;
+      }
+
+      storage.setCrtMode(mode);
+      consoleDispatch(setCrtMode(mode));
+      log(t({ key: "changeCrt", args: { state: getCrtStateLocale(t, mode) } }));
+    },
   },
   {
     name: "set language",

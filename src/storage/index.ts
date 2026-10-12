@@ -2,6 +2,8 @@ import {
   allThemeModes,
   CaretMode,
   caretModes,
+  CrtMode,
+  crtModes,
   oneOf,
   SecretId,
   secretIds,
@@ -13,6 +15,7 @@ import { htmlLangByLanguage } from "../localization/utils";
 enum StorageKeys {
   CaretMode = "caretMode",
   ThemeMode = "themeMode",
+  CrtMode = "crtMode",
   language = "language",
   // time of the previous visit, ms since epoch
   LastLogin = "lastLogin",
@@ -103,6 +106,13 @@ class Storage {
   };
 
   getThemeMode = (): ThemeMode => readOneOf(StorageKeys.ThemeMode, allThemeModes, "Black");
+
+  setCrtMode = (mode: CrtMode) => {
+    writeItem(StorageKeys.CrtMode, mode);
+  };
+
+  // off by default: the effect is opt-in
+  getCrtMode = (): CrtMode => readOneOf(StorageKeys.CrtMode, crtModes, "off");
 
   setLanguage = (language: Languages) => {
     writeItem(StorageKeys.language, language);

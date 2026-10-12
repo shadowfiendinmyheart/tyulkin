@@ -52,6 +52,13 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
       };
     }
 
+    case ConsoleActionKind.SetCrtMode: {
+      return {
+        ...state,
+        crtMode: action.payload,
+      };
+    }
+
     case ConsoleActionKind.FinishTyping: {
       // a late timer of an already skipped log changes nothing
       if (action.payload < state.typedLogId) return state;
