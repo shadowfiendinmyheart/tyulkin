@@ -1,5 +1,6 @@
 import React from "react";
 import { useHref, useLocation, useNavigate } from "react-router";
+import { trackCommand, trackUnknownCommand } from "../analytics";
 import { useAppContext } from "../context/appContext";
 import { useConsoleContext } from "../context/consoleContext";
 import { HandlerContext } from "../context/handlerContext";
@@ -57,6 +58,7 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
 
       const separated = separateCommand(availableCommands, userCommand);
       if (!separated) {
+        trackUnknownCommand(userCommand);
         const content = withNodes(
           ([help, ls]) => t({ key: "404command", args: { unknownCommand: userCommand, help, ls } }),
           [
@@ -78,6 +80,7 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
         return;
       }
 
+      trackCommand(separated.command.name);
       const ctx: CommandContext = {
         log,
         t,

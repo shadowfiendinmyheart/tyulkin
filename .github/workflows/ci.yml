@@ -55,6 +55,10 @@ jobs:
       # the absolute address of the published build (og:url, og:image, canonical; see webpack.config.js);
       # the custom domain goes here too
       SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+      # cookieless analytics (Umami, see webpack.config.js): repository variables (Settings → Secrets and
+      # variables → Actions → Variables); without UMAMI_WEBSITE_ID the build has no analytics
+      UMAMI_WEBSITE_ID: ${{ vars.UMAMI_WEBSITE_ID }}
+      UMAMI_SCRIPT_URL: ${{ vars.UMAMI_SCRIPT_URL }}
     steps:
       - uses: actions/checkout@v4
         with:

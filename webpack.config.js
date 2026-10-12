@@ -98,6 +98,44 @@ class OgImagePlugin {
   }
 }
 
+// cookieless analytics (Umami): its script, only when the website id is given; events are sent
+// from src/analytics. data-domains keeps local and e2e runs of the published build out of the stats
+class AnalyticsPlugin {
+  constructor({ websiteId, scriptUrl, siteUrl }) {
+    this.attributes = {
+      src: scriptUrl,
+      defer: true,
+      "data-website-id": websiteId,
+      // visitors with Do Not Track on are not counted
+      "data-do-not-track": "true",
+      "data-domains": new URL(siteUrl).hostname,
+    };
+  }
+
+  apply(compiler) {
+    compiler.hooks.thisCompilation.tap("AnalyticsPlugin", (compilation) => {
+      HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tap("AnalyticsPlugin", (data) => {
+        data.headTags.push(HtmlWebpackPlugin.createHtmlTagObject("script", this.attributes));
+        return data;
+      });
+    });
+  }
+}
+
+// UMAMI_WEBSITE_ID turns analytics on (the published build: a repository variable in ci.yml);
+// UMAMI_SCRIPT_URL — for a self-hosted Umami, Umami Cloud by default. SITE_URL is required: without
+// data-domains every local run of the build would be counted
+const getAnalytics = (siteUrl) => {
+  const websiteId = process.env.UMAMI_WEBSITE_ID;
+  if (!websiteId) return undefined;
+  if (!siteUrl) throw new Error("UMAMI_WEBSITE_ID needs SITE_URL (the domain that is counted)");
+  return {
+    websiteId,
+    siteUrl,
+    scriptUrl: new URL(process.env.UMAMI_SCRIPT_URL || "https://cloud.umami.is/script.js").href,
+  };
+};
+
 // "tyulkin", "/tyulkin" or "/tyulkin/" -> "/tyulkin/"; nothing -> "/"
 const normalizeBasePath = (basePath) => {
   // `--env basePath` without a value gives `true`
@@ -126,6 +164,9 @@ module.exports = (env, argv) => {
   // the site may live in a subpath (GitHub Pages project site): `webpack --env basePath=/tyulkin/`;
   // asset URLs and the router basename both come from it
   const basePath = normalizeBasePath(env.basePath);
+  const siteUrl = isProduction ? getSiteUrl(basePath) : undefined;
+  // the published site only: the dev server doesn't count visits
+  const analytics = isProduction ? getAnalytics(siteUrl) : undefined;
 
   const htmlOptions = {
     template: "./src/index.html",
@@ -206,7 +247,8 @@ module.exports = (env, argv) => {
       }),
       new FontPreloadPlugin(),
       // the card is for the published site: the dev server skips the render
-      ...(isProduction ? [new OgImagePlugin(getSiteUrl(basePath))] : []),
+      ...(isProduction ? [new OgImagePlugin(siteUrl)] : []),
+      ...(analytics ? [new AnalyticsPlugin(analytics)] : []),
       ...(isProduction ? [new MiniCssExtractPlugin({ filename: "[name].[contenthash].css" })] : []),
     ],
   };

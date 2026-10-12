@@ -5,6 +5,16 @@ import { BASE_PATH } from "../playwright.config";
 const input = (page: Page) => page.getByRole("textbox", { name: eng.inputLabel });
 const lastLog = (page: Page) => page.getByRole("log").getByRole("listitem").last();
 
+// the tested build is the published one and may load third-party scripts (analytics): the tests
+// don't wait for them and don't depend on their servers
+test.beforeEach(async ({ page, baseURL }) => {
+  const { host } = new URL(baseURL!);
+  await page.route(
+    (url) => url.host !== host,
+    (route) => route.abort(),
+  );
+});
+
 // the app is ready when the welcome text of the page is logged
 const open = async (page: Page, path = "") => {
   const response = await page.goto(path);

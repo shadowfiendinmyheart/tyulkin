@@ -1,6 +1,7 @@
 import { COMMAND_PARAM } from "../router/const";
 import { LogNode } from "../store/console/interfaces";
 import { joinNodes } from "../store/console/logNodes";
+import { normalizeInput } from "../utils";
 import { Command } from "./interfaces";
 
 const getCommandPhrases = ({ name, aliases = [] }: Command) => [name, ...aliases];
@@ -64,7 +65,7 @@ const getEditDistance = (a: string, b: string, maxDistance: number) => {
 // bare and with each param; short inputs allow one typo, longer ones two;
 // on a tie the first command wins, so page commands win over global ones
 export const getSuggestion = (commands: Command[], userCommand: string) => {
-  const input = userCommand.trim().replace(/\s+/g, " ").toLowerCase();
+  const input = normalizeInput(userCommand);
   const maxDistance = input.length <= 4 ? 1 : 2;
   const phrases = commands.flatMap((command) =>
     getCommandPhrases(command).flatMap((phrase) => [

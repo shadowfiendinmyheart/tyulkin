@@ -73,6 +73,7 @@ src/
   localization/         словари dictionaries/{eng,ru}.json, типы ключей, подстановка аргументов
   domain/               общие доменные типы: темы, режимы каретки, oneOf
   storage/              localStorage с валидацией значений
+  analytics/            события аналитики (Umami), без скрипта — no-op
   styles/themes.scss    CSS-переменные тем
 ```
 
@@ -217,6 +218,14 @@ print-стили убирают управление и красят всё чё
   адрес сайта, его путь должен совпадать с `basePath`); `og:url` и `canonical` — только в
   `index.html`, не в `404.html`, которым отвечают глубокие ссылки. В CI `SITE_URL` — адрес GitHub
   Pages; при своём домене поменяйте его вместе с `E2E_BASE_PATH`.
+- аналитика без cookies ([Umami](https://umami.is)) включается переменной `UMAMI_WEBSITE_ID` при
+  продакшен-сборке (`UMAMI_SCRIPT_URL` — адрес скрипта своего Umami, по умолчанию Umami Cloud); без
+  неё скрипта нет. В CI обе берутся из переменных репозитория (Settings → Secrets and variables →
+  Actions → Variables). Нужен и `SITE_URL`: `AnalyticsPlugin` добавляет скрипт с `data-domains` (его
+  хост; локальные запуски сборки не считаются) и `data-do-not-track`; e2e-тесты блокируют сторонние
+  запросы. Кроме визитов [`src/analytics`](src/analytics/index.ts) шлёт события `command`
+  (каноническое имя введённой команды) и `unknown-command` (два первых слова ненайденного ввода, без
+  email и цифр, до 40 символов); события до загрузки скрипта (глубокая ссылка) ждут его.
 
 ### Тулинг
 

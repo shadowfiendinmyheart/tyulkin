@@ -8,3 +8,7 @@ export const makeCapitalize = (str: string) => {
 export const prefersReducedMotion = () =>
   typeof window.matchMedia === "function" &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// the input as commands are matched: "  Set   Theme " -> "set theme"
+export const normalizeInput = (userCommand: string) =>
+  userCommand.trim().replace(/\s+/g, " ").toLowerCase();
