@@ -15,6 +15,10 @@ export interface CommandContext {
   appDispatch: (action: AppActionType) => void;
   navigate: NavigateFunction;
   pathname: string;
+  // address of the current page, with the base path: "/tyulkin/settings"
+  pageHref: string;
+  // commands executed before this one, newest first
+  history: string[];
   // every command available on the current page: page commands first, then global ones
   commands: Command[];
 }
@@ -27,5 +31,7 @@ export interface Command {
   // a command without params accepts no arguments
   params?: readonly string[];
   descriptionKey: CommandDescriptionKeys;
+  // false: `share` skips it (no output worth a link, or only navigates: link the page instead)
+  shareable?: false;
   run: (ctx: CommandContext, args: string[]) => void;
 }

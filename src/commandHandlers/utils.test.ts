@@ -3,8 +3,10 @@ import { Command } from "./interfaces";
 import {
   getAllCommandsWithParams,
   getAutocompleteCommands,
+  getCommandLink,
   getHelpRow,
   getParentPath,
+  getShareableCommand,
   getSuggestion,
   separateCommand,
 } from "./utils";
@@ -167,5 +169,38 @@ describe("getParentPath", () => {
 
   it("keeps the root", () => {
     expect(getParentPath("/")).toBe("/");
+  });
+});
+
+describe("getShareableCommand (TASK-62)", () => {
+  const clear: Command = { name: "clear", descriptionKey: "helpClear", shareable: false, run };
+  const share: Command = { name: "share", descriptionKey: "helpShare", shareable: false, run };
+  const commands = [setTheme, showThemes, clear, share];
+
+  it("takes the latest command of the page as it was typed", () => {
+    expect(getShareableCommand(commands, ["Set Theme white", "show themes"])).toBe(
+      "Set Theme white",
+    );
+  });
+
+  it("skips unshareable commands and commands of other pages", () => {
+    expect(getShareableCommand(commands, ["share", "clear", "about", "show themes"])).toBe(
+      "show themes",
+    );
+    expect(getShareableCommand(commands, ["share", "about"])).toBeUndefined();
+    expect(getShareableCommand(commands, [])).toBeUndefined();
+  });
+});
+
+describe("getCommandLink (TASK-62)", () => {
+  it("keeps the address and puts the command into the only parameter", () => {
+    expect(getCommandLink("https://a.github.io/tyulkin/settings?x=1#top", "set theme Hacker")).toBe(
+      "https://a.github.io/tyulkin/settings?cmd=set+theme+Hacker",
+    );
+  });
+
+  it("encodes the command", () => {
+    const link = getCommandLink("https://a.github.io/", "a&cmd=b #c");
+    expect(new URL(link).searchParams.getAll("cmd")).toEqual(["a&cmd=b #c"]);
   });
 });

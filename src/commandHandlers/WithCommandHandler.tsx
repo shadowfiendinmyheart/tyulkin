@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocation, useNavigate } from "react-router";
+import { useHref, useLocation, useNavigate } from "react-router";
 import { useAppContext } from "../context/appContext";
 import { useConsoleContext } from "../context/consoleContext";
 import { HandlerContext } from "../context/handlerContext";
@@ -25,13 +25,22 @@ interface WithCommandHandlerProps {
 
 const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, children }) => {
   const { consoleState, consoleDispatch } = useConsoleContext();
-  const { caretMode } = consoleState;
+  const { caretMode, history } = consoleState;
+  // read by `share` only: kept out of the deps, so the handlers don't change after every command
+  const historyRef = React.useRef(history);
+  React.useLayoutEffect(() => {
+    historyRef.current = history;
+  }, [history]);
   const pathnameLocation = usePathnameLocation();
   const { appState, appDispatch } = useAppContext();
   const { theme } = appState;
   const { t, language, changeLanguage } = useLocalization();
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const href = useHref(pathname);
+  // the basename has no trailing slash, so the root is "/tyulkin": a shared link gets the
+  // canonical "/tyulkin/" and doesn't rely on the host redirect keeping the query
+  const pageHref = pathname === "/" && !href.endsWith("/") ? `${href}/` : href;
 
   // page commands go first: they win over global ones and lead in help
   const availableCommands = React.useMemo(() => [...commands, ...globalCommands], [commands]);
@@ -80,6 +89,8 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
         appDispatch,
         navigate,
         pathname,
+        pageHref,
+        history: historyRef.current,
         commands: availableCommands,
       };
       separated.command.run(ctx, separated.params);
@@ -95,6 +106,7 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
       appDispatch,
       navigate,
       pathname,
+      pageHref,
     ],
   );
 

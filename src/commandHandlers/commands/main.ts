@@ -60,6 +60,7 @@ export const mainCommands: Command[] = [
     name: "settings",
     aliases: ["cd settings"],
     descriptionKey: "helpSettings",
+    shareable: false,
     run: ({ navigate }) => navigate(ROUTES.SETTINGS),
   },
 ];

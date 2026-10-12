@@ -96,7 +96,7 @@ src/
 Реестр — [`src/commandHandlers/commands/`](src/commandHandlers/commands):
 
 - `global.ts` — команды, доступные на любой странице (`help`, `ls`, `clear`, `back`, `menu`,
-  `neofetch`, `gui`);
+  `neofetch`, `gui`, `share`);
 - `main.ts`, `settings.ts` — команды страниц;
 - `index.ts` — `commandsByRoute`: какие команды у какого маршрута.
 
@@ -117,6 +117,14 @@ src/
 
 Тест [`dictionaries.test.ts`](src/localization/dictionaries/dictionaries.test.ts) проверяет, что
 словари совпадают по ключам, у каждой команды есть непустое описание и нет лишних `help*`-ключей.
+
+**Deep links.** `?cmd=<команда>` на странице терминала (`/?cmd=projects`,
+`/settings?cmd=show+themes`) выполняет команду при загрузке, как будто её ввели, после приветствия
+([`components/DeepLinkCommand`](src/components/DeepLinkCommand/index.tsx)); параметр сразу
+убирается из адреса, чтобы перезагрузка и «назад» не запускали команду повторно. Команда `share`
+копирует такую ссылку на последнюю из истории команду этой страницы, кроме помеченных
+`shareable: false` (навигация, `clear`, сам `share`); если буфер обмена недоступен — просто выводит
+ссылку.
 
 ### Локализация
 

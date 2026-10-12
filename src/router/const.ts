@@ -9,3 +9,6 @@ export const ROUTES = {
   // the CV as a regular page, for those who don't get along with the terminal
   GUI: "/gui",
 } as const;
+
+// query parameter of a deep link: /?cmd=projects runs `projects` when the page opens
+export const COMMAND_PARAM = "cmd";

@@ -1,3 +1,4 @@
+import { COMMAND_PARAM } from "../router/const";
 import { LogNode } from "../store/console/interfaces";
 import { joinNodes } from "../store/console/logNodes";
 import { Command } from "./interfaces";
@@ -106,4 +107,20 @@ export const getAutocompleteCommands = (commands: string[], userCommand: string)
 export const getParentPath = (pathname: string) => {
   const segments = pathname.split("/").filter(Boolean);
   return `/${segments.slice(0, -1).join("/")}`;
+};
+
+// the latest command of the history that a deep link on this page can run: a command of the
+// page (history is shared between pages) that is not marked unshareable, as it was typed
+export const getShareableCommand = (commands: Command[], history: string[]) =>
+  history.find((entry) => {
+    const separated = separateCommand(commands, entry);
+    return separated && separated.command.shareable !== false;
+  });
+
+// the current address with the command as the only parameter: "https://…/tyulkin/?cmd=about"
+export const getCommandLink = (href: string, command: string) => {
+  const url = new URL(href);
+  url.search = new URLSearchParams({ [COMMAND_PARAM]: command }).toString();
+  url.hash = "";
+  return url.toString();
 };

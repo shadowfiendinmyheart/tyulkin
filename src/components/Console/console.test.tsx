@@ -1,6 +1,6 @@
 import { StrictMode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { routes } from "../../router/routes";
@@ -8,7 +8,8 @@ import { AppContext } from "../../context/appContext";
 import { LocalizationContext } from "../../context/localizationContext";
 import { createT } from "../../localization";
 import eng from "../../localization/dictionaries/eng.json";
-import { CaretMode } from "../../domain";
+import { CaretMode, themeModes } from "../../domain";
+import { getParamsString } from "../../commandHandlers/utils";
 import inputStyles from "../Input/styles.module.scss";
 import hintStyles from "../CommandsHint/style.module.scss";
 import { QUICK_COMMANDS, QUICK_COMMANDS_TYPED_LIMIT } from "../QuickCommands";
@@ -21,6 +22,7 @@ Element.prototype.scrollIntoView = () => undefined;
 
 // StrictMode as in main.tsx: effects run twice on mount in dev
 const renderConsole = (path = "/") => {
+  const router = createMemoryRouter(routes, { initialEntries: [path] });
   render(
     <StrictMode>
       <AppContext.Provider
@@ -32,12 +34,16 @@ const renderConsole = (path = "/") => {
         <LocalizationContext.Provider
           value={{ language: "eng", t, changeLanguage: () => Promise.resolve(t) }}
         >
-          <RouterProvider router={createMemoryRouter(routes, { initialEntries: [path] })} />
+          <RouterProvider router={router} />
         </LocalizationContext.Provider>
       </AppContext.Provider>
     </StrictMode>,
   );
-  return { user: userEvent.setup(), input: screen.getByRole("textbox") as HTMLInputElement };
+  return {
+    user: userEvent.setup(),
+    input: screen.getByRole("textbox") as HTMLInputElement,
+    router,
+  };
 };
 
 const getLogs = () => screen.queryAllByRole("listitem").map((item) => item.textContent);
@@ -171,14 +177,14 @@ describe("command registry (TASK-33)", () => {
     expect(help[0]).toEqual(["set theme", "set the theme"]);
     expect(help).toContainEqual(["show languages", "list languages"]);
     expect(help).toContainEqual(["back (cd .., cd..)", "go back"]);
-    expect(help.at(-1)).toEqual(["neofetch", "a short summary about me and the terminal"]);
+    expect(help.at(-1)).toEqual(["share", eng.helpShare]);
   });
 
   it("generates ls from page and global commands", async () => {
     const { user } = renderConsole();
     await user.keyboard("ls{Enter}");
     expect(getLogs().at(-1)).toBe(
-      "about   back   clear   contacts   cv   education   experience   gui   help   ls   menu   neofetch   projects   settings   skills",
+      "about   back   clear   contacts   cv   education   experience   gui   help   ls   menu   neofetch   projects   settings   share   skills",
     );
   });
 
@@ -757,5 +763,81 @@ describe("regular view (TASK-59)", () => {
       act(() => vi.advanceTimersByTime(GUI_HINT_DELAY_MS * 4));
       expect(getLogs()).toEqual([eng.settingsWelcome]);
     });
+  });
+});
+
+describe("deep links (TASK-62)", () => {
+  it("runs the command of the link once, after the welcome, and drops it from the address", async () => {
+    const { router } = renderConsole("/?cmd=about#top");
+    await waitFor(() => expect(getLogs()).toEqual([...mainWelcome, "cv> about", eng.about]));
+    expect(router.state.location).toMatchObject({ pathname: "/", search: "", hash: "#top" });
+    // the command went to the history like a typed one
+    fireEvent.keyDown(screen.getByRole("textbox"), { key: "ArrowUp" });
+    expect(screen.getByRole("textbox")).toHaveProperty("value", "about");
+  });
+
+  it("runs a command with an argument on its page", async () => {
+    renderConsole("/Settings?cmd=show+themes");
+    await waitFor(() =>
+      expect(getLogs()).toEqual([
+        eng.settingsWelcome,
+        "settings> show themes",
+        t({ key: "themeList", args: { themes: getParamsString(themeModes) } }),
+      ]),
+    );
+  });
+
+  it("does not leave the link in the history when the command navigates", async () => {
+    const { router } = renderConsole("/?cmd=settings");
+    await waitFor(() => expect(router.state.location.pathname).toBe("/settings"));
+    await act(() => router.navigate(-1));
+    expect(router.state.location).toMatchObject({ pathname: "/", search: "" });
+    expect(getLogs().filter((log) => log === "cv> settings")).toHaveLength(1);
+  });
+
+  it("ignores an empty command", async () => {
+    const { router } = renderConsole("/?cmd=%20");
+    await waitFor(() => expect(router.state.location.search).toBe(""));
+    expect(getLogs()).toEqual(mainWelcome);
+  });
+});
+
+describe("share (TASK-62)", () => {
+  it("copies a link to the latest command", async () => {
+    // user-event provides the clipboard
+    const { user } = renderConsole();
+    await user.keyboard("about{Enter}share{Enter}");
+    const link = `${window.location.origin}/?cmd=about`;
+    expect(await navigator.clipboard.readText()).toBe(link);
+    await waitFor(() =>
+      expect(getLogs()).toContain(t({ key: "shareCopied", args: { command: "about", link } })),
+    );
+  });
+
+  it("shows the link when copying fails", async () => {
+    const { user } = renderConsole();
+    vi.spyOn(navigator.clipboard, "writeText").mockRejectedValue(new Error("denied"));
+    await user.keyboard("help{Enter}share{Enter}");
+    const link = `${window.location.origin}/?cmd=help`;
+    await waitFor(() =>
+      expect(getLogs()).toContain(t({ key: "shareNotCopied", args: { command: "help", link } })),
+    );
+  });
+
+  it("links the page the command is run on", async () => {
+    const { user } = renderConsole("/settings");
+    await user.keyboard("show themes{Enter}share{Enter}");
+    const link = `${window.location.origin}/settings?cmd=show+themes`;
+    expect(await navigator.clipboard.readText()).toBe(link);
+  });
+
+  it("has nothing to share before a command with output", async () => {
+    const { user } = renderConsole();
+    await user.keyboard("share{Enter}clear{Enter}settings{Enter}menu{Enter}share{Enter}");
+    const nothing = t({ key: "shareNothing", args: { help: "help" } });
+    expect(getLogs().at(-1)).toBe(nothing);
+    expect(
+      within(screen.getAllByRole("listitem").at(-1)!).getByRole("button", { name: "help" }),
+    ).toBeTruthy();
   });
 });

@@ -50,6 +50,7 @@ export interface CommandDescriptionDictionary {
   helpNeofetch: string;
   helpGui: string;
   helpCv: string;
+  helpShare: string;
 }
 
 export interface DictionaryWithArgs {
@@ -64,6 +65,11 @@ export interface DictionaryWithArgs {
   guiHint: string;
   // `cv` without --download: how to use it
   cvUsage: string;
+  // `share` with no command to link, $help is a command placeholder
+  shareNothing: string;
+  // `share`: $link is the deep link that runs $command, copied or not
+  shareCopied: string;
+  shareNotCopied: string;
   wrongCaret: string;
   changeCaret: string;
   caretList: string;
@@ -97,6 +103,9 @@ type DidYouMeanLocale = LocaleWithArgsGenerator<"didYouMean", "command">;
 type GuiHintLocale = LocaleWithArgsGenerator<"guiHint", "command" | "link">;
 // download and gui are command placeholders, see withNodes
 type CvUsageLocale = LocaleWithArgsGenerator<"cvUsage", "download" | "gui">;
+type ShareNothingLocale = LocaleWithArgsGenerator<"shareNothing", "help">;
+type ShareCopiedLocale = LocaleWithArgsGenerator<"shareCopied", "command" | "link">;
+type ShareNotCopiedLocale = LocaleWithArgsGenerator<"shareNotCopied", "command" | "link">;
 type BootLastLoginLocale = LocaleWithArgsGenerator<"bootLastLogin", "date">;
 type WrongCaretLocale = LocaleWithArgsGenerator<"wrongCaret", "caretName">;
 type ChangeCaretLocale = LocaleWithArgsGenerator<"changeCaret", "caretName">;
@@ -119,6 +128,9 @@ export type LocaleWithArgs =
   | DidYouMeanLocale
   | GuiHintLocale
   | CvUsageLocale
+  | ShareNothingLocale
+  | ShareCopiedLocale
+  | ShareNotCopiedLocale
   | BootLastLoginLocale
   | WrongCaretLocale
   | ChangeCaretLocale

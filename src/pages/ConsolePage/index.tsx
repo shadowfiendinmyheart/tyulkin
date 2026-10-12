@@ -1,6 +1,7 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router";
 import Console from "../../components/Console";
+import DeepLinkCommand from "../../components/DeepLinkCommand";
 import ViewSwitch from "../../components/ViewSwitch";
 import WithCommandHandler from "../../commandHandlers/WithCommandHandler";
 import { commandsByRoute } from "../../commandHandlers/commands";
@@ -146,6 +147,7 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
       <div className={styles.wrapper}>
         <Console />
       </div>
+      <DeepLinkCommand />
     </WithCommandHandler>
   );
 };

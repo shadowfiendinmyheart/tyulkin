@@ -79,6 +79,25 @@ test("opens a page by a direct link (SPA fallback)", async ({ page }) => {
   await expect(lastLog(page)).toContainText("Hacker");
 });
 
+test("shares a deep link that runs the command under the base path (TASK-62)", async ({ page }) => {
+  await open(page);
+  await page.keyboard.type("about");
+  await page.keyboard.press("Enter");
+  await page.keyboard.type("share");
+  await page.keyboard.press("Enter");
+  // the link is logged whether the clipboard is allowed or not
+  const link = new URL(`${BASE_PATH}?cmd=about`, page.url()).toString();
+  await expect(lastLog(page)).toContainText(link);
+
+  await page.goto(link);
+  await expect(lastLog(page)).toContainText("Ivan Tyulkin");
+  await expect(page.getByRole("log")).toContainText(eng.welcome);
+  // the parameter is dropped, so a reload doesn't run the command again
+  await expect(page).toHaveURL(
+    (url) => url.search === "" && `${url.pathname.replace(/\/$/, "")}/` === BASE_PATH,
+  );
+});
+
 test("opens the site root without the trailing slash", async ({ page }) => {
   await page.goto(BASE_PATH.replace(/\/$/, ""));
   await expect(page.getByRole("log")).toContainText(eng.welcome);
