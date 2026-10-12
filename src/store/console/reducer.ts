@@ -69,6 +69,14 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
       };
     }
 
+    case ConsoleActionKind.SetMatrixShown: {
+      if (action.payload === state.isMatrixShown) return state;
+      return {
+        ...state,
+        isMatrixShown: action.payload,
+      };
+    }
+
     case ConsoleActionKind.SetCommandsHint: {
       return {
         ...state,

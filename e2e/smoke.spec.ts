@@ -55,6 +55,25 @@ test("runs a command clicked in the output", async ({ page }) => {
   await expect(input(page)).toHaveValue("about");
 });
 
+test("rains in the theme colors by matrix, closes on a key (TASK-65)", async ({ page }) => {
+  await open(page);
+  await page.keyboard.type("matrix");
+  await page.keyboard.press("Enter");
+  await expect(page.getByText(eng.matrixExit)).toBeVisible();
+  // the rain is drawn: some pixel differs from the theme background
+  await expect
+    .poll(() =>
+      page.locator("canvas").evaluate((canvas: HTMLCanvasElement) => {
+        const { data } = canvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height);
+        return data.some((value, index) => index % 4 !== 3 && value > 64);
+      }),
+    )
+    .toBe(true);
+  await page.keyboard.press("q");
+  await expect(page.getByText(eng.matrixExit)).toBeHidden();
+  await expect(input(page)).toHaveValue("");
+});
+
 test("navigates between pages under the base path", async ({ page }) => {
   await open(page);
   await page.keyboard.type("settings");

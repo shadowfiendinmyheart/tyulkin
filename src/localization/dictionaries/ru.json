@@ -38,10 +38,12 @@
   "helpGui": "резюме обычной страницей",
   "helpCv": "сохранить резюме в PDF: cv --download",
   "helpShare": "скопировать ссылку, которая откроет эту страницу с последней командой",
+  "helpMatrix": "проснись, Нео...",
   "404command": "Команда: $unknownCommand не найдена\nВведите $help или $ls, чтобы получить список доступных команд",
   "loading": "загрузка",
   "inputLabel": "командная строка",
   "quickCommandsLabel": "быстрые команды",
+  "matrixExit": "нажмите любую клавишу или коснитесь экрана, чтобы выйти",
   "shareNothing": "Пока нечем поделиться: выполните команду этой страницы, которая что-то выводит, например $help",
   "inputHint": "введите $help, чтобы увидеть список команд",
   "bootLastLogin": "Последний вход: $date на ttys000",
@@ -60,5 +62,6 @@
   "wrongTheme": "Тема $themeName не найдена",
   "changeTheme": "Тема $themeName успешно установлена",
   "themeList": "Доступные темы: $themes",
+  "secretTheme": "Код Konami принят: включена секретная тема $themeName. Вернуть обычную — set theme в настройках",
   "neofetch": "Иван Тюлькин\nРоль: Frontend-разработчик\nГород: Санкт-Петербург\nСтек: React, TypeScript\nСтаж: $uptime\nТема: $theme\nКурсор: $caret\nЯзык: $language"
 }

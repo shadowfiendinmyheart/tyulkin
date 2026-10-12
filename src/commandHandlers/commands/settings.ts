@@ -1,4 +1,4 @@
-import { CaretMode, caretModes, ThemeMode, themeModes } from "../../domain";
+import { CaretMode, caretModes, oneOf, themeModes } from "../../domain";
 import { languages, TFunction } from "../../localization/interfaces";
 import { checkLanguage } from "../../localization/utils";
 import storage from "../../storage";
@@ -28,10 +28,12 @@ export const settingsCommands: Command[] = [
         return;
       }
 
-      const theme = makeCapitalize(param) as ThemeMode;
+      const themeName = makeCapitalize(param);
+      // the secret theme is not settable: only the Konami code unlocks it
+      const theme = oneOf(themeModes, themeName);
 
-      if (!themeModes.includes(theme)) {
-        log(t({ key: "wrongTheme", args: { themeName: theme } }));
+      if (!theme) {
+        log(t({ key: "wrongTheme", args: { themeName } }));
         return;
       }
 

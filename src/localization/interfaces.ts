@@ -25,6 +25,8 @@ export interface CommonDictionary {
   inputLabel: string;
   // accessible name of the quick command chips over the command line
   quickCommandsLabel: string;
+  // shown over the `matrix` digital rain
+  matrixExit: string;
 }
 
 // one line of `help` per command, see commandHandlers/commands
@@ -51,6 +53,7 @@ export interface CommandDescriptionDictionary {
   helpGui: string;
   helpCv: string;
   helpShare: string;
+  helpMatrix: string;
 }
 
 export interface DictionaryWithArgs {
@@ -80,6 +83,8 @@ export interface DictionaryWithArgs {
   wrongTheme: string;
   changeTheme: string;
   themeList: string;
+  // the Konami code switched to the secret theme $themeName
+  secretTheme: string;
   // "key: value" lines of neofetch, the first line is the title
   neofetch: string;
 }
@@ -117,6 +122,7 @@ type LanguageListLocale = LocaleWithArgsGenerator<"languageList", "languages">;
 type WrongThemeLocale = LocaleWithArgsGenerator<"wrongTheme", "themeName">;
 type ChangeThemeLocale = LocaleWithArgsGenerator<"changeTheme", "themeName">;
 type ThemeListLocale = LocaleWithArgsGenerator<"themeList", "themes">;
+type SecretThemeLocale = LocaleWithArgsGenerator<"secretTheme", "themeName">;
 type NeofetchLocale = LocaleWithArgsGenerator<
   "neofetch",
   "uptime" | "theme" | "caret" | "language"
@@ -142,6 +148,7 @@ export type LocaleWithArgs =
   | WrongThemeLocale
   | ChangeThemeLocale
   | ThemeListLocale
+  | SecretThemeLocale
   | NeofetchLocale;
 export type LocaleParams = CommonLocale | LocaleWithArgs;
 

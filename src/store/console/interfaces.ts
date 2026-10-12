@@ -48,6 +48,8 @@ export interface ConsoleState {
   typedCommandsCount: number;
   caretMode: CaretMode;
   commandsHint: string[];
+  // the `matrix` digital rain covers the console until any key or tap
+  isMatrixShown: boolean;
 }
 
 export type ConsoleActionType =
@@ -58,13 +60,15 @@ export type ConsoleActionType =
   | ActionSetCaretMode
   | ActionSetCommandsHint
   | ActionFinishTyping
-  | ActionSkipTyping;
+  | ActionSkipTyping
+  | ActionSetMatrixShown;
 
 export type ActionAddLogs = ActionTypeGenerator<ConsoleActionKind.AddLogs, NewLog>;
 export type ActionClearLogs = ActionTypeGenerator<ConsoleActionKind.ClearLogs>;
 // payload: id of the typed out log
 export type ActionFinishTyping = ActionTypeGenerator<ConsoleActionKind.FinishTyping, number>;
 export type ActionSkipTyping = ActionTypeGenerator<ConsoleActionKind.SkipTyping>;
+export type ActionSetMatrixShown = ActionTypeGenerator<ConsoleActionKind.SetMatrixShown, boolean>;
 export type ActionAddHistoryCommand = ActionTypeGenerator<
   ConsoleActionKind.AddHistoryCommand,
   string
@@ -85,4 +89,5 @@ export enum ConsoleActionKind {
   SetCommandsHint = "setCommandsHint",
   FinishTyping = "finishTyping",
   SkipTyping = "skipTyping",
+  SetMatrixShown = "setMatrixShown",
 }

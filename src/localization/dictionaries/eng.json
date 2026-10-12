@@ -38,10 +38,12 @@
   "helpGui": "the CV as a regular page",
   "helpCv": "save the CV as PDF: cv --download",
   "helpShare": "copy a link that opens this page with the last command",
+  "helpMatrix": "wake up, Neo...",
   "404command": "Command $unknownCommand not found\nType $help or $ls to see the available commands",
   "loading": "loading",
   "inputLabel": "command line",
   "quickCommandsLabel": "quick commands",
+  "matrixExit": "press any key or tap to exit",
   "shareNothing": "Nothing to share yet: run a command of this page that shows something, e.g. $help",
   "inputHint": "type $help to see the available commands",
   "bootLastLogin": "Last login: $date on ttys000",
@@ -60,5 +62,6 @@
   "wrongTheme": "Theme $themeName not found",
   "changeTheme": "Theme successfully changed to $themeName",
   "themeList": "Available themes: $themes",
+  "secretTheme": "Konami code accepted: the secret theme $themeName is on. Any other one is back with set theme in settings",
   "neofetch": "Ivan Tyulkin\nRole: Frontend developer\nLocation: Saint Petersburg\nStack: React, TypeScript\nUptime: $uptime\nTheme: $theme\nCaret: $caret\nLanguage: $language"
 }

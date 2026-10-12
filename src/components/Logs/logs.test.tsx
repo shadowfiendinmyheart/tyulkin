@@ -22,6 +22,7 @@ const renderLog = (content: LogNode[]) => {
           typedCommandsCount: 0,
           caretMode: CaretMode.Block,
           commandsHint: [],
+          isMatrixShown: false,
         },
         consoleDispatch: () => undefined,
       }}

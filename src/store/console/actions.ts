@@ -7,6 +7,7 @@ import {
   ActionFinishTyping,
   ActionSetCaretMode,
   ActionSetCommandsHint,
+  ActionSetMatrixShown,
   ActionSkipTyping,
   ConsoleActionKind,
   LogContent,
@@ -28,6 +29,10 @@ export const finishTyping = (logId: number): ActionFinishTyping => ({
 });
 // shows every log in full at once
 export const skipTyping = (): ActionSkipTyping => ({ type: ConsoleActionKind.SkipTyping });
+export const setMatrixShown = (isShown: boolean): ActionSetMatrixShown => ({
+  type: ConsoleActionKind.SetMatrixShown,
+  payload: isShown,
+});
 export const addHistoryCommand = (command: string): ActionAddHistoryCommand => ({
   type: ConsoleActionKind.AddHistoryCommand,
   payload: command,

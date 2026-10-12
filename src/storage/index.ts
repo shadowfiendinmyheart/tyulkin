@@ -1,4 +1,4 @@
-import { CaretMode, caretModes, oneOf, ThemeMode, themeModes } from "../domain";
+import { allThemeModes, CaretMode, caretModes, oneOf, ThemeMode } from "../domain";
 import { Languages, languages } from "../localization/interfaces";
 import { htmlLangByLanguage } from "../localization/utils";
 
@@ -79,7 +79,7 @@ class Storage {
     writeItem(StorageKeys.ThemeMode, theme);
   };
 
-  getThemeMode = (): ThemeMode => readOneOf(StorageKeys.ThemeMode, themeModes, "Black");
+  getThemeMode = (): ThemeMode => readOneOf(StorageKeys.ThemeMode, allThemeModes, "Black");
 
   setLanguage = (language: Languages) => {
     writeItem(StorageKeys.language, language);

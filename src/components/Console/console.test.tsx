@@ -4,7 +4,9 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testi
 import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { routes } from "../../router/routes";
-import { AppContext } from "../../context/appContext";
+import { AppContext, AppContextType } from "../../context/appContext";
+import { setTheme } from "../../store/app/actions";
+import { KONAMI_CODE } from "../../hooks/useKonamiCode";
 import { LocalizationContext } from "../../context/localizationContext";
 import { createT } from "../../localization";
 import eng from "../../localization/dictionaries/eng.json";
@@ -21,14 +23,17 @@ const t = createT(eng);
 Element.prototype.scrollIntoView = () => undefined;
 
 // StrictMode as in main.tsx: effects run twice on mount in dev
-const renderConsole = (path = "/") => {
+const renderConsole = (
+  path = "/",
+  appDispatch: AppContextType["appDispatch"] = () => undefined,
+) => {
   const router = createMemoryRouter(routes, { initialEntries: [path] });
   render(
     <StrictMode>
       <AppContext.Provider
         value={{
           appState: { status: "ok", theme: "Black" },
-          appDispatch: () => undefined,
+          appDispatch,
         }}
       >
         <LocalizationContext.Provider
@@ -184,7 +189,7 @@ describe("command registry (TASK-33)", () => {
     const { user } = renderConsole();
     await user.keyboard("ls{Enter}");
     expect(getLogs().at(-1)).toBe(
-      "about   back   clear   contacts   cv   education   experience   gui   help   ls   menu   neofetch   projects   settings   share   skills",
+      "about   back   clear   contacts   cv   education   experience   gui   help   ls   matrix   menu   neofetch   projects   settings   share   skills",
     );
   });
 
@@ -839,5 +844,86 @@ describe("share (TASK-62)", () => {
     expect(
       within(screen.getAllByRole("listitem").at(-1)!).getByRole("button", { name: "help" }),
     ).toBeTruthy();
+  });
+});
+
+describe("matrix and the Konami code (TASK-65)", () => {
+  beforeEach(() => {
+    // jsdom has no canvas: the rain is not drawn, the overlay works without it
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const queryMatrix = () => screen.queryByText(eng.matrixExit);
+
+  it("covers the console by matrix, any key closes it and is not typed", async () => {
+    const { user, input } = renderConsole("/settings");
+    await user.keyboard("matrix{Enter}");
+    expect(queryMatrix()).toBeTruthy();
+
+    await user.keyboard("x");
+    expect(queryMatrix()).toBeNull();
+    expect(input.value).toBe("");
+    // the console works as before
+    await user.keyboard("x");
+    expect(input.value).toBe("x");
+  });
+
+  it("is not closed by the held Enter that ran it", async () => {
+    const { user } = renderConsole();
+    await user.keyboard("matrix{Enter}");
+    fireEvent.keyDown(document.activeElement!, { key: "Enter", repeat: true });
+    expect(queryMatrix()).toBeTruthy();
+  });
+
+  it("closes matrix on a tap without pressing anything beneath", async () => {
+    const { user } = renderConsole();
+    await user.keyboard("matrix{Enter}");
+    const logsCount = getLogs().length;
+    fireEvent.click(screen.getByRole("button", { name: QUICK_COMMANDS[0] }));
+    expect(queryMatrix()).toBeNull();
+    expect(getLogs()).toHaveLength(logsCount);
+  });
+
+  it("closes matrix when the page is left without a key or tap", async () => {
+    const { user, router } = renderConsole();
+    await user.keyboard("settings{Enter}matrix{Enter}");
+    expect(queryMatrix()).toBeTruthy();
+    await act(() => router.navigate(-1));
+    expect(router.state.location.pathname).toBe("/");
+    expect(queryMatrix()).toBeNull();
+  });
+
+  it("switches to the secret theme by the Konami code and stores it", async () => {
+    const appDispatch = vi.fn();
+    const { user, input } = renderConsole("/", appDispatch);
+    const keys = KONAMI_CODE.map((key) => (key.length === 1 ? key : `{${key}}`)).join("");
+    // the code may follow other keys, its own first key included
+    await user.keyboard(`{ArrowUp}${keys}`);
+    expect(appDispatch).toHaveBeenCalledWith(setTheme("Amber"));
+    expect(localStorage.getItem("themeMode")).toBe("Amber");
+    // B and A of the code are not typed into the command line
+    expect(input.value).toBe("");
+    expect(getLogs().at(-1)).toBe(t({ key: "secretTheme", args: { themeName: "Amber" } }));
+  });
+
+  it("takes the physical B and A keys on a non-Latin layout", () => {
+    const appDispatch = vi.fn();
+    renderConsole("/", appDispatch);
+    KONAMI_CODE.slice(0, -2).forEach((key) => fireEvent.keyDown(document.body, { key }));
+    fireEvent.keyDown(document.body, { key: "Shift" });
+    fireEvent.keyDown(document.body, { key: "И", code: "KeyB" });
+    fireEvent.keyDown(document.body, { key: "ф", code: "KeyA" });
+    expect(appDispatch).toHaveBeenCalledWith(setTheme("Amber"));
+  });
+
+  it("does not list or set the secret theme by set theme", async () => {
+    const appDispatch = vi.fn();
+    const { user } = renderConsole("/settings", appDispatch);
+    await user.keyboard("set theme amber{Enter}");
+    expect(getLogs().at(-1)).toBe(t({ key: "wrongTheme", args: { themeName: "Amber" } }));
+    expect(appDispatch).not.toHaveBeenCalled();
   });
 });

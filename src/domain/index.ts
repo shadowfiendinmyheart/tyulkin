@@ -7,8 +7,12 @@ export enum CaretMode {
   Block = "block",
 }
 
+// themes a visitor can list and set
 export const themeModes = ["White", "Black", "Light", "Dark", "Hacker"] as const;
-export type ThemeMode = (typeof themeModes)[number];
+// unlocked by the Konami code only: not listed, not settable by `set theme`
+export const SECRET_THEME = "Amber";
+export const allThemeModes = [...themeModes, SECRET_THEME] as const;
+export type ThemeMode = (typeof allThemeModes)[number];
 
 export const caretModes = Object.values(CaretMode);
 

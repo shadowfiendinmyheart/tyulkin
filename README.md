@@ -96,7 +96,7 @@ src/
 Реестр — [`src/commandHandlers/commands/`](src/commandHandlers/commands):
 
 - `global.ts` — команды, доступные на любой странице (`help`, `ls`, `clear`, `back`, `menu`,
-  `neofetch`, `gui`, `share`);
+  `neofetch`, `gui`, `share`, `matrix`);
 - `main.ts`, `settings.ts` — команды страниц;
 - `index.ts` — `commandsByRoute`: какие команды у какого маршрута.
 
@@ -147,6 +147,12 @@ BCP 47-тег в `htmlLangByLanguage` ([`localization/utils.ts`](src/localizatio
 
 **Добавить тему:** имя в `themeModes` и блок `[data-theme="<Имя>"]` с теми же переменными в
 `themes.scss`.
+
+Секретная тема `SECRET_THEME` (Amber) не входит в `themeModes`: её нет в `show themes` и `set theme`,
+включает её только код Konami ↑↑↓↓←→←→BA на странице терминала
+([`hooks/useKonamiCode.ts`](src/hooks/useKonamiCode.ts)); сохраняется как обычная тема. Команда
+`matrix` закрывает страницу «цифровым дождём» на canvas в цветах темы
+([`components/MatrixRain`](src/components/MatrixRain/index.tsx)), выход — любая клавиша или тап.
 
 ### Хранилище
 

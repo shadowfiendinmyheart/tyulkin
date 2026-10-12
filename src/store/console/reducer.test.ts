@@ -22,6 +22,7 @@ const initialState: ConsoleState = {
   typedCommandsCount: 0,
   caretMode: CaretMode.Block,
   commandsHint: [],
+  isMatrixShown: false,
 };
 
 describe("console reducer", () => {

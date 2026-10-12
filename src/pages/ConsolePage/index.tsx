@@ -2,12 +2,16 @@ import React from "react";
 import { Navigate, useLocation } from "react-router";
 import Console from "../../components/Console";
 import DeepLinkCommand from "../../components/DeepLinkCommand";
+import MatrixRain from "../../components/MatrixRain";
 import ViewSwitch from "../../components/ViewSwitch";
 import WithCommandHandler from "../../commandHandlers/WithCommandHandler";
 import { commandsByRoute } from "../../commandHandlers/commands";
 import { useConsoleContext } from "../../context/consoleContext";
 import { ROUTES } from "../../router/const";
-import { addConsoleLog } from "../../store/console/actions";
+import { addConsoleLog, setMatrixShown } from "../../store/console/actions";
+import { setTheme } from "../../store/app/actions";
+import { SECRET_THEME } from "../../domain";
+import { useKonamiCode } from "../../hooks/useKonamiCode";
 import { withNode } from "../../store/console/logNodes";
 import storage from "../../storage";
 import { useLocalization } from "../../context/localizationContext";
@@ -70,7 +74,8 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
   const { consoleState: state, consoleDispatch: dispatch } = useConsoleContext();
   const { pathname, search, hash, state: locationState } = useLocation();
   const localization = useLocalization();
-  const { theme } = useAppContext().appState;
+  const { appState, appDispatch } = useAppContext();
+  const { theme } = appState;
   // welcome text is logged on navigation only, not again after a language, theme or caret change
   const { caretMode } = state;
   const welcomeParamsRef = React.useRef({ localization, theme, caretMode });
@@ -133,6 +138,18 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
     };
   }, [route, hasCommands, dispatch]);
 
+  // ↑↑↓↓←→←→BA switches to the secret theme (TASK-65); stored like any other theme
+  useKonamiCode(
+    React.useCallback(() => {
+      storage.setThemeMode(SECRET_THEME);
+      appDispatch(setTheme(SECRET_THEME));
+      const { t } = welcomeParamsRef.current.localization;
+      dispatch(addConsoleLog(t({ key: "secretTheme", args: { themeName: SECRET_THEME } })));
+    }, [appDispatch, dispatch]),
+  );
+
+  const exitMatrix = React.useCallback(() => dispatch(setMatrixShown(false)), [dispatch]);
+
   // "/settings/" and "/Settings" match this route too: switch to the canonical path,
   // so the prompt, history and `back` see the same path the commands were picked for
   if (pathname !== route) {
@@ -148,6 +165,7 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
         <Console />
       </div>
       <DeepLinkCommand />
+      {state.isMatrixShown && <MatrixRain onExit={exitMatrix} />}
     </WithCommandHandler>
   );
 };

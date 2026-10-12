@@ -45,6 +45,16 @@
   --error-color: #ff4d4d;
 }
 
+// the secret one: an amber phosphor monitor, unlocked by the Konami code
+[data-theme="Amber"] {
+  --bg-color: #120a00;
+  --text-color: #ffb000;
+  --muted-color: #b37400;
+  --caret-color: #ffb000;
+  --accent-color: #ffd27f;
+  --error-color: #ff6a3d;
+}
+
 // whatever the theme, paper is white: printing (the PDF version of the CV) is black on white
 @media print {
   html[data-theme],

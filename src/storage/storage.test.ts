@@ -17,6 +17,11 @@ describe("storage", () => {
     expect(storage.getLanguage()).toBe("ru");
   });
 
+  it("keeps the secret theme unlocked by the Konami code (TASK-65)", () => {
+    storage.setThemeMode("Amber");
+    expect(storage.getThemeMode()).toBe("Amber");
+  });
+
   it("falls back to defaults on missing values", () => {
     expect(storage.getCaretMode()).toBe(CaretMode.Block);
     expect(storage.getThemeMode()).toBe("Black");

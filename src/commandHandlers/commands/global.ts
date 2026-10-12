@@ -1,5 +1,5 @@
 import { ROUTES } from "../../router/const";
-import { clearLogs } from "../../store/console/actions";
+import { clearLogs, setMatrixShown } from "../../store/console/actions";
 import { LogNode } from "../../store/console/interfaces";
 import { joinNodes, withNode } from "../../store/console/logNodes";
 import { Command } from "../interfaces";
@@ -63,6 +63,14 @@ export const globalCommands: Command[] = [
     descriptionKey: "helpNeofetch",
     run: ({ log, t, language, theme, caretMode }) =>
       log(getNeofetch({ t, language, theme, caretMode, now: new Date() })),
+  },
+  {
+    // the digital rain over the page until any key or tap (TASK-65)
+    name: "matrix",
+    descriptionKey: "helpMatrix",
+    // logs nothing, and a link would cover the recipient's page at once
+    shareable: false,
+    run: ({ consoleDispatch }) => consoleDispatch(setMatrixShown(true)),
   },
   {
     // copies a deep link that opens the current page with the latest command run (TASK-62)
