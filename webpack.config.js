@@ -4,6 +4,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { DefinePlugin } = require("webpack");
 const eng = require("./src/localization/dictionaries/eng.json");
 const { OG_IMAGE, escapeXml, getOgImageAlt, renderOgImage } = require("./scripts/og-image.cjs");
+const { getGitLog } = require("./scripts/git-log.cjs");
 
 // static CV text for crawlers and no-JS visitors, taken from the dictionary (single source)
 const toHtmlLines = (text) => escapeXml(text).split("\n").join("<br />");
@@ -198,7 +199,11 @@ module.exports = (env, argv) => {
       // SPA fallback for static hosting without rewrites (GitHub Pages serves 404.html for any
       // unknown path): a direct visit to /settings gets the same app, and the router picks the page
       ...(isProduction ? [new HtmlWebpackPlugin({ ...htmlOptions, filename: "404.html" })] : []),
-      new DefinePlugin({ __BASE_PATH__: JSON.stringify(basePath) }),
+      new DefinePlugin({
+        __BASE_PATH__: JSON.stringify(basePath),
+        // the commits for `changelog` as of the build; the dev server reads them once at start
+        __GIT_LOG__: JSON.stringify(getGitLog()),
+      }),
       new FontPreloadPlugin(),
       // the card is for the published site: the dev server skips the render
       ...(isProduction ? [new OgImagePlugin(getSiteUrl(basePath))] : []),

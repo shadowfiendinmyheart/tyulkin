@@ -106,6 +106,11 @@ src/
 [`commandHandlers/neofetch.ts`](src/commandHandlers/neofetch.ts): её выводит команда `neofetch`, ею
 же приветствует главная страница.
 
+`changelog` на главной — история сайта из его коммитов: `git log` читается при сборке
+([`scripts/git-log.cjs`](scripts/git-log.cjs), `__GIT_LOG__` через `DefinePlugin`), в историю идут
+коммиты формата `[add]|[fix]|[refactor] …`; без `--all` — последние 10. Сборке нужна полная история
+(в CI — `fetch-depth: 0`, там ошибка git роняет сборку); локально без git команда сообщает, что истории нет.
+
 **Добавить команду:**
 
 1. Добавить объект в массив нужного файла реестра (или в `global.ts`).

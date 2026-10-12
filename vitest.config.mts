@@ -2,7 +2,15 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   // the site root; the subpath build is covered by the e2e tests
-  define: { __BASE_PATH__: JSON.stringify("/") },
+  define: {
+    __BASE_PATH__: JSON.stringify("/"),
+    // a fixed history instead of the real one (scripts/git-log.cjs), so tests don't depend on it
+    __GIT_LOG__: JSON.stringify([
+      { date: "2026-10-13", subject: "[add] changelog command TASK-69" },
+      { date: "2026-10-12", subject: "[fix] stable app tests TASK-79" },
+      { date: "2023-12-18", subject: "init" },
+    ]),
+  },
   test: {
     environment: "jsdom",
     include: ["src/**/*.test.{ts,tsx}"],

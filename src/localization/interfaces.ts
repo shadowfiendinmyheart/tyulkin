@@ -27,6 +27,8 @@ export interface CommonDictionary {
   quickCommandsLabel: string;
   // shown over the `matrix` digital rain
   matrixExit: string;
+  // `changelog` in a build without the git history
+  changelogEmpty: string;
 }
 
 // one line of `help` per command, see commandHandlers/commands
@@ -54,6 +56,7 @@ export interface CommandDescriptionDictionary {
   helpCv: string;
   helpShare: string;
   helpMatrix: string;
+  helpChangelog: string;
 }
 
 export interface DictionaryWithArgs {
@@ -85,6 +88,10 @@ export interface DictionaryWithArgs {
   themeList: string;
   // the Konami code switched to the secret theme $themeName
   secretTheme: string;
+  // `changelog`: $total changes, the latest $shown are listed, $all is a command placeholder
+  changelog: string;
+  // `changelog` listing all $total changes
+  changelogAll: string;
   // "key: value" lines of neofetch, the first line is the title
   neofetch: string;
 }
@@ -123,6 +130,8 @@ type WrongThemeLocale = LocaleWithArgsGenerator<"wrongTheme", "themeName">;
 type ChangeThemeLocale = LocaleWithArgsGenerator<"changeTheme", "themeName">;
 type ThemeListLocale = LocaleWithArgsGenerator<"themeList", "themes">;
 type SecretThemeLocale = LocaleWithArgsGenerator<"secretTheme", "themeName">;
+type ChangelogLocale = LocaleWithArgsGenerator<"changelog", "total" | "shown" | "all">;
+type ChangelogAllLocale = LocaleWithArgsGenerator<"changelogAll", "total">;
 type NeofetchLocale = LocaleWithArgsGenerator<
   "neofetch",
   "uptime" | "theme" | "caret" | "language"
@@ -149,6 +158,8 @@ export type LocaleWithArgs =
   | ChangeThemeLocale
   | ThemeListLocale
   | SecretThemeLocale
+  | ChangelogLocale
+  | ChangelogAllLocale
   | NeofetchLocale;
 export type LocaleParams = CommonLocale | LocaleWithArgs;
 

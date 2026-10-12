@@ -10,3 +10,6 @@ declare module "@fontsource/ibm-plex-mono/400";
 
 // public path of the site, "/" or "/<subpath>/" (DefinePlugin in webpack.config.js, `define` in vitest)
 declare const __BASE_PATH__: string;
+
+// commits of the repo at build time, newest first (scripts/git-log.cjs; a fixed list in vitest)
+declare const __GIT_LOG__: { date: string; subject: string }[];

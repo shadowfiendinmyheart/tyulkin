@@ -189,7 +189,7 @@ describe("command registry (TASK-33)", () => {
     const { user } = renderConsole();
     await user.keyboard("ls{Enter}");
     expect(getLogs().at(-1)).toBe(
-      "about   back   clear   contacts   cv   education   experience   gui   help   ls   matrix   menu   neofetch   projects   settings   share   skills",
+      "about   back   changelog   clear   contacts   cv   education   experience   gui   help   ls   matrix   menu   neofetch   projects   settings   share   skills",
     );
   });
 

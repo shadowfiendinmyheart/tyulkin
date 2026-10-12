@@ -18,6 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # the whole history for `changelog` (scripts/git-log.cjs), as in the published build
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -54,6 +57,9 @@ jobs:
       SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
     steps:
       - uses: actions/checkout@v4
+        with:
+          # the whole history: the published build lists it in `changelog` (scripts/git-log.cjs)
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:

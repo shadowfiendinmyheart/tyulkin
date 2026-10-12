@@ -1,6 +1,7 @@
 import { ROUTES } from "../../router/const";
 import { GuiLocationState } from "../../router/interfaces";
 import { linkify, withNodes } from "../../store/console/logNodes";
+import { changes, getChangelog } from "../changelog";
 import { Command } from "../interfaces";
 
 export const mainCommands: Command[] = [
@@ -55,6 +56,14 @@ export const mainCommands: Command[] = [
       const state: GuiLocationState = { print: true };
       navigate(ROUTES.GUI, { state });
     },
+  },
+  {
+    // the history of the site from its commits (TASK-69)
+    name: "changelog",
+    params: ["--all"],
+    descriptionKey: "helpChangelog",
+    run: ({ log, t }, [param]) =>
+      getChangelog(t, changes, param?.toLowerCase() === "--all").forEach((content) => log(content)),
   },
   {
     name: "settings",

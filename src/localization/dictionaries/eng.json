@@ -63,5 +63,9 @@
   "changeTheme": "Theme successfully changed to $themeName",
   "themeList": "Available themes: $themes",
   "secretTheme": "Konami code accepted: the secret theme $themeName is on. Any other one is back with set theme in settings",
-  "neofetch": "Ivan Tyulkin\nRole: Frontend developer\nLocation: Saint Petersburg\nStack: React, TypeScript\nUptime: $uptime\nTheme: $theme\nCaret: $caret\nLanguage: $language"
+  "neofetch": "Ivan Tyulkin\nRole: Frontend developer\nLocation: Saint Petersburg\nStack: React, TypeScript\nUptime: $uptime\nTheme: $theme\nCaret: $caret\nLanguage: $language",
+  "helpChangelog": "the history of this site from its commits, all of it: changelog --all",
+  "changelog": "How this site is made, from its git log. Changes: $total, the latest $shown below. All of them: $all",
+  "changelogAll": "How this site is made, from its git log. Changes: $total",
+  "changelogEmpty": "The change history is not included in this build"
 }

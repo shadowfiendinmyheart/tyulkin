@@ -63,5 +63,9 @@
   "changeTheme": "Тема $themeName успешно установлена",
   "themeList": "Доступные темы: $themes",
   "secretTheme": "Код Konami принят: включена секретная тема $themeName. Вернуть обычную — set theme в настройках",
-  "neofetch": "Иван Тюлькин\nРоль: Frontend-разработчик\nГород: Санкт-Петербург\nСтек: React, TypeScript\nСтаж: $uptime\nТема: $theme\nКурсор: $caret\nЯзык: $language"
+  "neofetch": "Иван Тюлькин\nРоль: Frontend-разработчик\nГород: Санкт-Петербург\nСтек: React, TypeScript\nСтаж: $uptime\nТема: $theme\nКурсор: $caret\nЯзык: $language",
+  "helpChangelog": "история сайта по его коммитам, целиком: changelog --all",
+  "changelog": "Как сделан этот сайт — по его git log. Изменений: $total, последние $shown ниже. Все: $all",
+  "changelogAll": "Как сделан этот сайт — по его git log. Изменений: $total",
+  "changelogEmpty": "История изменений не вошла в эту сборку"
 }
