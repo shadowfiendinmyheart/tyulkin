@@ -11,6 +11,7 @@ import eng from "../../localization/dictionaries/eng.json";
 import { CaretMode } from "../../domain";
 import inputStyles from "../Input/styles.module.scss";
 import hintStyles from "../CommandsHint/style.module.scss";
+import { QUICK_COMMANDS, QUICK_COMMANDS_TYPED_LIMIT } from "../QuickCommands";
 
 const t = createT(eng);
 
@@ -455,9 +456,56 @@ describe("clickable commands (TASK-55)", () => {
 
   it("runs help from the input hint", async () => {
     const { user } = renderConsole();
-    await user.click(screen.getByRole("button", { name: "help" }));
+    const hint = document.querySelector<HTMLElement>(`.${inputStyles.hint}`)!;
+    await user.click(within(hint).getByRole("button", { name: "help" }));
     expect(getLogs().at(-2)).toBe("cv> help");
     expect(document.querySelector(`.${inputStyles.hint}`)).toBeNull();
+  });
+});
+
+describe("quick commands (TASK-58)", () => {
+  const queryChips = () => screen.queryByRole("group", { name: eng.quickCommandsLabel });
+  const getChipNames = () =>
+    within(queryChips()!)
+      .getAllByRole("button")
+      .map((button) => button.textContent);
+
+  it("runs a chip as if it was typed, without popping up the keyboard", async () => {
+    const { user, input } = renderConsole();
+    expect(getChipNames()).toEqual(QUICK_COMMANDS);
+    input.blur();
+
+    await user.click(within(queryChips()!).getByRole("button", { name: "projects" }));
+    expect(getLogs().slice(-2)).toEqual(["cv> projects", eng.projects]);
+    expect(document.activeElement).not.toBe(input);
+  });
+
+  it("shows only the commands of the page", () => {
+    renderConsole("/settings");
+    expect(getChipNames()).toEqual(["help"]);
+  });
+
+  it("hides after a few typed commands, clicked and empty ones don't count", async () => {
+    const { user, input } = renderConsole();
+    // one typed command short of the limit, mixed with empty lines
+    for (let i = 1; i < QUICK_COMMANDS_TYPED_LIMIT; i++)
+      await user.keyboard("about{Enter}{Enter}   {Enter}");
+    await user.click(within(queryChips()!).getByRole("button", { name: "contacts" }));
+    await user.click(within(queryChips()!).getByRole("button", { name: "about" }));
+    expect(queryChips()).not.toBeNull();
+
+    input.focus();
+    await user.keyboard("ls{Enter}");
+    expect(queryChips()).toBeNull();
+  });
+
+  it("stays hidden after moving between pages", async () => {
+    const { user } = renderConsole();
+    for (let i = 1; i < QUICK_COMMANDS_TYPED_LIMIT; i++) await user.keyboard("about{Enter}");
+    await user.keyboard("settings{Enter}");
+    expect(queryChips()).toBeNull();
+    await user.keyboard("menu{Enter}");
+    expect(queryChips()).toBeNull();
   });
 });
 

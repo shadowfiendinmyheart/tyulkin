@@ -44,6 +44,8 @@ export interface ConsoleState {
   typedLogId: number;
   // executed commands, newest first
   history: string[];
+  // commands the visitor typed and entered, not clicked: the quick commands hide after a few
+  typedCommandsCount: number;
   caretMode: CaretMode;
   commandsHint: string[];
 }
@@ -52,6 +54,7 @@ export type ConsoleActionType =
   | ActionAddLogs
   | ActionClearLogs
   | ActionAddHistoryCommand
+  | ActionCountTypedCommand
   | ActionSetCaretMode
   | ActionSetCommandsHint
   | ActionFinishTyping
@@ -66,6 +69,7 @@ export type ActionAddHistoryCommand = ActionTypeGenerator<
   ConsoleActionKind.AddHistoryCommand,
   string
 >;
+export type ActionCountTypedCommand = ActionTypeGenerator<ConsoleActionKind.CountTypedCommand>;
 export type ActionSetCaretMode = ActionTypeGenerator<ConsoleActionKind.SetCaretMode, CaretMode>;
 export type ActionSetCommandsHint = ActionTypeGenerator<
   ConsoleActionKind.SetCommandsHint,
@@ -76,6 +80,7 @@ export enum ConsoleActionKind {
   AddLogs = "addLogs",
   ClearLogs = "clearLogs",
   AddHistoryCommand = "addHistoryCommand",
+  CountTypedCommand = "countTypedCommand",
   SetCaretMode = "setCaretMode",
   SetCommandsHint = "setCommandsHint",
   FinishTyping = "finishTyping",

@@ -1,0 +1,29 @@
+.quickCommands {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1ch;
+  margin: 10px 0 5px;
+}
+
+.chip {
+  padding: 2px 1ch;
+  border: 1px solid var(--muted-color);
+  border-radius: 4px;
+  background: none;
+  font: inherit;
+  color: var(--accent-color);
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--accent-color);
+  }
+}
+
+// a comfortable tap target on touch screens
+@media (pointer: coarse) {
+  .chip {
+    min-height: 36px;
+    padding: 4px 1.5ch;
+  }
+}

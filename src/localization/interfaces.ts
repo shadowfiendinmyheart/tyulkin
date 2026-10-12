@@ -12,6 +12,8 @@ export interface CommonDictionary {
   loading: string;
   // accessible name of the command line input
   inputLabel: string;
+  // accessible name of the quick command chips over the command line
+  quickCommandsLabel: string;
 }
 
 // one line of `help` per command, see commandHandlers/commands

@@ -3,6 +3,7 @@ import {
   ActionAddHistoryCommand,
   ActionAddLogs,
   ActionClearLogs,
+  ActionCountTypedCommand,
   ActionFinishTyping,
   ActionSetCaretMode,
   ActionSetCommandsHint,
@@ -30,6 +31,9 @@ export const skipTyping = (): ActionSkipTyping => ({ type: ConsoleActionKind.Ski
 export const addHistoryCommand = (command: string): ActionAddHistoryCommand => ({
   type: ConsoleActionKind.AddHistoryCommand,
   payload: command,
+});
+export const countTypedCommand = (): ActionCountTypedCommand => ({
+  type: ConsoleActionKind.CountTypedCommand,
 });
 export const setCaretMode = (caretMode: CaretMode): ActionSetCaretMode => ({
   type: ConsoleActionKind.SetCaretMode,

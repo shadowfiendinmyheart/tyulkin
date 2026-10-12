@@ -30,6 +30,7 @@
   "404command": "Команда: $unknownCommand не найдена\nВведите $help или $ls, чтобы получить список доступных команд",
   "loading": "загрузка",
   "inputLabel": "командная строка",
+  "quickCommandsLabel": "быстрые команды",
   "inputHint": "введите $help, чтобы увидеть список команд",
   "bootLastLogin": "Последний вход: $date на ttys000",
   "didYouMean": "Возможно, вы имели в виду $command?",

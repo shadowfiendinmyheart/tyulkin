@@ -30,6 +30,7 @@
   "404command": "Command $unknownCommand not found\nType $help or $ls to see the available commands",
   "loading": "loading",
   "inputLabel": "command line",
+  "quickCommandsLabel": "quick commands",
   "inputHint": "type $help to see the available commands",
   "bootLastLogin": "Last login: $date on ttys000",
   "didYouMean": "Did you mean $command?",

@@ -61,6 +61,7 @@ const createInitialState = (): ConsoleState => ({
   nextLogId: 0,
   typedLogId: 0,
   history: [],
+  typedCommandsCount: 0,
   caretMode: storage.getCaretMode(),
   commandsHint: [],
 });

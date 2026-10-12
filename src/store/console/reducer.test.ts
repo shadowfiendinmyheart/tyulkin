@@ -5,6 +5,7 @@ import {
   addHistoryCommand,
   addUserLog,
   clearLogs,
+  countTypedCommand,
   finishTyping,
   setCaretMode,
   setCommandsHint,
@@ -18,6 +19,7 @@ const initialState: ConsoleState = {
   nextLogId: 0,
   typedLogId: 0,
   history: [],
+  typedCommandsCount: 0,
   caretMode: CaretMode.Block,
   commandsHint: [],
 };
@@ -58,6 +60,11 @@ describe("console reducer", () => {
     const state = reducer(initialState, addHistoryCommand("ls"));
     expect(reducer(state, addHistoryCommand("ls"))).toBe(state);
     expect(reducer(state, addHistoryCommand(""))).toBe(state);
+  });
+
+  it("counts typed commands (TASK-58)", () => {
+    const state = reducer(reducer(initialState, countTypedCommand()), countTypedCommand());
+    expect(state.typedCommandsCount).toBe(2);
   });
 
   it("sets caret mode", () => {

@@ -38,6 +38,13 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
       };
     }
 
+    case ConsoleActionKind.CountTypedCommand: {
+      return {
+        ...state,
+        typedCommandsCount: state.typedCommandsCount + 1,
+      };
+    }
+
     case ConsoleActionKind.SetCaretMode: {
       return {
         ...state,

@@ -3,7 +3,12 @@ import Char from "../Char";
 import CommandButton from "../CommandButton";
 import { useConsoleContext } from "../../context/consoleContext";
 import { useHandlerContext } from "../../context/handlerContext";
-import { addUserLog, clearLogs, setCommandsHint } from "../../store/console/actions";
+import {
+  addUserLog,
+  clearLogs,
+  countTypedCommand,
+  setCommandsHint,
+} from "../../store/console/actions";
 import { usePathnameLocation } from "../../hooks/usePathnameLocation";
 import { useCommandsHint } from "./hooks/useCommandsHint";
 import { useHistoryCommands } from "./hooks/useHistoryCommands";
@@ -117,6 +122,8 @@ const Input: React.FC = () => {
     // e.code is empty on virtual keyboards, e.key is reliable
     if (e.key === "Enter") {
       setInputValue("");
+      // the visitor got used to typing: the quick commands give way (clicks don't count)
+      if (inputValue.trim()) consoleDispatch(countTypedCommand());
       executeCommand(inputValue);
     }
   };
