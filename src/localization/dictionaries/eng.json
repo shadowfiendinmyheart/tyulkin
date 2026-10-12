@@ -67,5 +67,21 @@
   "helpChangelog": "the history of this site from its commits, all of it: changelog --all",
   "changelog": "How this site is made, from its git log. Changes: $total, the latest $shown below. All of them: $all",
   "changelogAll": "How this site is made, from its git log. Changes: $total",
-  "changelogEmpty": "The change history is not included in this build"
+  "changelogEmpty": "The change history is not included in this build",
+  "helpSecrets": "how many secrets of this terminal you have found",
+  "sudo": "visitor is not in the sudoers file. This incident will be reported.",
+  "sudoHireMe": "[sudo] password for visitor: ********\nAccess granted. Hiring is one message away:",
+  "rmRf": "rm: removing /bin...\nrm: removing /etc...\nrm: removing /usr...\nrm: removing /home/visitor/cv...\nrm: removing /dev/coffee...",
+  "rmRfJoke": "Just kidding: everything is in place, this terminal is read-only. Good try, though",
+  "vim": "VIM - Vi IMproved\nRelax, this is not a real vim. But you can practice the main skill here: type $quit to exit, or $forceQuit to exit without saving",
+  "vimExit": "You have exited vim. Not everyone manages it on the first try",
+  "cowsayDefault": "Moo! Type cowsay and your text",
+  "fortunes": "There are only two hard things in Computer Science: cache invalidation and naming things. — Phil Karlton\n%\nTalk is cheap. Show me the code. — Linus Torvalds\n%\nAny fool can write code that a computer can understand. Good programmers write code that humans can understand. — Martin Fowler\n%\nPremature optimization is the root of all evil. — Donald Knuth\n%\nSimplicity is prerequisite for reliability. — Edsger W. Dijkstra\n%\nIt works on my machine.\n%\nWeeks of coding can save you hours of planning.\n%\n99 little bugs in the code, 99 little bugs.\nTake one down, patch it around — 127 little bugs in the code.\n%\nThere's no place like 127.0.0.1",
+  "sl": "Choo-choo! The train has left. Maybe you meant $ls?",
+  "coffee": "Error 418: I'm a teapot. This terminal brews only code",
+  "secretKonami": "the Konami code",
+  "secretsProgress": "Secrets found: $found/$total. Some commands of real terminals work here too, even though help keeps quiet about them",
+  "secretsAll": "All $total secrets found. You know this terminal inside out!",
+  "secretsList": "Found: $list",
+  "secretFound": "Secret found: $found/$total. Your progress: $secrets"
 }

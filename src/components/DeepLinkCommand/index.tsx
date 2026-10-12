@@ -28,7 +28,7 @@ const DeepLinkCommand: React.FC = () => {
     const pendingCommand = pendingCommandRef.current;
     if (pendingCommand === null) return;
     pendingCommandRef.current = null;
-    executeCommand(pendingCommand);
+    executeCommand(pendingCommand, { fromLink: true });
   }, [pathname, search, hash, state, navigate, executeCommand]);
 
   return null;

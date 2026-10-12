@@ -5,6 +5,7 @@ import { mainCommands } from "./main";
 import { settingsCommands } from "./settings";
 
 export { globalCommands } from "./global";
+export { secretCommands } from "./secrets";
 
 export const commandsByRoute: Record<ConsoleRouteValues, Command[]> = {
   [ROUTES.MAIN]: mainCommands,

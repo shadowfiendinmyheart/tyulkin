@@ -4,6 +4,7 @@ import { trackCommand, trackUnknownCommand } from "../analytics";
 import { useAppContext } from "../context/appContext";
 import { useConsoleContext } from "../context/consoleContext";
 import { HandlerContext } from "../context/handlerContext";
+import { HandlerContextType } from "../context/interfaces";
 import { useLocalization } from "../context/localizationContext";
 import { usePathnameLocation } from "../hooks/usePathnameLocation";
 import {
@@ -14,8 +15,9 @@ import {
 } from "../store/console/actions";
 import { LogNode } from "../store/console/interfaces";
 import { withNode, withNodes } from "../store/console/logNodes";
-import { globalCommands } from "./commands";
+import { globalCommands, secretCommands } from "./commands";
 import { Command, CommandContext } from "./interfaces";
+import { findSecret } from "./secrets";
 import { getAllCommandsWithParams, getSuggestion, separateCommand } from "./utils";
 
 interface WithCommandHandlerProps {
@@ -51,12 +53,15 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
   );
 
   const commandHandler = React.useCallback(
-    (userCommand: string) => {
+    (userCommand: string, fromLink: boolean) => {
       if (userCommand.trim() === "") return;
 
       const log: CommandContext["log"] = (content) => consoleDispatch(addConsoleLog(content));
 
-      const separated = separateCommand(availableCommands, userCommand);
+      // easter eggs only when no command of the page or global one matches
+      const separated =
+        separateCommand(availableCommands, userCommand) ??
+        (fromLink ? undefined : separateCommand(secretCommands, userCommand));
       if (!separated) {
         trackUnknownCommand(userCommand);
         const content = withNodes(
@@ -96,7 +101,12 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
         history: historyRef.current,
         commands: availableCommands,
       };
-      separated.command.run(ctx, separated.params);
+      const { command, params } = separated;
+      command.run(ctx, params);
+      if ("secret" in command) {
+        const found = findSecret(command.secret, t);
+        if (found) log(found);
+      }
     },
     [
       availableCommands,
@@ -113,14 +123,14 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
     ],
   );
 
-  // shared by Enter in the input and clicks on commands in logs
-  const executeCommand = React.useCallback(
-    (userCommand: string) => {
+  // shared by Enter in the input, clicks on commands in logs and deep links
+  const executeCommand = React.useCallback<HandlerContextType["executeCommand"]>(
+    (userCommand, { fromLink = false } = {}) => {
       const command = userCommand.trim();
       consoleDispatch(addHistoryCommand(command));
       consoleDispatch(setCommandsHint([]));
       consoleDispatch(addUserLog(command, pathnameLocation));
-      commandHandler(command);
+      commandHandler(command, fromLink);
     },
     [consoleDispatch, pathnameLocation, commandHandler],
   );

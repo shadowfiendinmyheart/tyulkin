@@ -29,6 +29,20 @@ export interface CommonDictionary {
   matrixExit: string;
   // `changelog` in a build without the git history
   changelogEmpty: string;
+  // easter eggs (TASK-63), see commandHandlers/commands/secrets
+  sudo: string;
+  sudoHireMe: string;
+  // the fake removal, line by line, then the joke
+  rmRf: string;
+  rmRfJoke: string;
+  vimExit: string;
+  // `cowsay` without a text
+  cowsayDefault: string;
+  // entries of `fortune`, separated by a line of "%"
+  fortunes: string;
+  coffee: string;
+  // how the Konami code is listed by `secrets`
+  secretKonami: string;
 }
 
 // one line of `help` per command, see commandHandlers/commands
@@ -57,6 +71,7 @@ export interface CommandDescriptionDictionary {
   helpShare: string;
   helpMatrix: string;
   helpChangelog: string;
+  helpSecrets: string;
 }
 
 export interface DictionaryWithArgs {
@@ -92,6 +107,16 @@ export interface DictionaryWithArgs {
   changelog: string;
   // `changelog` listing all $total changes
   changelogAll: string;
+  // `vim`: $quit and $forceQuit are command placeholders
+  vim: string;
+  // `sl`: $ls is a command placeholder
+  sl: string;
+  // `secrets`: $found of $total secrets; all $total found; $list of found ones (placeholders)
+  secretsProgress: string;
+  secretsAll: string;
+  secretsList: string;
+  // a secret found for the first time, $secrets is a command placeholder
+  secretFound: string;
   // "key: value" lines of neofetch, the first line is the title
   neofetch: string;
 }
@@ -132,6 +157,12 @@ type ThemeListLocale = LocaleWithArgsGenerator<"themeList", "themes">;
 type SecretThemeLocale = LocaleWithArgsGenerator<"secretTheme", "themeName">;
 type ChangelogLocale = LocaleWithArgsGenerator<"changelog", "total" | "shown" | "all">;
 type ChangelogAllLocale = LocaleWithArgsGenerator<"changelogAll", "total">;
+type VimLocale = LocaleWithArgsGenerator<"vim", "quit" | "forceQuit">;
+type SlLocale = LocaleWithArgsGenerator<"sl", "ls">;
+type SecretsProgressLocale = LocaleWithArgsGenerator<"secretsProgress", "found" | "total">;
+type SecretsAllLocale = LocaleWithArgsGenerator<"secretsAll", "total">;
+type SecretsListLocale = LocaleWithArgsGenerator<"secretsList", "list">;
+type SecretFoundLocale = LocaleWithArgsGenerator<"secretFound", "found" | "total" | "secrets">;
 type NeofetchLocale = LocaleWithArgsGenerator<
   "neofetch",
   "uptime" | "theme" | "caret" | "language"
@@ -160,6 +191,12 @@ export type LocaleWithArgs =
   | SecretThemeLocale
   | ChangelogLocale
   | ChangelogAllLocale
+  | VimLocale
+  | SlLocale
+  | SecretsProgressLocale
+  | SecretsAllLocale
+  | SecretsListLocale
+  | SecretFoundLocale
   | NeofetchLocale;
 export type LocaleParams = CommonLocale | LocaleWithArgs;
 

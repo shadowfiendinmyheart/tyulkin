@@ -19,3 +19,18 @@ export const caretModes = Object.values(CaretMode);
 // narrows an arbitrary (e.g. user- or storage-provided) value to one of the allowed ones
 export const oneOf = <T extends string>(allowed: readonly T[], value: unknown): T | undefined =>
   allowed.find((item) => item === value);
+
+// easter eggs counted by `secrets` (TASK-63): hidden commands and the Konami code
+export const secretIds = [
+  "sudo",
+  "hireMe",
+  "rmRf",
+  "vim",
+  "vimExit",
+  "cowsay",
+  "fortune",
+  "sl",
+  "coffee",
+  "konami",
+] as const;
+export type SecretId = (typeof secretIds)[number];

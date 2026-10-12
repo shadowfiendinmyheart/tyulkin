@@ -17,6 +17,7 @@ import storage from "../../storage";
 import { useLocalization } from "../../context/localizationContext";
 import { useAppContext } from "../../context/appContext";
 import { getNeofetch } from "../../commandHandlers/neofetch";
+import { findSecret } from "../../commandHandlers/secrets";
 import { CommonDictionaryKeys, Languages, TFunction } from "../../localization/interfaces";
 import { htmlLangByLanguage } from "../../localization/utils";
 import { prefersReducedMotion } from "../../utils";
@@ -145,6 +146,9 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
       appDispatch(setTheme(SECRET_THEME));
       const { t } = welcomeParamsRef.current.localization;
       dispatch(addConsoleLog(t({ key: "secretTheme", args: { themeName: SECRET_THEME } })));
+      // the code is one of the secrets of `secrets` (TASK-63)
+      const found = findSecret("konami", t);
+      if (found) dispatch(addConsoleLog(found));
     }, [appDispatch, dispatch]),
   );
 

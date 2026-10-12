@@ -2,14 +2,15 @@ import { COMMAND_PARAM } from "../router/const";
 import { LogNode } from "../store/console/interfaces";
 import { joinNodes } from "../store/console/logNodes";
 import { normalizeInput } from "../utils";
-import { Command } from "./interfaces";
+import { Command, CommandBase } from "./interfaces";
 
-const getCommandPhrases = ({ name, aliases = [] }: Command) => [name, ...aliases];
+const getCommandPhrases = ({ name, aliases = [] }: CommandBase) => [name, ...aliases];
 
 // matches whole words case-insensitively: "Help" is "help", "set themeblack" is not "set theme";
 // params are returned as typed, commands normalize them themselves
-// the first matching command decides: with params it accepts at most one argument, without none
-export const separateCommand = (commands: Command[], userCommand: string) => {
+// the first matching command decides: with params it accepts at most one argument, without none,
+// with anyArgs any number
+export const separateCommand = <T extends CommandBase>(commands: T[], userCommand: string) => {
   const userWords = userCommand.trim().split(/\s+/);
   const lowerUserWords = userWords.map((word) => word.toLowerCase());
 
@@ -19,7 +20,7 @@ export const separateCommand = (commands: Command[], userCommand: string) => {
       if (!phraseWords.every((word, index) => lowerUserWords[index] === word)) continue;
 
       const params = userWords.slice(phraseWords.length);
-      const maxParamsCount = command.params ? 1 : 0;
+      const maxParamsCount = command.anyArgs ? Infinity : command.params ? 1 : 0;
       if (params.length > maxParamsCount) return;
 
       return { command, params };

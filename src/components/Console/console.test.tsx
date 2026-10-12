@@ -10,7 +10,7 @@ import { KONAMI_CODE } from "../../hooks/useKonamiCode";
 import { LocalizationContext } from "../../context/localizationContext";
 import { createT } from "../../localization";
 import eng from "../../localization/dictionaries/eng.json";
-import { CaretMode, themeModes } from "../../domain";
+import { CaretMode, secretIds, themeModes } from "../../domain";
 import { getParamsString } from "../../commandHandlers/utils";
 import inputStyles from "../Input/styles.module.scss";
 import hintStyles from "../CommandsHint/style.module.scss";
@@ -189,7 +189,7 @@ describe("command registry (TASK-33)", () => {
     const { user } = renderConsole();
     await user.keyboard("ls{Enter}");
     expect(getLogs().at(-1)).toBe(
-      "about   back   changelog   clear   contacts   cv   education   experience   gui   help   ls   matrix   menu   neofetch   projects   settings   share   skills",
+      "about   back   changelog   clear   contacts   cv   education   experience   gui   help   ls   matrix   menu   neofetch   projects   secrets   settings   share   skills",
     );
   });
 
@@ -906,7 +906,11 @@ describe("matrix and the Konami code (TASK-65)", () => {
     expect(localStorage.getItem("themeMode")).toBe("Amber");
     // B and A of the code are not typed into the command line
     expect(input.value).toBe("");
-    expect(getLogs().at(-1)).toBe(t({ key: "secretTheme", args: { themeName: "Amber" } }));
+    expect(getLogs().at(-2)).toBe(t({ key: "secretTheme", args: { themeName: "Amber" } }));
+    // the code is one of the secrets (TASK-63)
+    expect(getLogs().at(-1)).toBe(
+      t({ key: "secretFound", args: { found: "1", total: "10", secrets: "secrets" } }),
+    );
   });
 
   it("takes the physical B and A keys on a non-Latin layout", () => {
@@ -925,5 +929,91 @@ describe("matrix and the Konami code (TASK-65)", () => {
     await user.keyboard("set theme amber{Enter}");
     expect(getLogs().at(-1)).toBe(t({ key: "wrongTheme", args: { themeName: "Amber" } }));
     expect(appDispatch).not.toHaveBeenCalled();
+  });
+});
+
+describe("easter eggs (TASK-63)", () => {
+  const found = (count: number) =>
+    t({ key: "secretFound", args: { found: String(count), total: "10", secrets: "secrets" } });
+
+  it("hides secret commands from help, ls and autocomplete", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("help{Enter}ls{Enter}");
+    const logs = getLogs().join("\n");
+    for (const name of ["sudo", "cowsay", "fortune", "vim", "coffee"]) {
+      expect(logs).not.toContain(name);
+    }
+    await user.type(input, "cows{Tab}");
+    expect(input.value).toBe("cows");
+  });
+
+  it("answers sudo with anything and counts the secret once", async () => {
+    const { user } = renderConsole("/settings");
+    await user.keyboard("sudo rm -rf /{Enter}");
+    expect(getLogs().slice(-2)).toEqual([eng.sudo, found(1)]);
+    await user.keyboard("SUDO{Enter}");
+    expect(getLogs().at(-1)).toBe(eng.sudo);
+    expect(JSON.parse(localStorage.getItem("foundSecrets")!)).toEqual(["sudo"]);
+  });
+
+  it("shows the contacts on sudo hire-me", async () => {
+    const { user } = renderConsole();
+    await user.keyboard("sudo hire-me{Enter}");
+    expect(getLogs().slice(-3)).toEqual([eng.sudoHireMe, eng.contacts, found(1)]);
+  });
+
+  it("exits vim", async () => {
+    const { user } = renderConsole();
+    await user.keyboard("vim{Enter}");
+    expect(getLogs().at(-2)).toBe(t({ key: "vim", args: { quit: ":q", forceQuit: ":q!" } }));
+    await user.click(screen.getByRole("button", { name: ":q!" }));
+    expect(getLogs().slice(-2)).toEqual([eng.vimExit, found(2)]);
+  });
+
+  it("puts the visitor's text into the cow's bubble", async () => {
+    const { user } = renderConsole();
+    await user.keyboard("cowsay hello   world{Enter}");
+    expect(getLogs().at(-2)).toContain("< hello world >");
+  });
+
+  it("takes extra words after sudo hire-me and rm -rf /", async () => {
+    const { user } = renderConsole();
+    await user.keyboard("sudo hire-me please{Enter}");
+    expect(getLogs().at(-3)).toBe(eng.sudoHireMe);
+    await user.keyboard("rm -rf / --no-preserve-root{Enter}");
+    expect(getLogs().at(-2)).toBe(eng.rmRfJoke);
+  });
+
+  it("is not run by a deep link: nobody links the site with their own text", async () => {
+    renderConsole("/?cmd=cowsay+hire+me");
+    await waitFor(() => expect(getLogs().at(-1)).toContain("Command cowsay hire me not found"));
+    expect(localStorage.getItem("foundSecrets")).toBeNull();
+  });
+
+  it("takes no extra words after a secret command without arguments", async () => {
+    const { user } = renderConsole();
+    await user.keyboard("vim now{Enter}");
+    expect(getLogs().at(-1)).toContain("Command vim now not found");
+    expect(localStorage.getItem("foundSecrets")).toBeNull();
+  });
+
+  it("lists the found secrets", async () => {
+    const { user } = renderConsole();
+    await user.keyboard("secrets{Enter}");
+    expect(getLogs().at(-1)).toBe(t({ key: "secretsProgress", args: { found: "0", total: "10" } }));
+    await user.keyboard("fortune{Enter}coffee{Enter}secrets{Enter}");
+    expect(getLogs().at(-1)).toBe(
+      t({ key: "secretsProgress", args: { found: "2", total: "10" } }) +
+        "\n" +
+        t({ key: "secretsList", args: { list: "fortune, coffee" } }),
+    );
+  });
+
+  it("congratulates when all secrets are found", async () => {
+    localStorage.setItem("foundSecrets", JSON.stringify([...secretIds]));
+    const { user } = renderConsole();
+    await user.keyboard("secrets{Enter}");
+    expect(getLogs().at(-1)).toContain(t({ key: "secretsAll", args: { total: "10" } }));
+    expect(getLogs().at(-1)).toContain(eng.secretKonami);
   });
 });

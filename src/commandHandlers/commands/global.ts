@@ -4,6 +4,7 @@ import { LogNode } from "../../store/console/interfaces";
 import { joinNodes, withNode } from "../../store/console/logNodes";
 import { Command } from "../interfaces";
 import { getNeofetch } from "../neofetch";
+import { getSecretsLog } from "../secrets";
 import { getCommandLink, getHelpRow, getParentPath, getShareableCommand } from "../utils";
 
 export const globalCommands: Command[] = [
@@ -71,6 +72,12 @@ export const globalCommands: Command[] = [
     // logs nothing, and a link would cover the recipient's page at once
     shareable: false,
     run: ({ consoleDispatch }) => consoleDispatch(setMatrixShown(true)),
+  },
+  {
+    // how many easter eggs the visitor has found (TASK-63)
+    name: "secrets",
+    descriptionKey: "helpSecrets",
+    run: ({ log, t }) => log(getSecretsLog(t)),
   },
   {
     // copies a deep link that opens the current page with the latest command run (TASK-62)

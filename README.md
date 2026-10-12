@@ -97,8 +97,13 @@ src/
 Реестр — [`src/commandHandlers/commands/`](src/commandHandlers/commands):
 
 - `global.ts` — команды, доступные на любой странице (`help`, `ls`, `clear`, `back`, `menu`,
-  `neofetch`, `gui`, `share`, `matrix`);
+  `neofetch`, `gui`, `share`, `matrix`, `secrets`);
 - `main.ts`, `settings.ts` — команды страниц;
+- `secrets.ts` — пасхалки (`sudo …`, `rm -rf /`, `vim`, `cowsay`, `fortune`, `sl`, `coffee`):
+  `SecretCommand` без описания, их нет в `help`, `ls`, автодополнении и «did you mean»; они
+  проверяются, только если не подошла ни одна обычная команда. Первый запуск отмечает секрет
+  найденным (`storage`, список — `secretIds` в `src/domain`, туда же входит код Konami), прогресс
+  показывает `secrets`. Deep link (`?cmd=`) пасхалки не запускает;
 - `index.ts` — `commandsByRoute`: какие команды у какого маршрута.
 
 Ввод регистронезависим; команды страницы имеют приоритет над глобальными.

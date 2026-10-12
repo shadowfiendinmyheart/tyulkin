@@ -106,3 +106,31 @@ describe("session and last login (TASK-53)", () => {
     }
   });
 });
+
+describe("found secrets (TASK-63)", () => {
+  it("adds a secret once, keeping the order of secretIds", () => {
+    expect(storage.getFoundSecrets()).toEqual([]);
+    expect(storage.addFoundSecret("konami")).toEqual(["konami"]);
+    expect(storage.addFoundSecret("sudo")).toEqual(["sudo", "konami"]);
+    expect(storage.addFoundSecret("konami")).toBeUndefined();
+    expect(storage.getFoundSecrets()).toEqual(["sudo", "konami"]);
+  });
+
+  it("drops garbage", () => {
+    for (const value of ["", "{", "{}", '"sudo"', '["sudo","root",1,"sudo"]']) {
+      localStorage.setItem("foundSecrets", value);
+      expect(storage.getFoundSecrets()).toEqual(value.includes("[") ? ["sudo"] : []);
+    }
+  });
+
+  // last: a secret found without storage stays in memory for the rest of the file
+  it("remembers secrets in memory when storage is blocked", () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new DOMException("blocked", "SecurityError");
+    });
+    expect(storage.addFoundSecret("vim")).toEqual(["vim"]);
+    expect(storage.addFoundSecret("vim")).toBeUndefined();
+    expect(storage.getFoundSecrets()).toEqual(["vim"]);
+    vi.restoreAllMocks();
+  });
+});
