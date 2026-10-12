@@ -10,16 +10,16 @@ describe("storage", () => {
   it("round-trips valid values", () => {
     storage.setCaretMode(CaretMode.Line);
     storage.setThemeMode("Hacker");
-    storage.setLanguage("eng");
+    storage.setLanguage("ru");
     expect(storage.getCaretMode()).toBe(CaretMode.Line);
     expect(storage.getThemeMode()).toBe("Hacker");
-    expect(storage.getLanguage()).toBe("eng");
+    expect(storage.getLanguage()).toBe("ru");
   });
 
   it("falls back to defaults on missing values", () => {
     expect(storage.getCaretMode()).toBe(CaretMode.Block);
     expect(storage.getThemeMode()).toBe("Black");
-    expect(storage.getLanguage()).toBe("ru");
+    expect(storage.getLanguage()).toBe("eng");
   });
 
   it("falls back to defaults on garbage values", () => {
@@ -28,7 +28,7 @@ describe("storage", () => {
     localStorage.setItem("language", "de");
     expect(storage.getCaretMode()).toBe(CaretMode.Block);
     expect(storage.getThemeMode()).toBe("Black");
-    expect(storage.getLanguage()).toBe("ru");
+    expect(storage.getLanguage()).toBe("eng");
   });
 
   it("rejects empty values and values valid only for another setting", () => {
@@ -37,7 +37,7 @@ describe("storage", () => {
     localStorage.setItem("language", "Hacker");
     expect(storage.getCaretMode()).toBe(CaretMode.Block);
     expect(storage.getThemeMode()).toBe("Black");
-    expect(storage.getLanguage()).toBe("ru");
+    expect(storage.getLanguage()).toBe("eng");
   });
 
   it("survives blocked storage", () => {
@@ -53,6 +53,30 @@ describe("storage", () => {
     expect(() => storage.setThemeMode("White")).not.toThrow();
     expect(storage.getCaretMode()).toBe(CaretMode.Block);
     expect(storage.getThemeMode()).toBe("Black");
+    expect(storage.getLanguage()).toBe("eng");
+  });
+});
+
+describe("language by browser (TASK-72)", () => {
+  const mockBrowserLanguages = (preferred: string[]) => {
+    vi.spyOn(navigator, "languages", "get").mockReturnValue(preferred);
+  };
+
+  it("takes the first supported browser language until one is set", () => {
+    mockBrowserLanguages(["de-DE", "ru-RU", "en-US"]);
     expect(storage.getLanguage()).toBe("ru");
+    mockBrowserLanguages(["EN-gb", "ru"]);
+    expect(storage.getLanguage()).toBe("eng");
+  });
+
+  it("falls back to English when no browser language is supported", () => {
+    mockBrowserLanguages(["de-DE", "fr"]);
+    expect(storage.getLanguage()).toBe("eng");
+  });
+
+  it("prefers the stored language", () => {
+    mockBrowserLanguages(["ru-RU"]);
+    storage.setLanguage("eng");
+    expect(storage.getLanguage()).toBe("eng");
   });
 });

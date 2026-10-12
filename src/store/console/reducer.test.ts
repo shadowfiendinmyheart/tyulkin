@@ -51,6 +51,12 @@ describe("console reducer", () => {
     expect(state.history).toEqual(["help", "ls"]);
   });
 
+  it("skips empty commands and repeats of the last one", () => {
+    const state = reducer(initialState, addHistoryCommand("ls"));
+    expect(reducer(state, addHistoryCommand("ls"))).toBe(state);
+    expect(reducer(state, addHistoryCommand(""))).toBe(state);
+  });
+
   it("sets caret mode", () => {
     expect(reducer(initialState, setCaretMode(CaretMode.Underline)).caretMode).toBe(
       CaretMode.Underline,

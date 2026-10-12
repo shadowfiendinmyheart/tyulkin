@@ -1,10 +1,14 @@
-import { afterEach, describe, expect, it } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { ConsoleContext } from "../../context/consoleContext";
+import { HandlerContext } from "../../context/handlerContext";
 import { CaretMode } from "../../domain";
 import { LogNode } from "../../store/console/interfaces";
 import Logs from ".";
 import styles from "./styles.module.scss";
+import commandStyles from "../CommandButton/styles.module.scss";
+
+const executeCommand = vi.fn();
 
 const renderLog = (content: LogNode[]) => {
   render(
@@ -20,7 +24,9 @@ const renderLog = (content: LogNode[]) => {
         consoleDispatch: () => undefined,
       }}
     >
-      <Logs />
+      <HandlerContext.Provider value={{ executeCommand, allCommands: [] }}>
+        <Logs />
+      </HandlerContext.Provider>
     </ConsoleContext.Provider>,
   );
   return screen.getByRole("listitem");
@@ -41,7 +47,7 @@ describe("rich logs (TASK-56)", () => {
     expect(log.textContent).toBe("plain error site help");
     expect(screen.getByText("error").className).toBe(styles.error);
     expect(screen.getByRole("link", { name: "site" }).getAttribute("rel")).toBe("noreferrer");
-    expect(screen.getByText("help").className).toBe(styles.command);
+    expect(screen.getByRole("button", { name: "help" }).className).toBe(commandStyles.command);
   });
 
   it("renders tables with nodes in cells", () => {
@@ -59,7 +65,7 @@ describe("rich logs (TASK-56)", () => {
       ["about", "about me"],
       ["ls", "list"],
     ]);
-    expect(screen.getByText("about").className).toBe(styles.command);
+    expect(screen.getByRole("button", { name: "about" }).className).toBe(commandStyles.command);
   });
 
   it("keeps a pre block as is", () => {
@@ -67,5 +73,15 @@ describe("rich logs (TASK-56)", () => {
     const pre = log.querySelector("pre");
     expect(pre?.className).toBe(styles.pre);
     expect(pre?.textContent).toBe(" /\\_/\\\n( o.o )");
+  });
+});
+
+describe("clickable commands (TASK-55)", () => {
+  it("runs a command on click", () => {
+    renderLog(["type ", { type: "command", command: "cd .." }]);
+    const button = screen.getByRole("button", { name: "cd .." });
+    expect(button.getAttribute("type")).toBe("button");
+    fireEvent.click(button);
+    expect(executeCommand).toHaveBeenCalledExactlyOnceWith("cd ..");
   });
 });

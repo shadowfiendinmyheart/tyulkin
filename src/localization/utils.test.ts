@@ -16,7 +16,7 @@ describe("getLocaleWithArgs", () => {
     expect(
       getLocaleWithArgs({
         key: "404command",
-        args: { unknownCommand: "foo bar" },
+        args: { unknownCommand: "foo bar", help: "help", ls: "ls" },
         locale: "Command $unknownCommand not found",
       }),
     ).toBe("Command foo bar not found");
@@ -46,7 +46,7 @@ describe("getLocaleWithArgs placeholders", () => {
     expect(
       getLocaleWithArgs({
         key: "404command",
-        args: { unknownCommand: "$& $unknownCommand $$" },
+        args: { unknownCommand: "$& $unknownCommand $$", help: "help", ls: "ls" },
         locale: "Command $unknownCommand not found, $other",
       }),
     ).toBe("Command $& $unknownCommand $$ not found, $other");

@@ -10,8 +10,6 @@ export interface CommonDictionary {
   loading: string;
   // accessible name of the command line input
   inputLabel: string;
-  // shown next to the empty command line until the first command is executed
-  inputHint: string;
 }
 
 // one line of `help` per command, see commandHandlers/commands
@@ -38,6 +36,8 @@ export interface CommandDescriptionDictionary {
 
 export interface DictionaryWithArgs {
   ["404command"]: string;
+  // shown next to the empty command line until the first command is executed
+  inputHint: string;
   // the closest command when an unknown one is typed
   didYouMean: string;
   wrongCaret: string;
@@ -64,7 +64,9 @@ type LocaleWithArgsGenerator<Key extends DictionaryWithArgsKeys, Args extends st
 };
 
 type CommonLocale = { key: CommonDictionaryKeys | CommandDescriptionKeys };
-type NotFoundLocale = LocaleWithArgsGenerator<"404command", "unknownCommand">;
+// help and ls are command placeholders, see withNodes
+type NotFoundLocale = LocaleWithArgsGenerator<"404command", "unknownCommand" | "help" | "ls">;
+type InputHintLocale = LocaleWithArgsGenerator<"inputHint", "help">;
 type DidYouMeanLocale = LocaleWithArgsGenerator<"didYouMean", "command">;
 type WrongCaretLocale = LocaleWithArgsGenerator<"wrongCaret", "caretName">;
 type ChangeCaretLocale = LocaleWithArgsGenerator<"changeCaret", "caretName">;
@@ -79,6 +81,7 @@ type ThemeListLocale = LocaleWithArgsGenerator<"themeList", "themes">;
 
 export type LocaleWithArgs =
   | NotFoundLocale
+  | InputHintLocale
   | DidYouMeanLocale
   | WrongCaretLocale
   | ChangeCaretLocale

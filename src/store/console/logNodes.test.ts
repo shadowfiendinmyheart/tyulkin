@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { joinNodes, linkify, withNode } from "./logNodes";
+import { joinNodes, linkify, withNode, withNodes } from "./logNodes";
 
 describe("joinNodes", () => {
   it("puts the separator between nodes only", () => {
@@ -23,6 +23,29 @@ describe("withNode", () => {
 
   it("drops empty text around the node", () => {
     expect(withNode((value) => value, help)).toEqual([help]);
+  });
+});
+
+describe("withNodes", () => {
+  const help = { type: "command", command: "help" } as const;
+  const ls = { type: "command", command: "ls" } as const;
+
+  it("puts each node in place of its placeholder, in any order", () => {
+    expect(withNodes(([a, b]) => `${b} or ${a}${a}!`, [help, ls])).toEqual([
+      ls,
+      " or ",
+      help,
+      help,
+      "!",
+    ]);
+  });
+
+  it("keeps a placeholder-like arg without a node as text", () => {
+    expect(withNodes(([a]) => `${a} \u00007\u0000`, [help])).toEqual([help, " ", "\u00007\u0000"]);
+  });
+
+  it("keeps text without placeholders", () => {
+    expect(withNodes(() => "no nodes", [help])).toEqual(["no nodes"]);
   });
 });
 

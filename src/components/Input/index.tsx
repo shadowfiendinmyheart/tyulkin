@@ -1,17 +1,14 @@
 import React from "react";
 import Char from "../Char";
+import CommandButton from "../CommandButton";
 import { useConsoleContext } from "../../context/consoleContext";
 import { useHandlerContext } from "../../context/handlerContext";
-import {
-  addHistoryCommand,
-  addUserLog,
-  clearLogs,
-  setCommandsHint,
-} from "../../store/console/actions";
+import { addUserLog, clearLogs, setCommandsHint } from "../../store/console/actions";
 import { usePathnameLocation } from "../../hooks/usePathnameLocation";
 import { useCommandsHint } from "./hooks/useCommandsHint";
 import { useHistoryCommands } from "./hooks/useHistoryCommands";
 import { useT } from "../../context/localizationContext";
+import { withNode } from "../../store/console/logNodes";
 
 import styles from "./styles.module.scss";
 
@@ -35,7 +32,7 @@ const isCtrlShortcut = (e: React.KeyboardEvent, letter: string) => {
 const isTextSelected = () => Boolean(window.getSelection()?.toString());
 
 const Input: React.FC = () => {
-  const { commandHandler } = useHandlerContext();
+  const { executeCommand } = useHandlerContext();
   const { consoleDispatch, consoleState } = useConsoleContext();
   const { logs, history } = consoleState;
   const [inputValue, setInputValue] = React.useState<string>("");
@@ -119,12 +116,8 @@ const Input: React.FC = () => {
 
     // e.code is empty on virtual keyboards, e.key is reliable
     if (e.key === "Enter") {
-      const command = inputValue.trim();
       setInputValue("");
-      if (command && command !== history[0]) consoleDispatch(addHistoryCommand(command));
-
-      consoleDispatch(addUserLog(command, pathnameLocation));
-      commandHandler(command);
+      executeCommand(inputValue);
     }
   };
 
@@ -143,14 +136,17 @@ const Input: React.FC = () => {
     // focus on click/tap opens the virtual keyboard on mobile (it must happen inside a user gesture)
     const clickFocusEventHandler = (e: MouseEvent) => {
       if (isTextSelected()) return; // don't break copying text from logs
-      // a link in logs opens a new tab: don't pop up the virtual keyboard and scroll to the prompt
-      if (e.target instanceof Element && e.target.closest("a")) return;
+      // a link in logs opens a new tab, a command button prints its output: don't pop up
+      // the virtual keyboard and scroll to the prompt
+      if (e.target instanceof Element && e.target.closest("a, button")) return;
       autoFocusEventHandler();
     };
 
     // focusing the input drops the page selection: keep it for Ctrl/Cmd+C on selected logs
     const keyDownFocusEventHandler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && isTextSelected()) return;
+      // Enter/Space on a focused command button press it
+      if (e.target instanceof HTMLButtonElement && (e.key === "Enter" || e.key === " ")) return;
       autoFocusEventHandler();
     };
 
@@ -210,7 +206,17 @@ const Input: React.FC = () => {
       </div>
       {isHintShown && (
         <span id={hintId} className={styles.hint}>
-          {t({ key: "inputHint" })}
+          {withNode((help) => t({ key: "inputHint", args: { help } }), {
+            type: "command",
+            command: "help",
+          }).map((node, index) => (
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- the hint never reorders
+            <React.Fragment key={index}>
+              {typeof node === "string"
+                ? node
+                : node.type === "command" && <CommandButton command={node.command} />}
+            </React.Fragment>
+          ))}
         </span>
       )}
     </div>

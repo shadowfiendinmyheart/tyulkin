@@ -1,5 +1,6 @@
 import React from "react";
 import { useConsoleContext } from "../../context/consoleContext";
+import CommandButton from "../CommandButton";
 import { LogColor, LogNode } from "../../store/console/interfaces";
 import styles from "./styles.module.scss";
 
@@ -27,7 +28,7 @@ const renderNode = (node: LogNode): React.ReactNode => {
         </a>
       );
     case "command":
-      return <span className={styles.command}>{node.command}</span>;
+      return <CommandButton command={node.command} />;
     case "table":
       return (
         <table className={styles.table}>

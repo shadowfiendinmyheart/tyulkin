@@ -1,0 +1,16 @@
+// looks like text of the log, not like a form control
+.command {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  white-space: inherit;
+  color: var(--accent-color);
+  cursor: pointer;
+  // logs stay copyable with command names (buttons aren't selectable by default)
+  user-select: text;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

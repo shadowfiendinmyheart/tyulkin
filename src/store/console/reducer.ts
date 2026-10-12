@@ -26,6 +26,8 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
     }
 
     case ConsoleActionKind.AddHistoryCommand: {
+      // checked here, not by the caller: two quick clicks on a command see the same stale state
+      if (!action.payload || action.payload === state.history[0]) return state;
       return {
         ...state,
         history: [action.payload, ...state.history],

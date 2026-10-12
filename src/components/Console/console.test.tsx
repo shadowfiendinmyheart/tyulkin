@@ -360,18 +360,81 @@ describe("accessibility (TASK-49)", () => {
 
   it("shows the help hint until the first command is executed", async () => {
     const { user, input } = renderConsole();
-    expect(screen.getByText(eng.inputHint)).toBeTruthy();
-    expect(input.getAttribute("aria-describedby")).toBe(screen.getByText(eng.inputHint).id);
+    const hintText = t({ key: "inputHint", args: { help: "help" } });
+    const getHint = () => document.querySelector(`.${inputStyles.hint}`);
+    expect(getHint()?.textContent).toBe(hintText);
+    expect(input.getAttribute("aria-describedby")).toBe(getHint()?.id);
 
     await user.keyboard("h");
-    expect(screen.queryByText(eng.inputHint)).toBeNull();
+    expect(getHint()).toBeNull();
     expect(input.hasAttribute("aria-describedby")).toBe(false);
 
     await user.keyboard("{Backspace}");
-    expect(screen.getByText(eng.inputHint)).toBeTruthy();
+    expect(getHint()?.textContent).toBe(hintText);
 
     await user.keyboard("help{Enter}");
-    expect(screen.queryByText(eng.inputHint)).toBeNull();
+    expect(getHint()).toBeNull();
+  });
+});
+
+describe("clickable commands (TASK-55)", () => {
+  it("runs a clicked command as if it was typed", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("ls{Enter}");
+    await user.click(
+      within(screen.getAllByRole("listitem").at(-1)!).getByRole("button", { name: "about" }),
+    );
+    expect(getLogs().slice(-2)).toEqual(["cv> about", eng.about]);
+    // the keyboard is not popped up on mobile
+    expect(document.activeElement).not.toBe(input);
+
+    input.focus();
+    await user.keyboard("{ArrowUp}");
+    expect(input.value).toBe("about");
+    await user.keyboard("{ArrowUp}");
+    expect(input.value).toBe("ls");
+  });
+
+  it("keeps the browsed history entry and the draft when a command is clicked", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("ls{Enter}pro{ArrowUp}");
+    expect(input.value).toBe("ls");
+    await user.click(
+      within(screen.getAllByRole("listitem").at(-1)!).getByRole("button", { name: "about" }),
+    );
+    input.focus();
+    await user.keyboard("{ArrowDown}");
+    expect(input.value).toBe("about");
+    await user.keyboard("{ArrowDown}");
+    expect(input.value).toBe("pro");
+  });
+
+  it("presses a focused command button with Enter", async () => {
+    const { user } = renderConsole();
+    await user.keyboard("ls{Enter}");
+    within(screen.getAllByRole("listitem").at(-1)!).getByRole("button", { name: "about" }).focus();
+    await user.keyboard("{Enter}");
+    expect(getLogs().slice(-2)).toEqual(["cv> about", eng.about]);
+  });
+
+  it("makes help, ls and the suggestion clickable in the unknown command output", async () => {
+    const { user } = renderConsole();
+    await user.keyboard("abuot{Enter}");
+    const log = within(screen.getAllByRole("listitem").at(-1)!);
+    expect(log.getAllByRole("button").map((button) => button.textContent)).toEqual([
+      "help",
+      "ls",
+      "about",
+    ]);
+    await user.click(log.getByRole("button", { name: "help" }));
+    expect(getLogs().at(-2)).toBe("cv> help");
+  });
+
+  it("runs help from the input hint", async () => {
+    const { user } = renderConsole();
+    await user.click(screen.getByRole("button", { name: "help" }));
+    expect(getLogs().at(-2)).toBe("cv> help");
+    expect(document.querySelector(`.${inputStyles.hint}`)).toBeNull();
   });
 });
 

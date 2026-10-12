@@ -50,10 +50,6 @@ export const useCommandsHint = (
     isTabSwitchMode.current = false;
     tabCounterRef.current = 0;
 
-    if (e.key === "Enter") {
-      consoleDispatch(setCommandsHint([]));
-    }
-
     return true;
   };
 

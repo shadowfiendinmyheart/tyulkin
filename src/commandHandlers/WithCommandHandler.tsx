@@ -4,9 +4,15 @@ import { useAppContext } from "../context/appContext";
 import { useConsoleContext } from "../context/consoleContext";
 import { HandlerContext } from "../context/handlerContext";
 import { useLocalization } from "../context/localizationContext";
-import { addConsoleLog } from "../store/console/actions";
+import { usePathnameLocation } from "../hooks/usePathnameLocation";
+import {
+  addConsoleLog,
+  addHistoryCommand,
+  addUserLog,
+  setCommandsHint,
+} from "../store/console/actions";
 import { LogNode } from "../store/console/interfaces";
-import { withNode } from "../store/console/logNodes";
+import { withNode, withNodes } from "../store/console/logNodes";
 import { globalCommands } from "./commands";
 import { Command, CommandContext } from "./interfaces";
 import { getAllCommandsWithParams, getSuggestion, separateCommand } from "./utils";
@@ -19,6 +25,7 @@ interface WithCommandHandlerProps {
 
 const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, children }) => {
   const { consoleDispatch } = useConsoleContext();
+  const pathnameLocation = usePathnameLocation();
   const { appDispatch } = useAppContext();
   const { t, changeLanguage } = useLocalization();
   const navigate = useNavigate();
@@ -39,8 +46,15 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
 
       const separated = separateCommand(availableCommands, userCommand);
       if (!separated) {
-        const notFound = t({ key: "404command", args: { unknownCommand: userCommand } });
-        const content: LogNode[] = [{ type: "text", text: notFound, color: "error" }];
+        const content = withNodes(
+          ([help, ls]) => t({ key: "404command", args: { unknownCommand: userCommand, help, ls } }),
+          [
+            { type: "command", command: "help" },
+            { type: "command", command: "ls" },
+          ],
+        ).map((node): LogNode =>
+          typeof node === "string" ? { type: "text", text: node, color: "error" } : node,
+        );
         const suggestion = getSuggestion(availableCommands, userCommand);
         if (suggestion) {
           const didYouMean = withNode((command) => t({ key: "didYouMean", args: { command } }), {
@@ -68,9 +82,21 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
     [availableCommands, t, changeLanguage, consoleDispatch, appDispatch, navigate, pathname],
   );
 
+  // shared by Enter in the input and clicks on commands in logs
+  const executeCommand = React.useCallback(
+    (userCommand: string) => {
+      const command = userCommand.trim();
+      consoleDispatch(addHistoryCommand(command));
+      consoleDispatch(setCommandsHint([]));
+      consoleDispatch(addUserLog(command, pathnameLocation));
+      commandHandler(command);
+    },
+    [consoleDispatch, pathnameLocation, commandHandler],
+  );
+
   const handlerContextValue = React.useMemo(
-    () => ({ commandHandler, allCommands }),
-    [commandHandler, allCommands],
+    () => ({ executeCommand, allCommands }),
+    [executeCommand, allCommands],
   );
 
   return <HandlerContext.Provider value={handlerContextValue}>{children}</HandlerContext.Provider>;

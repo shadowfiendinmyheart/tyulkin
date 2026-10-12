@@ -29,11 +29,25 @@ export const linkify = (message: string): LogNode[] => {
 export const joinNodes = (nodes: LogNode[], separator: string): LogNode[] =>
   nodes.flatMap((node, index) => (index ? [separator, node] : [node]));
 
-// replaced by a placeholder value, so the text around it stays in the dictionary
-const PLACEHOLDER = "\u0000";
+// a node is replaced by a placeholder value, so the text around it stays in the dictionary;
+// "\u0000<index>\u0000" doesn't occur in dictionary texts
+const getPlaceholder = (index: number) => `\u0000${index}\u0000`;
+// eslint-disable-next-line no-control-regex -- the placeholder is made of control chars on purpose
+const PLACEHOLDER_REGEXP = /\u0000(\d+)\u0000/;
 
-// puts a node in place of the placeholder: withNode((value) => t({ …, args: { command: value } }), node)
-export const withNode = (getText: (placeholder: string) => string, node: LogNode): LogNode[] => {
-  const [before, ...after] = getText(PLACEHOLDER).split(PLACEHOLDER);
-  return [before, node, after.join("")].filter((part) => part !== "");
-};
+// puts nodes in place of their placeholders:
+// withNodes(([help, ls]) => t({ …, args: { help, ls } }), [helpNode, lsNode])
+export const withNodes = (
+  getText: (placeholders: string[]) => string,
+  nodes: LogNode[],
+): LogNode[] =>
+  getText(nodes.map((_, index) => getPlaceholder(index)))
+    // with a capturing group split puts the indexes at odd positions
+    .split(PLACEHOLDER_REGEXP)
+    // an index without a node came from an arg (echoed input), not a placeholder: kept as text
+    .map((part, position) => (position % 2 ? (nodes[Number(part)] ?? `\u0000${part}\u0000`) : part))
+    .filter((part) => part !== "");
+
+// withNode((value) => t({ …, args: { command: value } }), node)
+export const withNode = (getText: (placeholder: string) => string, node: LogNode): LogNode[] =>
+  withNodes(([placeholder]) => getText(placeholder), [node]);

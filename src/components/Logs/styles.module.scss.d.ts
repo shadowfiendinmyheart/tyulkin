@@ -1,6 +1,5 @@
 export type Styles = {
   accent: string;
-  command: string;
   error: string;
   link: string;
   list: string;

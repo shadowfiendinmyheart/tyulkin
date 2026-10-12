@@ -19,6 +19,16 @@ export const useHistoryCommands = (
     historyPosition.current = DRAFT_POSITION;
   };
 
+  // a command clicked in logs is added to the history start while an entry may be browsed:
+  // the position follows that entry, so the line and the draft stay as they were
+  const historyLength = React.useRef(history.length);
+  React.useEffect(() => {
+    if (historyPosition.current !== DRAFT_POSITION) {
+      historyPosition.current += history.length - historyLength.current;
+    }
+    historyLength.current = history.length;
+  }, [history]);
+
   const historyCommandsHandleKeyDownInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
     switch (e.key) {
       case "ArrowUp": {
