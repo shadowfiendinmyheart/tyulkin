@@ -1,3 +1,5 @@
+import { LogNode } from "../store/console/interfaces";
+import { joinNodes } from "../store/console/logNodes";
 import { Command } from "./interfaces";
 
 const getCommandPhrases = ({ name, aliases = [] }: Command) => [name, ...aliases];
@@ -23,10 +25,63 @@ export const separateCommand = (commands: Command[], userCommand: string) => {
   }
 };
 
-// "menu (exit) - return to the main menu"
-export const getHelpLine = (command: Command, description: string) => {
-  const aliases = command.aliases?.length ? ` (${command.aliases.join(", ")})` : "";
-  return `${command.name}${aliases} - ${description}`;
+// a help table row: "menu (exit)" | "return to the main menu"
+export const getHelpRow = (command: Command, description: string): LogNode[][] => {
+  const name: LogNode[] = [{ type: "command", command: command.name }];
+  if (command.aliases?.length) {
+    const aliases = command.aliases.map((alias): LogNode => ({ type: "command", command: alias }));
+    name.push(" (", ...joinNodes(aliases, ", "), ")");
+  }
+  return [name, [description]];
+};
+
+// optimal string alignment distance: Levenshtein where swapping two neighbours is one edit,
+// so "abuot" is one typo away from "about"
+const getEditDistance = (a: string, b: string, maxDistance: number) => {
+  // a cheap bound: a long pasted line is not compared letter by letter
+  if (Math.abs(a.length - b.length) > maxDistance) return Infinity;
+  const distances = Array.from({ length: a.length + 1 }, (_, i) =>
+    Array.from({ length: b.length + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0)),
+  );
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      distances[i][j] = Math.min(
+        distances[i - 1][j] + 1,
+        distances[i][j - 1] + 1,
+        distances[i - 1][j - 1] + cost,
+      );
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+        distances[i][j] = Math.min(distances[i][j], distances[i - 2][j - 2] + 1);
+      }
+    }
+  }
+  return distances[a.length][b.length];
+};
+
+// the closest command for an unknown one ("abuot" -> "about"), among names and aliases,
+// bare and with each param; short inputs allow one typo, longer ones two;
+// on a tie the first command wins, so page commands win over global ones
+export const getSuggestion = (commands: Command[], userCommand: string) => {
+  const input = userCommand.trim().replace(/\s+/g, " ").toLowerCase();
+  const maxDistance = input.length <= 4 ? 1 : 2;
+  const phrases = commands.flatMap((command) =>
+    getCommandPhrases(command).flatMap((phrase) => [
+      phrase,
+      ...(command.params ?? []).map((param) => `${phrase} ${param}`),
+    ]),
+  );
+
+  let suggestion: string | undefined;
+  let suggestionDistance = maxDistance + 1;
+  for (const phrase of phrases) {
+    const distance = getEditDistance(input, phrase.toLowerCase(), maxDistance);
+    if (distance < suggestionDistance) {
+      suggestion = phrase;
+      suggestionDistance = distance;
+    }
+  }
+  return suggestion;
 };
 
 export const getParamsString = (obj: object) => {

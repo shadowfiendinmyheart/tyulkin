@@ -1,6 +1,6 @@
 import { StrictMode } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { routes } from "../../router/routes";
@@ -66,6 +66,8 @@ describe("console", () => {
     expect(github.getAttribute("target")).toBe("_blank");
     const email = screen.getByRole("link", { name: "tyulkindev@yandex.ru" });
     expect(email.getAttribute("href")).toBe("mailto:tyulkindev@yandex.ru");
+    // no blank tab for links that open an app
+    expect(email.hasAttribute("target")).toBe(false);
   });
 
   it("does not focus the input on a link click (TASK-48)", async () => {
@@ -87,6 +89,15 @@ describe("console", () => {
     const { user } = renderConsole("/settings");
     await user.keyboard("set themeblack{Enter}");
     expect(getLogs().at(-1)).toContain("Command set themeblack not found");
+  });
+
+  it("suggests the closest command for a typo (TASK-57)", async () => {
+    const { user } = renderConsole();
+    await user.keyboard("abuot{Enter}");
+    expect(getLogs().at(-1)).toMatch(/^Command abuot not found[\s\S]*\nDid you mean about\?$/);
+
+    await user.keyboard("qwerty{Enter}");
+    expect(getLogs().at(-1)).not.toContain(eng.didYouMean);
   });
 
   it("autocompletes by Tab", async () => {
@@ -129,10 +140,13 @@ describe("command registry (TASK-33)", () => {
   it("generates help from page and global commands", async () => {
     const { user } = renderConsole("/settings");
     await user.keyboard("help{Enter}");
-    const help = getLogs().at(-1)?.split("\n");
-    expect(help?.[0]).toBe("set theme - set the theme");
-    expect(help).toContain("show languages - list languages");
-    expect(help?.at(-1)).toBe("ls - list commands");
+    const help = within(screen.getAllByRole("listitem").at(-1)!)
+      .getAllByRole("row")
+      .map((row) => Array.from((row as HTMLTableRowElement).cells, (cell) => cell.textContent));
+    expect(help[0]).toEqual(["set theme", "set the theme"]);
+    expect(help).toContainEqual(["show languages", "list languages"]);
+    expect(help).toContainEqual(["back (cd .., cd..)", "go back"]);
+    expect(help.at(-1)).toEqual(["ls", "list commands"]);
   });
 
   it("generates ls from page and global commands", async () => {

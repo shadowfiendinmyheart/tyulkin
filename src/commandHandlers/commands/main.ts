@@ -1,4 +1,5 @@
 import { ROUTES } from "../../router/const";
+import { linkify } from "../../store/console/logNodes";
 import { Command } from "../interfaces";
 
 export const mainCommands: Command[] = [
@@ -25,12 +26,12 @@ export const mainCommands: Command[] = [
   {
     name: "projects",
     descriptionKey: "helpProjects",
-    run: ({ log, t }) => log(t({ key: "projects" }), { withLinks: true }),
+    run: ({ log, t }) => log(linkify(t({ key: "projects" }))),
   },
   {
     name: "contacts",
     descriptionKey: "helpContacts",
-    run: ({ log, t }) => log(t({ key: "contacts" }), { withLinks: true }),
+    run: ({ log, t }) => log(linkify(t({ key: "contacts" }))),
   },
   {
     name: "settings",

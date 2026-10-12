@@ -29,6 +29,7 @@
   "loading": "loading",
   "inputLabel": "command line",
   "inputHint": "type help to see the available commands",
+  "didYouMean": "Did you mean $command?",
   "wrongCaret": "Cursor $caretName not found",
   "changeCaret": "Cursor successfully changed to $caretName",
   "caretList": "Available cursors: $carets",

@@ -38,6 +38,8 @@ export interface CommandDescriptionDictionary {
 
 export interface DictionaryWithArgs {
   ["404command"]: string;
+  // the closest command when an unknown one is typed
+  didYouMean: string;
   wrongCaret: string;
   changeCaret: string;
   caretList: string;
@@ -63,6 +65,7 @@ type LocaleWithArgsGenerator<Key extends DictionaryWithArgsKeys, Args extends st
 
 type CommonLocale = { key: CommonDictionaryKeys | CommandDescriptionKeys };
 type NotFoundLocale = LocaleWithArgsGenerator<"404command", "unknownCommand">;
+type DidYouMeanLocale = LocaleWithArgsGenerator<"didYouMean", "command">;
 type WrongCaretLocale = LocaleWithArgsGenerator<"wrongCaret", "caretName">;
 type ChangeCaretLocale = LocaleWithArgsGenerator<"changeCaret", "caretName">;
 type CaretListLocale = LocaleWithArgsGenerator<"caretList", "carets">;
@@ -76,6 +79,7 @@ type ThemeListLocale = LocaleWithArgsGenerator<"themeList", "themes">;
 
 export type LocaleWithArgs =
   | NotFoundLocale
+  | DidYouMeanLocale
   | WrongCaretLocale
   | ChangeCaretLocale
   | CaretListLocale

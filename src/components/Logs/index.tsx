@@ -1,7 +1,59 @@
 import React from "react";
 import { useConsoleContext } from "../../context/consoleContext";
+import { LogColor, LogNode } from "../../store/console/interfaces";
 import styles from "./styles.module.scss";
-import { splitLinks } from "./utils";
+
+const colorClassNames: Record<LogColor, string> = {
+  muted: styles.muted,
+  accent: styles.accent,
+  error: styles.error,
+};
+
+const renderNode = (node: LogNode): React.ReactNode => {
+  if (typeof node === "string") return node;
+
+  switch (node.type) {
+    case "text":
+      return <span className={colorClassNames[node.color]}>{node.text}</span>;
+    case "link":
+      // mailto: and tel: open an app, a new tab would stay blank
+      return /^https?:/.test(node.href) ? (
+        <a className={styles.link} href={node.href} target="_blank" rel="noreferrer">
+          {node.text}
+        </a>
+      ) : (
+        <a className={styles.link} href={node.href}>
+          {node.text}
+        </a>
+      );
+    case "command":
+      return <span className={styles.command}>{node.command}</span>;
+    case "table":
+      return (
+        <table className={styles.table}>
+          <tbody>
+            {node.rows.map((row, rowIndex) => (
+              // eslint-disable-next-line @eslint-react/no-array-index-key -- a log never changes
+              <tr key={rowIndex}>
+                {row.map((cell, cellIndex) => (
+                  // eslint-disable-next-line @eslint-react/no-array-index-key -- a log never changes
+                  <td key={cellIndex}>{renderNodes(cell)}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      );
+    case "pre":
+      return <pre className={styles.pre}>{node.text}</pre>;
+  }
+};
+
+const renderNodes = (nodes: LogNode[]) =>
+  nodes.map((node, index) => (
+    // eslint-disable-next-line @eslint-react/no-array-index-key -- a log never changes
+    <React.Fragment key={index}>{renderNode(node)}</React.Fragment>
+  ));
 
 const Logs: React.FC = () => {
   const { consoleState } = useConsoleContext();
@@ -15,23 +67,7 @@ const Logs: React.FC = () => {
             item's text, and the live region could announce them all again */}
         {logs.map((log) => (
           <li key={log.id} className={styles.log}>
-            {log.withLinks
-              ? splitLinks(log.message).map(({ text, start, href }) =>
-                  href ? (
-                    <a
-                      key={start}
-                      className={styles.link}
-                      href={href}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {text}
-                    </a>
-                  ) : (
-                    <React.Fragment key={start}>{text}</React.Fragment>
-                  ),
-                )
-              : log.message}
+            {renderNodes(log.content)}
           </li>
         ))}
       </ul>

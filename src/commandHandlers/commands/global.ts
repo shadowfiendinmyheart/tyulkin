@@ -1,7 +1,9 @@
 import { ROUTES } from "../../router/const";
 import { clearLogs } from "../../store/console/actions";
+import { LogNode } from "../../store/console/interfaces";
+import { joinNodes } from "../../store/console/logNodes";
 import { Command } from "../interfaces";
-import { getHelpLine, getParentPath } from "../utils";
+import { getHelpRow, getParentPath } from "../utils";
 
 export const globalCommands: Command[] = [
   {
@@ -27,21 +29,22 @@ export const globalCommands: Command[] = [
     name: "help",
     descriptionKey: "helpHelp",
     run: ({ log, t, commands }) => {
-      const help = commands.map((command) =>
-        getHelpLine(command, t({ key: command.descriptionKey })),
+      const rows = commands.map((command) =>
+        getHelpRow(command, t({ key: command.descriptionKey })),
       );
-      log(help.join("\n"));
+      log({ type: "table", rows });
     },
   },
   {
     name: "ls",
     descriptionKey: "helpLs",
     run: ({ log, commands }) => {
+      const names = commands.map(({ name }) => name).sort();
       log(
-        commands
-          .map(({ name }) => name)
-          .sort()
-          .join("   "),
+        joinNodes(
+          names.map((name): LogNode => ({ type: "command", command: name })),
+          "   ",
+        ),
       );
     },
   },

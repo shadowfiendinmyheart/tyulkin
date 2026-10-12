@@ -5,9 +5,11 @@ import { useConsoleContext } from "../context/consoleContext";
 import { HandlerContext } from "../context/handlerContext";
 import { useLocalization } from "../context/localizationContext";
 import { addConsoleLog } from "../store/console/actions";
+import { LogNode } from "../store/console/interfaces";
+import { withNode } from "../store/console/logNodes";
 import { globalCommands } from "./commands";
 import { Command, CommandContext } from "./interfaces";
-import { getAllCommandsWithParams, separateCommand } from "./utils";
+import { getAllCommandsWithParams, getSuggestion, separateCommand } from "./utils";
 
 interface WithCommandHandlerProps {
   // commands of the current page; global commands are always available
@@ -33,12 +35,21 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
     (userCommand: string) => {
       if (userCommand.trim() === "") return;
 
-      const log: CommandContext["log"] = (message, { withLinks } = {}) =>
-        consoleDispatch(addConsoleLog(message, withLinks));
+      const log: CommandContext["log"] = (content) => consoleDispatch(addConsoleLog(content));
 
       const separated = separateCommand(availableCommands, userCommand);
       if (!separated) {
-        log(t({ key: "404command", args: { unknownCommand: userCommand } }));
+        const notFound = t({ key: "404command", args: { unknownCommand: userCommand } });
+        const content: LogNode[] = [{ type: "text", text: notFound, color: "error" }];
+        const suggestion = getSuggestion(availableCommands, userCommand);
+        if (suggestion) {
+          const didYouMean = withNode((command) => t({ key: "didYouMean", args: { command } }), {
+            type: "command",
+            command: suggestion,
+          });
+          content.push("\n", ...didYouMean);
+        }
+        log(content);
         return;
       }
 

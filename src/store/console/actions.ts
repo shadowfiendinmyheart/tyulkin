@@ -6,17 +6,17 @@ import {
   ActionSetCaretMode,
   ActionSetCommandsHint,
   ConsoleActionKind,
+  LogContent,
 } from "./interfaces";
 
-export const addConsoleLog = (message: string, withLinks = false): ActionAddLogs => {
-  return {
-    type: ConsoleActionKind.AddLogs,
-    payload: withLinks ? { message, withLinks } : { message },
-  };
-};
+export const addConsoleLog = (content: LogContent): ActionAddLogs => ({
+  type: ConsoleActionKind.AddLogs,
+  payload: { content: Array.isArray(content) ? content : [content] },
+});
+// the echoed input is plain text: never a link or a command
 export const addUserLog = (message: string, location: string): ActionAddLogs => ({
   type: ConsoleActionKind.AddLogs,
-  payload: { message: `${location}> ${message}` },
+  payload: { content: [`${location}> ${message}`] },
 });
 export const clearLogs = (): ActionClearLogs => ({ type: ConsoleActionKind.ClearLogs });
 export const addHistoryCommand = (command: string): ActionAddHistoryCommand => ({

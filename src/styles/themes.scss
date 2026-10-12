@@ -5,6 +5,8 @@
   --text-color: #ccc;
   --muted-color: #888;
   --caret-color: #fff;
+  --accent-color: #5fafff;
+  --error-color: #ff5f5f;
 }
 
 [data-theme="White"] {
@@ -12,6 +14,8 @@
   --text-color: #222;
   --muted-color: #777;
   --caret-color: #000;
+  --accent-color: #0057b8;
+  --error-color: #c62828;
 }
 
 [data-theme="Light"] {
@@ -19,6 +23,8 @@
   --text-color: #586e75;
   --muted-color: #93a1a1;
   --caret-color: #586e75;
+  --accent-color: #268bd2;
+  --error-color: #dc322f;
 }
 
 [data-theme="Dark"] {
@@ -26,6 +32,8 @@
   --text-color: #d4d4d4;
   --muted-color: #808080;
   --caret-color: #d4d4d4;
+  --accent-color: #569cd6;
+  --error-color: #f48771;
 }
 
 [data-theme="Hacker"] {
@@ -33,4 +41,6 @@
   --text-color: #33ff33;
   --muted-color: #1a9e1a;
   --caret-color: #33ff33;
+  --accent-color: #b3ffb3;
+  --error-color: #ff4d4d;
 }

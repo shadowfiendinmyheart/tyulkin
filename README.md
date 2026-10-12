@@ -66,6 +66,12 @@ src/
 автодополнении), `descriptionKey` (строка в `help`) и `run(ctx, args)`. `ctx` даёт `log`, `t`,
 `navigate`, диспатчеры сторов, `changeLanguage` и список доступных команд.
 
+`log` принимает `LogNode` или их массив
+([`store/console/interfaces.ts`](src/store/console/interfaces.ts)): строку (простой текст),
+цветной текст, ссылку, имя команды, таблицу или `pre`-блок. Помощники — в
+[`store/console/logNodes.ts`](src/store/console/logNodes.ts): ссылки из текстов владельца делает
+`linkify`; ввод посетителя всегда остаётся простым текстом.
+
 Реестр — [`src/commandHandlers/commands/`](src/commandHandlers/commands):
 
 - `global.ts` — команды, доступные на любой странице (`help`, `ls`, `clear`, `back`, `menu`);

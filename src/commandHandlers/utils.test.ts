@@ -3,8 +3,9 @@ import { Command } from "./interfaces";
 import {
   getAllCommandsWithParams,
   getAutocompleteCommands,
-  getHelpLine,
+  getHelpRow,
   getParentPath,
+  getSuggestion,
   separateCommand,
 } from "./utils";
 
@@ -106,10 +107,53 @@ describe("getAutocompleteCommands", () => {
   });
 });
 
-describe("getHelpLine", () => {
-  it("lists aliases next to the name", () => {
-    expect(getHelpLine(back, "go back")).toBe("back (cd .., cd..) - go back");
-    expect(getHelpLine(showThemes, "list themes")).toBe("show themes - list themes");
+describe("getHelpRow", () => {
+  it("lists aliases next to the name as commands", () => {
+    expect(getHelpRow(back, "go back")).toEqual([
+      [
+        { type: "command", command: "back" },
+        " (",
+        { type: "command", command: "cd .." },
+        ", ",
+        { type: "command", command: "cd.." },
+        ")",
+      ],
+      ["go back"],
+    ]);
+    expect(getHelpRow(showThemes, "list themes")).toEqual([
+      [{ type: "command", command: "show themes" }],
+      ["list themes"],
+    ]);
+  });
+});
+
+describe("getSuggestion (TASK-57)", () => {
+  const named = (name: string): Command => ({ name, descriptionKey: "helpAbout", run });
+  const all = [named("about"), named("education"), named("help"), named("ls"), ...commands];
+
+  it("suggests the closest command, counting a swap of neighbours as one typo", () => {
+    expect(getSuggestion(all, "abuot")).toBe("about");
+    expect(getSuggestion(all, "eductaion")).toBe("education");
+    expect(getSuggestion(all, "lss")).toBe("ls");
+  });
+
+  it("compares names and aliases, bare and with params, ignoring case and extra whitespace", () => {
+    expect(getSuggestion(all, "set  themeblack")).toBe("set theme Black");
+    expect(getSuggestion(all, "set them")).toBe("set theme");
+    expect(getSuggestion(all, "cd ,,")).toBe("cd ..");
+    expect(getSuggestion(all, "ABOTU")).toBe("about");
+  });
+
+  it("allows one typo in short inputs and two in longer ones", () => {
+    expect(getSuggestion(all, "hlp")).toBe("help");
+    expect(getSuggestion(all, "hl")).toBeUndefined();
+    expect(getSuggestion(all, "abxyt")).toBe("about");
+    expect(getSuggestion(all, "axyzt")).toBeUndefined();
+    expect(getSuggestion(all, "about".repeat(100))).toBeUndefined();
+  });
+
+  it("prefers the first command on a tie", () => {
+    expect(getSuggestion([named("cat"), named("car")], "cax")).toBe("cat");
   });
 });
 

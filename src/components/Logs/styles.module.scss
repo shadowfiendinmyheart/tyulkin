@@ -14,3 +14,37 @@
   color: inherit;
   text-decoration: underline;
 }
+
+.command,
+.accent {
+  color: var(--accent-color);
+}
+
+.muted {
+  color: var(--muted-color);
+}
+
+.error {
+  color: var(--error-color);
+}
+
+.table {
+  border-collapse: collapse;
+
+  td {
+    padding: 0 2ch 0 0;
+    vertical-align: top;
+  }
+
+  // the first column holds names (commands, keys), the rest wrap
+  td:first-child {
+    white-space: nowrap;
+  }
+}
+
+.pre {
+  font: inherit;
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow-x: auto;
+}
