@@ -104,7 +104,7 @@
 | ✅ TASK-64 | P2 | M | **CRT-эффект** | Scanlines, свечение текста, лёгкая виньетка/изгиб, мерцание; `set crt on\|off` (по умолчанию выкл.). При `prefers-reduced-motion` — без мерцания. Особенно с темой Hacker. |
 | ✅ TASK-65 | P2 | S | **`matrix` и Konami code** | «Цифровой дождь» на canvas поверх консоли в цветах темы, выход по любой клавише/тапу. ↑↑↓↓←→←→BA открывает секретную тему. |
 | TASK-66 | P3 | L | **Мини-игры** | `snake` / `2048` / `tetris` внутри терминала (символьная сетка), стрелки и свайпы, рекорд в storage. Ленивая загрузка чанка (`import()`), чтобы не раздувать основной бандл. |
-| TASK-67 | P3 | S | **Звук клавиатуры** | Механические щелчки при наборе через Web Audio, `set sound on\|off`, по умолчанию выкл. |
+| ✅ TASK-67 | P3 | S | **Звук клавиатуры** | Механические щелчки при наборе через Web Audio, `set sound on\|off`, по умолчанию выкл. |
 | TASK-73 | P3 | M | **Больше тем** | Dracula, Solarized, Gruvbox, Nord, Monokai, `set theme random`; тема по умолчанию — по `prefers-color-scheme`. [domain](src/domain/index.ts), [themes.scss](src/styles/themes.scss) |
 
 ### Живой контент

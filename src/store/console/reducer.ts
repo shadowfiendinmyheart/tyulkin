@@ -69,6 +69,13 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
       };
     }
 
+    case ConsoleActionKind.SetSoundMode: {
+      return {
+        ...state,
+        soundMode: action.payload,
+      };
+    }
+
     case ConsoleActionKind.FinishTyping: {
       // a late timer of an already skipped log changes nothing
       if (action.payload < state.typedLogId) return state;

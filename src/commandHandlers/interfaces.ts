@@ -1,5 +1,5 @@
 import { NavigateFunction } from "react-router";
-import { CaretMode, CrtMode, SecretId, ThemeMode } from "../domain";
+import { CaretMode, CrtMode, SecretId, SoundMode, ThemeMode } from "../domain";
 import { CommandDescriptionKeys, Languages, TFunction } from "../localization/interfaces";
 import { AppActionType } from "../store/app/interfaces";
 import { ConsoleActionType, LogContent } from "../store/console/interfaces";
@@ -11,6 +11,7 @@ export interface CommandContext {
   theme: ThemeMode;
   caretMode: CaretMode;
   crtMode: CrtMode;
+  soundMode: SoundMode;
   changeLanguage: (language: Languages) => Promise<TFunction>;
   consoleDispatch: (action: ConsoleActionType) => void;
   appDispatch: (action: AppActionType) => void;

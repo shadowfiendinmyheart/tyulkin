@@ -8,6 +8,8 @@ import {
   oneOf,
   SecretId,
   secretIds,
+  SoundMode,
+  soundModes,
   ThemeMode,
 } from "../domain";
 import { Languages, languages } from "../localization/interfaces";
@@ -17,6 +19,7 @@ enum StorageKeys {
   CaretMode = "caretMode",
   ThemeMode = "themeMode",
   CrtMode = "crtMode",
+  SoundMode = "soundMode",
   language = "language",
   // time of the previous visit, ms since epoch
   LastLogin = "lastLogin",
@@ -129,6 +132,13 @@ class Storage {
 
   // off by default: the effect is opt-in
   getCrtMode = (): CrtMode => readOneOf(StorageKeys.CrtMode, crtModes, "off");
+
+  setSoundMode = (mode: SoundMode) => {
+    writeItem(StorageKeys.SoundMode, mode);
+  };
+
+  // off by default: a page must not make sounds unasked
+  getSoundMode = (): SoundMode => readOneOf(StorageKeys.SoundMode, soundModes, "off");
 
   setLanguage = (language: Languages) => {
     writeItem(StorageKeys.language, language);

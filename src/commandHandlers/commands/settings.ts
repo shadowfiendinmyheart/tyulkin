@@ -1,10 +1,20 @@
-import { CaretMode, caretModes, CrtMode, crtModes, oneOf, themeModes } from "../../domain";
+import {
+  CaretMode,
+  caretModes,
+  CrtMode,
+  crtModes,
+  oneOf,
+  SoundMode,
+  soundModes,
+  themeModes,
+} from "../../domain";
 import { languages, TFunction } from "../../localization/interfaces";
 import { checkLanguage } from "../../localization/utils";
 import storage from "../../storage";
 import { setTheme } from "../../store/app/actions";
-import { setCaretMode, setCrtMode } from "../../store/console/actions";
+import { setCaretMode, setCrtMode, setSoundMode } from "../../store/console/actions";
 import { makeCapitalize } from "../../utils";
+import { suspendKeySound } from "../../utils/keySound";
 import { Command } from "../interfaces";
 import { getParamsString } from "../utils";
 
@@ -20,8 +30,10 @@ const getThemeListLocale = (t: TFunction) =>
 const CRT_MODES = getParamsString(crtModes);
 
 // the state in words of the language: "on" / "включён"
-const getCrtStateLocale = (t: TFunction, mode: CrtMode) =>
-  t({ key: mode === "on" ? "crtOn" : "crtOff" });
+const getStateLocale = (t: TFunction, mode: CrtMode | SoundMode) =>
+  t({ key: mode === "on" ? "stateOn" : "stateOff" });
+
+const SOUND_MODES = getParamsString(soundModes);
 
 export const settingsCommands: Command[] = [
   {
@@ -86,9 +98,7 @@ export const settingsCommands: Command[] = [
     descriptionKey: "helpSetCrt",
     run: ({ log, t, crtMode, consoleDispatch }, [param]) => {
       if (!param) {
-        log(
-          t({ key: "crtStatus", args: { state: getCrtStateLocale(t, crtMode), modes: CRT_MODES } }),
-        );
+        log(t({ key: "crtStatus", args: { state: getStateLocale(t, crtMode), modes: CRT_MODES } }));
         return;
       }
 
@@ -101,7 +111,35 @@ export const settingsCommands: Command[] = [
 
       storage.setCrtMode(mode);
       consoleDispatch(setCrtMode(mode));
-      log(t({ key: "changeCrt", args: { state: getCrtStateLocale(t, mode) } }));
+      log(t({ key: "changeCrt", args: { state: getStateLocale(t, mode) } }));
+    },
+  },
+  {
+    name: "set sound",
+    params: soundModes,
+    descriptionKey: "helpSetSound",
+    run: ({ log, t, soundMode, consoleDispatch }, [param]) => {
+      if (!param) {
+        log(
+          t({
+            key: "soundStatus",
+            args: { state: getStateLocale(t, soundMode), modes: SOUND_MODES },
+          }),
+        );
+        return;
+      }
+
+      const mode = oneOf(soundModes, param.toLowerCase());
+
+      if (!mode) {
+        log(t({ key: "wrongSound", args: { soundName: param, modes: SOUND_MODES } }));
+        return;
+      }
+
+      storage.setSoundMode(mode);
+      consoleDispatch(setSoundMode(mode));
+      if (mode === "off") suspendKeySound();
+      log(t({ key: "changeSound", args: { state: getStateLocale(t, mode) } }));
     },
   },
   {

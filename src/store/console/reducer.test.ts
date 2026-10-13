@@ -11,6 +11,7 @@ import {
   setCaretMode,
   setCommandsHint,
   setCrtMode,
+  setSoundMode,
   skipTyping,
 } from "./actions";
 import { ConsoleState } from "./interfaces";
@@ -25,6 +26,7 @@ const initialState: ConsoleState = {
   typedCommandsCount: 0,
   caretMode: CaretMode.Block,
   crtMode: "off",
+  soundMode: "off",
   commandsHint: [],
   isMatrixShown: false,
 };
@@ -91,6 +93,10 @@ describe("console reducer", () => {
 
   it("sets the crt mode (TASK-64)", () => {
     expect(reducer(initialState, setCrtMode("on")).crtMode).toBe("on");
+  });
+
+  it("sets the sound mode (TASK-67)", () => {
+    expect(reducer(initialState, setSoundMode("on")).soundMode).toBe("on");
   });
 
   it("sets the commands hint as is", () => {

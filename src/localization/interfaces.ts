@@ -46,9 +46,9 @@ export interface CommonDictionary {
   coffee: string;
   // how the Konami code is listed by `secrets`
   secretKonami: string;
-  // the state of the CRT effect in `set crt` messages
-  crtOn: string;
-  crtOff: string;
+  // the state of an on/off setting in `set crt` and `set sound` messages
+  stateOn: string;
+  stateOff: string;
   // `history` (TASK-61): nothing to list, `history -c`, wrong arguments
   historyEmpty: string;
   historyCleared: string;
@@ -83,6 +83,7 @@ export interface CommandDescriptionDictionary {
   helpSetCaret: string;
   helpShowCarets: string;
   helpSetCrt: string;
+  helpSetSound: string;
   helpSetLanguage: string;
   helpShowLanguages: string;
   helpNeofetch: string;
@@ -126,6 +127,10 @@ export interface DictionaryWithArgs {
   crtStatus: string;
   wrongCrt: string;
   changeCrt: string;
+  // `set sound` (TASK-67): $state is on or off, $modes lists both
+  soundStatus: string;
+  wrongSound: string;
+  changeSound: string;
   wrongLanguage: string;
   changeLanguage: string;
   changeLanguageError: string;
@@ -190,6 +195,9 @@ type CaretListLocale = LocaleWithArgsGenerator<"caretList", "carets">;
 type CrtStatusLocale = LocaleWithArgsGenerator<"crtStatus", "state" | "modes">;
 type WrongCrtLocale = LocaleWithArgsGenerator<"wrongCrt", "crtName" | "modes">;
 type ChangeCrtLocale = LocaleWithArgsGenerator<"changeCrt", "state">;
+type SoundStatusLocale = LocaleWithArgsGenerator<"soundStatus", "state" | "modes">;
+type WrongSoundLocale = LocaleWithArgsGenerator<"wrongSound", "soundName" | "modes">;
+type ChangeSoundLocale = LocaleWithArgsGenerator<"changeSound", "state">;
 type WrongLanguageLocale = LocaleWithArgsGenerator<"wrongLanguage", "languageName">;
 type ChangeLanguageLocale = LocaleWithArgsGenerator<"changeLanguage", "languageName">;
 type ChangeLanguageErrorLocale = LocaleWithArgsGenerator<"changeLanguageError", "languageName">;
@@ -233,6 +241,9 @@ export type LocaleWithArgs =
   | CrtStatusLocale
   | WrongCrtLocale
   | ChangeCrtLocale
+  | SoundStatusLocale
+  | WrongSoundLocale
+  | ChangeSoundLocale
   | WrongLanguageLocale
   | ChangeLanguageLocale
   | ChangeLanguageErrorLocale

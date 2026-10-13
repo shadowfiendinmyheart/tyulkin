@@ -15,6 +15,7 @@ import { useHistoryCommands } from "./hooks/useHistoryCommands";
 import { useReverseSearch } from "./hooks/useReverseSearch";
 import { useT } from "../../context/localizationContext";
 import { withNode } from "../../store/console/logNodes";
+import { isClickingKey, playKeyClick } from "../../utils/keySound";
 
 import styles from "./styles.module.scss";
 
@@ -51,7 +52,7 @@ const SEARCH_ACCEPT_KEYS = [
 const Input: React.FC = () => {
   const { executeCommand } = useHandlerContext();
   const { consoleDispatch, consoleState } = useConsoleContext();
-  const { logs, history } = consoleState;
+  const { logs, history, soundMode } = consoleState;
   const [inputValue, setInputValue] = React.useState<string>("");
   // index of the char the caret is drawn on (-1 — before the first char), see readCaretPosition
   const [caretPosition, setCaretPosition] = React.useState<number>(-1);
@@ -151,6 +152,9 @@ const Input: React.FC = () => {
   };
 
   const handleKeyDownInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // `set sound on` (TASK-67)
+    if (soundMode === "on" && isClickingKey(e.nativeEvent)) playKeyClick(e.key);
+
     if (reverseSearch.isSearching && handleSearchKeyDown(e)) return;
 
     const isContinue = commandsHintHandleKeyDownInput(e);

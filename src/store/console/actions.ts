@@ -1,4 +1,4 @@
-import { CaretMode, CrtMode } from "../../domain";
+import { CaretMode, CrtMode, SoundMode } from "../../domain";
 import {
   ActionAddHistoryCommand,
   ActionAddLogs,
@@ -8,6 +8,7 @@ import {
   ActionFinishTyping,
   ActionSetCaretMode,
   ActionSetCrtMode,
+  ActionSetSoundMode,
   ActionSetCommandsHint,
   ActionSetMatrixShown,
   ActionSkipTyping,
@@ -52,6 +53,10 @@ export const setCaretMode = (caretMode: CaretMode): ActionSetCaretMode => ({
 export const setCrtMode = (crtMode: CrtMode): ActionSetCrtMode => ({
   type: ConsoleActionKind.SetCrtMode,
   payload: crtMode,
+});
+export const setSoundMode = (soundMode: SoundMode): ActionSetSoundMode => ({
+  type: ConsoleActionKind.SetSoundMode,
+  payload: soundMode,
 });
 export const setCommandsHint = (commandsHint: string[]): ActionSetCommandsHint => ({
   type: ConsoleActionKind.SetCommandsHint,

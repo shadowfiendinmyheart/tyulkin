@@ -1,4 +1,4 @@
-import { CaretMode, CrtMode } from "../../domain";
+import { CaretMode, CrtMode, SoundMode } from "../../domain";
 import { ActionTypeGenerator } from "../interfaces";
 
 // theme colors of a text, see styles/themes.scss
@@ -53,6 +53,8 @@ export interface ConsoleState {
   caretMode: CaretMode;
   // the CRT monitor effect over the console (`set crt on|off`)
   crtMode: CrtMode;
+  // keyboard clicks while typing (`set sound on|off`)
+  soundMode: SoundMode;
   commandsHint: string[];
   // the `matrix` digital rain covers the console until any key or tap
   isMatrixShown: boolean;
@@ -66,6 +68,7 @@ export type ConsoleActionType =
   | ActionCountTypedCommand
   | ActionSetCaretMode
   | ActionSetCrtMode
+  | ActionSetSoundMode
   | ActionSetCommandsHint
   | ActionFinishTyping
   | ActionSkipTyping
@@ -85,6 +88,7 @@ export type ActionClearHistory = ActionTypeGenerator<ConsoleActionKind.ClearHist
 export type ActionCountTypedCommand = ActionTypeGenerator<ConsoleActionKind.CountTypedCommand>;
 export type ActionSetCaretMode = ActionTypeGenerator<ConsoleActionKind.SetCaretMode, CaretMode>;
 export type ActionSetCrtMode = ActionTypeGenerator<ConsoleActionKind.SetCrtMode, CrtMode>;
+export type ActionSetSoundMode = ActionTypeGenerator<ConsoleActionKind.SetSoundMode, SoundMode>;
 export type ActionSetCommandsHint = ActionTypeGenerator<
   ConsoleActionKind.SetCommandsHint,
   string[]
@@ -98,6 +102,7 @@ export enum ConsoleActionKind {
   CountTypedCommand = "countTypedCommand",
   SetCaretMode = "setCaretMode",
   SetCrtMode = "setCrtMode",
+  SetSoundMode = "setSoundMode",
   SetCommandsHint = "setCommandsHint",
   FinishTyping = "finishTyping",
   SkipTyping = "skipTyping",

@@ -23,6 +23,7 @@ const renderLog = (content: LogNode[]) => {
           typedCommandsCount: 0,
           caretMode: CaretMode.Block,
           crtMode: "off",
+          soundMode: "off",
           commandsHint: [],
           isMatrixShown: false,
         },

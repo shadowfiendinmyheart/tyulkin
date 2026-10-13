@@ -10,7 +10,7 @@ import { KONAMI_CODE } from "../../hooks/useKonamiCode";
 import { LocalizationContext } from "../../context/localizationContext";
 import { createT } from "../../localization";
 import eng from "../../localization/dictionaries/eng.json";
-import { CaretMode, crtModes, secretIds, themeModes } from "../../domain";
+import { CaretMode, crtModes, secretIds, soundModes, themeModes } from "../../domain";
 import { getParamsString } from "../../commandHandlers/utils";
 import inputStyles from "../Input/styles.module.scss";
 import hintStyles from "../CommandsHint/style.module.scss";
@@ -181,12 +181,12 @@ describe("crt effect (TASK-64)", () => {
     expect(getCrt()).toBeNull();
     await user.keyboard("set crt{Enter}");
     expect(getLogs().at(-1)).toBe(
-      t({ key: "crtStatus", args: { state: eng.crtOff, modes: getParamsString(crtModes) } }),
+      t({ key: "crtStatus", args: { state: eng.stateOff, modes: getParamsString(crtModes) } }),
     );
 
     await user.keyboard("set crt ON{Enter}");
     expect(getCrt()).not.toBeNull();
-    expect(getLogs().at(-1)).toBe(t({ key: "changeCrt", args: { state: eng.crtOn } }));
+    expect(getLogs().at(-1)).toBe(t({ key: "changeCrt", args: { state: eng.stateOn } }));
     expect(localStorage.getItem("crtMode")).toBe("on");
 
     await user.keyboard("set crt off{Enter}");
@@ -201,6 +201,74 @@ describe("crt effect (TASK-64)", () => {
       t({ key: "wrongCrt", args: { crtName: "maybe", modes: getParamsString(crtModes) } }),
     );
     expect(getCrt()).toBeNull();
+  });
+});
+
+describe("keyboard sound (TASK-67)", () => {
+  // jsdom has no Web Audio: a fake context counts the clicks played
+  let clicks = 0;
+  const node = () => ({ connect: () => undefined });
+  class FakeAudioContext {
+    state = "running";
+    currentTime = 0;
+    sampleRate = 44100;
+    destination = {};
+    resume = () => Promise.resolve();
+    suspend = () => Promise.resolve();
+    createBuffer = (_channels: number, length: number) => ({
+      getChannelData: () => new Float32Array(length),
+    });
+    createBufferSource = () => {
+      clicks++;
+      return {
+        ...node(),
+        playbackRate: { value: 1 },
+        start: () => undefined,
+        stop: () => undefined,
+      };
+    };
+    createBiquadFilter = () => ({ ...node(), frequency: { value: 0 }, Q: { value: 0 } });
+    createGain = () => ({
+      ...node(),
+      gain: { setValueAtTime: () => undefined, exponentialRampToValueAtTime: () => undefined },
+    });
+  }
+
+  beforeEach(() => {
+    clicks = 0;
+    vi.stubGlobal("AudioContext", FakeAudioContext);
+  });
+
+  it("is off by default, turned on and off by set sound and kept in storage", async () => {
+    const { user } = renderConsole("/settings");
+    await user.keyboard("set sound{Enter}");
+    expect(clicks).toBe(0);
+    expect(getLogs().at(-1)).toBe(
+      t({ key: "soundStatus", args: { state: eng.stateOff, modes: getParamsString(soundModes) } }),
+    );
+
+    await user.keyboard("set sound ON{Enter}");
+    expect(getLogs().at(-1)).toBe(t({ key: "changeSound", args: { state: eng.stateOn } }));
+    expect(localStorage.getItem("soundMode")).toBe("on");
+
+    // a click per key, modifiers are silent
+    await user.keyboard("ab{Shift>}C{/Shift}");
+    expect(clicks).toBe(3);
+
+    await user.keyboard("{Control>}c{/Control}set sound off{Enter}");
+    const clicksWhenOff = clicks;
+    expect(localStorage.getItem("soundMode")).toBe("off");
+    await user.keyboard("abc");
+    expect(clicks).toBe(clicksWhenOff);
+  });
+
+  it("rejects an unknown mode", async () => {
+    const { user } = renderConsole("/settings");
+    await user.keyboard("set sound loud{Enter}");
+    expect(getLogs().at(-1)).toBe(
+      t({ key: "wrongSound", args: { soundName: "loud", modes: getParamsString(soundModes) } }),
+    );
+    expect(localStorage.getItem("soundMode")).toBeNull();
   });
 });
 

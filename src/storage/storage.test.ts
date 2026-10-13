@@ -13,8 +13,10 @@ describe("storage", () => {
     storage.setThemeMode("Hacker");
     storage.setLanguage("ru");
     storage.setCrtMode("on");
+    storage.setSoundMode("on");
     expect(storage.getCaretMode()).toBe(CaretMode.Line);
     expect(storage.getCrtMode()).toBe("on");
+    expect(storage.getSoundMode()).toBe("on");
     expect(storage.getThemeMode()).toBe("Hacker");
     expect(storage.getLanguage()).toBe("ru");
   });
@@ -27,6 +29,7 @@ describe("storage", () => {
   it("falls back to defaults on missing values", () => {
     expect(storage.getCaretMode()).toBe(CaretMode.Block);
     expect(storage.getCrtMode()).toBe("off");
+    expect(storage.getSoundMode()).toBe("off");
     expect(storage.getThemeMode()).toBe("Black");
     expect(storage.getLanguage()).toBe("eng");
   });
@@ -36,8 +39,10 @@ describe("storage", () => {
     localStorage.setItem("themeMode", "neon");
     localStorage.setItem("language", "de");
     localStorage.setItem("crtMode", "true");
+    localStorage.setItem("soundMode", "loud");
     expect(storage.getCaretMode()).toBe(CaretMode.Block);
     expect(storage.getCrtMode()).toBe("off");
+    expect(storage.getSoundMode()).toBe("off");
     expect(storage.getThemeMode()).toBe("Black");
     expect(storage.getLanguage()).toBe("eng");
   });

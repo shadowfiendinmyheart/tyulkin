@@ -202,6 +202,11 @@ CRT-эффект терминала: свечение текста и слой �
 ([`pages/ConsolePage`](src/pages/ConsolePage/styles.module.scss)); при `prefers-reduced-motion` —
 без мерцания. На обычный вид резюме (`/gui`) и печать не влияет.
 
+`set sound on|off` (по умолчанию выкл., `soundModes` в `src/domain`, хранится в storage) включает
+механические щелчки при наборе в строке терминала: короткий шум через полосовой фильтр, синтез на
+Web Audio без звуковых файлов ([`utils/keySound.ts`](src/utils/keySound.ts)); модификаторы и
+автоповтор зажатой клавиши не щёлкают, Enter/пробел/Backspace звучат ниже.
+
 ### Хранилище
 
 [`src/storage`](src/storage/index.ts) сохраняет тему, каретку, язык, время прошлого визита, найденные

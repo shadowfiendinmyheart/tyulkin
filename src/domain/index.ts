@@ -20,6 +20,10 @@ export const caretModes = Object.values(CaretMode);
 export const crtModes = ["on", "off"] as const;
 export type CrtMode = (typeof crtModes)[number];
 
+// mechanical keyboard clicks while typing (TASK-67), synthesized with Web Audio
+export const soundModes = ["on", "off"] as const;
+export type SoundMode = (typeof soundModes)[number];
+
 // narrows an arbitrary (e.g. user- or storage-provided) value to one of the allowed ones
 export const oneOf = <T extends string>(allowed: readonly T[], value: unknown): T | undefined =>
   allowed.find((item) => item === value);
