@@ -4,6 +4,7 @@ import {
   caretModes,
   CrtMode,
   crtModes,
+  HISTORY_LIMIT,
   oneOf,
   SecretId,
   secretIds,
@@ -21,6 +22,8 @@ enum StorageKeys {
   LastLogin = "lastLogin",
   // easter eggs found by the visitor, a JSON array of secret ids
   FoundSecrets = "foundSecrets",
+  // executed commands, newest first, a JSON array of strings (TASK-61)
+  History = "history",
 }
 
 // kept for the browser tab only: a new tab or window is a new session
@@ -74,6 +77,19 @@ const parseSecrets = (value: string | null): SecretId[] => {
   try {
     const parsed: unknown = value ? JSON.parse(value) : [];
     return Array.isArray(parsed) ? parsed.flatMap((item) => oneOf(secretIds, item) ?? []) : [];
+  } catch {
+    return [];
+  }
+};
+
+// the commands of a stored JSON array, at most HISTORY_LIMIT; anything else is dropped
+const parseHistory = (value: string | null): string[] => {
+  try {
+    const parsed: unknown = value ? JSON.parse(value) : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((item): item is string => typeof item === "string" && item.trim() !== "")
+      .slice(0, HISTORY_LIMIT);
   } catch {
     return [];
   }
@@ -151,6 +167,13 @@ class Storage {
     }
     return secretIds.filter((id) => id === secret || found.includes(id));
   };
+
+  // the history survives visits (TASK-61); without localStorage it lasts until a reload
+  setHistory = (history: string[]) => {
+    writeItem(StorageKeys.History, JSON.stringify(history.slice(0, HISTORY_LIMIT)));
+  };
+
+  getHistory = (): string[] => parseHistory(readItem(StorageKeys.History));
 
   // the boot animation plays once per session (browser tab)
   setSessionStarted = () => setSessionFlag(SessionStorageKeys.SessionStarted);

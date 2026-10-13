@@ -3,6 +3,7 @@ import { LogNode } from "../store/console/interfaces";
 import { joinNodes } from "../store/console/logNodes";
 import { normalizeInput } from "../utils";
 import { Command, CommandBase } from "./interfaces";
+import { parsePipeline } from "./shell";
 
 const getCommandPhrases = ({ name, aliases = [] }: CommandBase) => [name, ...aliases];
 
@@ -112,10 +113,12 @@ export const getParentPath = (pathname: string) => {
 };
 
 // the latest command of the history that a deep link on this page can run: a command of the
-// page (history is shared between pages) that is not marked unshareable, as it was typed
+// page (history is shared between pages) that is not marked unshareable, as it was typed,
+// with its grep filters ("help | grep theme")
 export const getShareableCommand = (commands: Command[], history: string[]) =>
   history.find((entry) => {
-    const separated = separateCommand(commands, entry);
+    const pipeline = parsePipeline(entry);
+    const separated = pipeline && separateCommand(commands, pipeline.command);
     return separated && separated.command.shareable !== false;
   });
 

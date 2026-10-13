@@ -18,6 +18,7 @@ import { withNode, withNodes } from "../store/console/logNodes";
 import { globalCommands, secretCommands } from "./commands";
 import { Command, CommandContext } from "./interfaces";
 import { findSecret } from "./secrets";
+import { expandHistory, grep, parsePipeline } from "./shell";
 import { getAllCommandsWithParams, getSuggestion, separateCommand } from "./utils";
 
 interface WithCommandHandlerProps {
@@ -29,7 +30,8 @@ interface WithCommandHandlerProps {
 const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, children }) => {
   const { consoleState, consoleDispatch } = useConsoleContext();
   const { caretMode, crtMode, history } = consoleState;
-  // read by `share` only: kept out of the deps, so the handlers don't change after every command
+  // read by `share`, `history` and `!!`: kept out of the deps, so the handlers don't change
+  // after every command
   const historyRef = React.useRef(history);
   React.useLayoutEffect(() => {
     historyRef.current = history;
@@ -56,16 +58,33 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
     (userCommand: string, fromLink: boolean) => {
       if (userCommand.trim() === "") return;
 
-      const log: CommandContext["log"] = (content) => consoleDispatch(addConsoleLog(content));
+      const rawLog: CommandContext["log"] = (content) => consoleDispatch(addConsoleLog(content));
+
+      // "help | grep theme" (TASK-61): the command, then only the lines of its output with the word
+      const pipeline = parsePipeline(userCommand);
+      if (!pipeline) {
+        rawLog({ type: "text", text: t({ key: "pipeUsage" }), color: "error" });
+        return;
+      }
+      const { command: line, filters } = pipeline;
+      const log: CommandContext["log"] = filters.length
+        ? (content) => {
+            const nodes = filters.reduce(grep, Array.isArray(content) ? content : [content]);
+            if (nodes.length) rawLog(nodes);
+          }
+        : rawLog;
 
       // easter eggs only when no command of the page or global one matches
+      const commands = fromLink
+        ? availableCommands.filter(({ linkable }) => linkable !== false)
+        : availableCommands;
       const separated =
-        separateCommand(availableCommands, userCommand) ??
-        (fromLink ? undefined : separateCommand(secretCommands, userCommand));
+        separateCommand(commands, line) ??
+        (fromLink ? undefined : separateCommand(secretCommands, line));
       if (!separated) {
-        trackUnknownCommand(userCommand);
+        trackUnknownCommand(line);
         const content = withNodes(
-          ([help, ls]) => t({ key: "404command", args: { unknownCommand: userCommand, help, ls } }),
+          ([help, ls]) => t({ key: "404command", args: { unknownCommand: line, help, ls } }),
           [
             { type: "command", command: "help" },
             { type: "command", command: "ls" },
@@ -73,7 +92,7 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
         ).map((node): LogNode =>
           typeof node === "string" ? { type: "text", text: node, color: "error" } : node,
         );
-        const suggestion = getSuggestion(availableCommands, userCommand);
+        const suggestion = getSuggestion(commands, line);
         if (suggestion) {
           const didYouMean = withNode((command) => t({ key: "didYouMean", args: { command } }), {
             type: "command",
@@ -81,7 +100,7 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
           });
           content.push("\n", ...didYouMean);
         }
-        log(content);
+        rawLog(content);
         return;
       }
 
@@ -106,7 +125,7 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
       command.run(ctx, params);
       if ("secret" in command) {
         const found = findSecret(command.secret, t);
-        if (found) log(found);
+        if (found) rawLog(found);
       }
     },
     [
@@ -128,13 +147,23 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
   // shared by Enter in the input, clicks on commands in logs and deep links
   const executeCommand = React.useCallback<HandlerContextType["executeCommand"]>(
     (userCommand, { fromLink = false } = {}) => {
-      const command = userCommand.trim();
-      consoleDispatch(addHistoryCommand(command));
+      const typed = userCommand.trim();
+      // `!!` is the previous command (TASK-61); a link runs what it says
+      const command = fromLink ? typed : expandHistory(typed, historyRef.current[0]);
       consoleDispatch(setCommandsHint([]));
-      consoleDispatch(addUserLog(command, pathnameLocation));
+      consoleDispatch(addUserLog(typed, pathnameLocation));
+      if (command === undefined) {
+        consoleDispatch(
+          addConsoleLog({ type: "text", text: t({ key: "historyNotFound" }), color: "error" }),
+        );
+        return;
+      }
+      // the history keeps the expanded command, and it is shown as in bash
+      consoleDispatch(addHistoryCommand(command));
+      if (command !== typed) consoleDispatch(addConsoleLog(command));
       commandHandler(command, fromLink);
     },
-    [consoleDispatch, pathnameLocation, commandHandler],
+    [consoleDispatch, pathnameLocation, commandHandler, t],
   );
 
   const handlerContextValue = React.useMemo(

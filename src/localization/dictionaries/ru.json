@@ -19,7 +19,7 @@
   "helpBack": "назад",
   "helpClear": "очистить консоль",
   "helpMenu": "вернуться в главное меню",
-  "helpHelp": "помощь",
+  "helpHelp": "помощь; любой вывод можно отфильтровать: help | grep theme",
   "helpLs": "список команд",
   "helpEducation": "образование",
   "helpAbout": "что-то обо мне...",
@@ -89,5 +89,18 @@
   "secretsProgress": "Найдено секретов: $found/$total. Здесь работают и некоторые команды настоящих терминалов, хоть help о них и молчит",
   "secretsAll": "Найдены все секреты: $total. Вы знаете этот терминал вдоль и поперёк!",
   "secretsList": "Найдены: $list",
-  "secretFound": "Найден секрет: $found/$total. Ваш прогресс: $secrets"
+  "secretFound": "Найден секрет: $found/$total. Ваш прогресс: $secrets",
+  "helpHistory": "выполненные команды: !! повторяет последнюю, Ctrl+R ищет по ним, history -c забывает их",
+  "helpEcho": "вывести текст: echo <текст>",
+  "helpWhoami": "кто вы здесь",
+  "helpPwd": "текущий каталог",
+  "helpDate": "текущие дата и время",
+  "historyEmpty": "История пуста: ещё не выполнено ни одной команды",
+  "historyCleared": "История очищена",
+  "historyUsage": "Использование: history — выполненные команды, history -c — забыть их",
+  "historyNotFound": "!!: событие не найдено — ещё не выполнено ни одной команды",
+  "pipeUsage": "После | работает только grep: <команда> | grep [-i] <слово>, например help | grep theme",
+  "reverseSearch": "(поиск в истории)`",
+  "reverseSearchFailing": "(не найдено в истории)`",
+  "reverseSearchLabel": "Поиск по истории команд"
 }

@@ -19,7 +19,7 @@
   "helpBack": "go back",
   "helpClear": "clear the console",
   "helpMenu": "return to the main menu",
-  "helpHelp": "show help",
+  "helpHelp": "show help; any output can be filtered: help | grep theme",
   "helpLs": "list commands",
   "helpEducation": "education",
   "helpAbout": "a few words about me...",
@@ -89,5 +89,18 @@
   "secretsProgress": "Secrets found: $found/$total. Some commands of real terminals work here too, even though help keeps quiet about them",
   "secretsAll": "All $total secrets found. You know this terminal inside out!",
   "secretsList": "Found: $list",
-  "secretFound": "Secret found: $found/$total. Your progress: $secrets"
+  "secretFound": "Secret found: $found/$total. Your progress: $secrets",
+  "helpHistory": "the commands you have run: !! repeats the last one, Ctrl+R searches them, history -c forgets them",
+  "helpEcho": "print a text: echo <text>",
+  "helpWhoami": "who you are here",
+  "helpPwd": "the current directory",
+  "helpDate": "the current date and time",
+  "historyEmpty": "The history is empty: no commands have been run yet",
+  "historyCleared": "The history is cleared",
+  "historyUsage": "Usage: history — the commands you have run, history -c — forget them",
+  "historyNotFound": "!!: event not found — no command has been run yet",
+  "pipeUsage": "Only grep works after |: <command> | grep [-i] <word>, e.g. help | grep theme",
+  "reverseSearch": "(reverse-i-search)`",
+  "reverseSearchFailing": "(failing reverse-i-search)`",
+  "reverseSearchLabel": "Search the command history"
 }

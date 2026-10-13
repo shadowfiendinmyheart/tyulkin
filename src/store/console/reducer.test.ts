@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { CaretMode } from "../../domain";
+import { CaretMode, HISTORY_LIMIT } from "../../domain";
 import {
   addConsoleLog,
   addHistoryCommand,
   addUserLog,
+  clearHistory,
   clearLogs,
   countTypedCommand,
   finishTyping,
@@ -20,6 +21,7 @@ const initialState: ConsoleState = {
   nextLogId: 0,
   typedLogId: 0,
   history: [],
+  historyAdded: 0,
   typedCommandsCount: 0,
   caretMode: CaretMode.Block,
   crtMode: "off",
@@ -63,6 +65,17 @@ describe("console reducer", () => {
     const state = reducer(initialState, addHistoryCommand("ls"));
     expect(reducer(state, addHistoryCommand("ls"))).toBe(state);
     expect(reducer(state, addHistoryCommand(""))).toBe(state);
+  });
+
+  it("keeps the newest HISTORY_LIMIT commands and clears them (TASK-61)", () => {
+    let state = initialState;
+    for (let i = 0; i <= HISTORY_LIMIT; i++) state = reducer(state, addHistoryCommand(`echo ${i}`));
+    expect(state.history).toHaveLength(HISTORY_LIMIT);
+    expect(state.history[0]).toBe(`echo ${HISTORY_LIMIT}`);
+    // the length no longer grows, the counter does
+    expect(state.historyAdded).toBe(HISTORY_LIMIT + 1);
+    expect(reducer(state, clearHistory()).history).toEqual([]);
+    expect(reducer(initialState, clearHistory())).toBe(initialState);
   });
 
   it("counts typed commands (TASK-58)", () => {

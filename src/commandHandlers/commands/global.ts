@@ -1,10 +1,11 @@
 import { ROUTES } from "../../router/const";
-import { clearLogs, setMatrixShown } from "../../store/console/actions";
+import { clearHistory, clearLogs, setMatrixShown } from "../../store/console/actions";
 import { LogNode } from "../../store/console/interfaces";
 import { joinNodes, withNode } from "../../store/console/logNodes";
 import { Command } from "../interfaces";
 import { getNeofetch } from "../neofetch";
 import { getSecretsLog } from "../secrets";
+import { formatDate, formatHistory, getWorkingDirectory, unquote, USER_NAME } from "../shell";
 import { getCommandLink, getHelpRow, getParentPath, getShareableCommand } from "../utils";
 
 export const globalCommands: Command[] = [
@@ -64,6 +65,50 @@ export const globalCommands: Command[] = [
     descriptionKey: "helpNeofetch",
     run: ({ log, t, language, theme, caretMode }) =>
       log(getNeofetch({ t, language, theme, caretMode, now: new Date() })),
+  },
+  {
+    // the executed commands (TASK-61), kept between visits; `history -c` forgets them
+    name: "history",
+    anyArgs: true,
+    descriptionKey: "helpHistory",
+    // a link would show the recipient's own history
+    shareable: false,
+    run: ({ log, t, history, consoleDispatch }, args) => {
+      if (args.length === 1 && args[0] === "-c") {
+        consoleDispatch(clearHistory());
+        log({ type: "text", text: t({ key: "historyCleared" }), color: "muted" });
+      } else if (args.length) {
+        log(t({ key: "historyUsage" }));
+      } else if (history.length) {
+        log({ type: "pre", text: formatHistory(history) });
+      } else {
+        log({ type: "text", text: t({ key: "historyEmpty" }), color: "muted" });
+      }
+    },
+  },
+  {
+    // the visitor's text, as typed: plain text, never a link or a command
+    name: "echo",
+    anyArgs: true,
+    descriptionKey: "helpEcho",
+    shareable: false,
+    linkable: false,
+    run: ({ log }, args) => log(unquote(args.join(" "))),
+  },
+  {
+    name: "whoami",
+    descriptionKey: "helpWhoami",
+    run: ({ log }) => log(USER_NAME),
+  },
+  {
+    name: "pwd",
+    descriptionKey: "helpPwd",
+    run: ({ log, pathname }) => log(getWorkingDirectory(pathname)),
+  },
+  {
+    name: "date",
+    descriptionKey: "helpDate",
+    run: ({ log, language }) => log(formatDate(new Date(), language)),
   },
   {
     // the digital rain over the page until any key or tap (TASK-65)

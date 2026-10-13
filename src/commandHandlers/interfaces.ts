@@ -41,6 +41,8 @@ export interface Command extends CommandBase {
   descriptionKey: CommandDescriptionKeys;
   // false: `share` skips it (no output worth a link, or only navigates: link the page instead)
   shareable?: false;
+  // false: a deep link doesn't run it either (`echo`: a link must not put words in the CV's mouth)
+  linkable?: false;
 }
 
 // an easter egg (TASK-63): runs on any page, but is not in help, ls, autocomplete or

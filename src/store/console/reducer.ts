@@ -1,3 +1,4 @@
+import { HISTORY_LIMIT } from "../../domain";
 import { ConsoleActionKind, ConsoleActionType, ConsoleState } from "./interfaces";
 
 // scrollback limit: older logs are dropped so a long session doesn't grow the DOM forever;
@@ -34,7 +35,16 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
       if (!action.payload || action.payload === state.history[0]) return state;
       return {
         ...state,
-        history: [action.payload, ...state.history],
+        history: [action.payload, ...state.history].slice(0, HISTORY_LIMIT),
+        historyAdded: state.historyAdded + 1,
+      };
+    }
+
+    case ConsoleActionKind.ClearHistory: {
+      if (!state.history.length) return state;
+      return {
+        ...state,
+        history: [],
       };
     }
 

@@ -53,6 +53,22 @@ test("recalls the history by arrows", async ({ page }) => {
   await expect(input(page)).toHaveValue("about");
 });
 
+test("searches the history by Ctrl+R and keeps it after a reload (TASK-61)", async ({ page }) => {
+  await open(page);
+  for (const command of ["skills", "help"]) {
+    await page.keyboard.type(command);
+    await page.keyboard.press("Enter");
+  }
+  await page.reload();
+  await expect(page.getByRole("log")).toContainText(eng.welcome);
+  // Ctrl+R searches instead of reloading the page
+  await page.keyboard.press("Control+r");
+  await page.keyboard.type("sk");
+  await expect(page.getByText("': skills")).toBeVisible();
+  await page.keyboard.press("Enter");
+  await expect(lastLog(page)).toContainText(eng.skills.split("\n")[0]);
+});
+
 test("runs a command clicked in the output", async ({ page }) => {
   await open(page);
   await page.keyboard.type("help");

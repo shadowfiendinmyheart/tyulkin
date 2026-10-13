@@ -190,6 +190,13 @@ describe("getShareableCommand (TASK-62)", () => {
     expect(getShareableCommand(commands, ["share", "about"])).toBeUndefined();
     expect(getShareableCommand(commands, [])).toBeUndefined();
   });
+
+  it("takes a command with its grep filters (TASK-61)", () => {
+    expect(getShareableCommand(commands, ["clear | grep x", "show themes | grep Bl"])).toBe(
+      "show themes | grep Bl",
+    );
+    expect(getShareableCommand(commands, ["show themes | wc"])).toBeUndefined();
+  });
 });
 
 describe("getCommandLink (TASK-62)", () => {

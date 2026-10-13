@@ -46,6 +46,19 @@ export interface CommonDictionary {
   // the state of the CRT effect in `set crt` messages
   crtOn: string;
   crtOff: string;
+  // `history` (TASK-61): nothing to list, `history -c`, wrong arguments
+  historyEmpty: string;
+  historyCleared: string;
+  historyUsage: string;
+  // `!!` with no previous command
+  historyNotFound: string;
+  // something other than grep after "|"
+  pipeUsage: string;
+  // the prompt of Ctrl+R, the query goes after it; failing: nothing contains the query
+  reverseSearch: string;
+  reverseSearchFailing: string;
+  // accessible name of the command line while it searches the history
+  reverseSearchLabel: string;
 }
 
 // one line of `help` per command, see commandHandlers/commands
@@ -76,6 +89,11 @@ export interface CommandDescriptionDictionary {
   helpMatrix: string;
   helpChangelog: string;
   helpSecrets: string;
+  helpHistory: string;
+  helpEcho: string;
+  helpWhoami: string;
+  helpPwd: string;
+  helpDate: string;
 }
 
 export interface DictionaryWithArgs {

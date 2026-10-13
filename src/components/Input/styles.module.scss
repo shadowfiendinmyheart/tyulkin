@@ -44,3 +44,9 @@
   margin-left: 2ch;
   color: var(--muted-color);
 }
+
+// the history entry found by Ctrl+R, after the query; 1ch: the caret is drawn after the query
+.searchMatch {
+  margin-left: 1ch;
+  white-space: pre-wrap;
+}

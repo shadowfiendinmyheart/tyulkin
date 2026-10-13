@@ -12,6 +12,7 @@ import {
 import { usePathnameLocation } from "../../hooks/usePathnameLocation";
 import { useCommandsHint } from "./hooks/useCommandsHint";
 import { useHistoryCommands } from "./hooks/useHistoryCommands";
+import { useReverseSearch } from "./hooks/useReverseSearch";
 import { useT } from "../../context/localizationContext";
 import { withNode } from "../../store/console/logNodes";
 
@@ -36,6 +37,17 @@ const isCtrlShortcut = (e: React.KeyboardEvent, letter: string) => {
 // text selected on the page (in logs); the input's own selection is always collapsed
 const isTextSelected = () => Boolean(window.getSelection()?.toString());
 
+// keys that end Ctrl+R search with the found entry in the line, to edit it
+const SEARCH_ACCEPT_KEYS = [
+  "Tab",
+  "ArrowUp",
+  "ArrowDown",
+  "ArrowLeft",
+  "ArrowRight",
+  "Home",
+  "End",
+];
+
 const Input: React.FC = () => {
   const { executeCommand } = useHandlerContext();
   const { consoleDispatch, consoleState } = useConsoleContext();
@@ -50,8 +62,7 @@ const Input: React.FC = () => {
   const pathnameLocation = usePathnameLocation();
   const t = useT();
   const hintId = React.useId();
-  // a newcomer sees how to start until the first command is executed
-  const isHintShown = history.length === 0 && inputValue.length === 0;
+  const searchMatchId = React.useId();
 
   // programmatic line replacement (Tab autocomplete, history): the caret goes to the end
   const replaceInputValue = (value: string) => {
@@ -64,6 +75,9 @@ const Input: React.FC = () => {
     inputValue,
     replaceInputValue,
   );
+  const reverseSearch = useReverseSearch(inputValue, replaceInputValue);
+  // a newcomer sees how to start until the first command is executed
+  const isHintShown = history.length === 0 && inputValue.length === 0 && !reverseSearch.isSearching;
 
   // the native input is the single source of truth for the caret
   const syncCaretPosition = React.useCallback(() => {
@@ -90,7 +104,55 @@ const Input: React.FC = () => {
     setCaretPosition(readCaretPosition(input));
   }, [inputValue, caretToEndRequest]);
 
+  // Enter: the line runs and the input empties
+  const submitLine = (line: string) => {
+    setInputValue("");
+    // the visitor got used to typing: the quick commands give way (clicks don't count)
+    if (line.trim()) consoleDispatch(countTypedCommand());
+    executeCommand(line);
+  };
+
+  // Ctrl+C drops the typed line as in bash: it is echoed with ^C and not added to history
+  const dropLine = (line: string) => {
+    consoleDispatch(addUserLog(`${line}^C`, pathnameLocation));
+    consoleDispatch(setCommandsHint([]));
+    setInputValue("");
+    resetHistoryBrowsing();
+  };
+
+  // keys of Ctrl+R search (TASK-61), as in bash; false: the key edits the query as usual
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const { line, draft, searchOlder, stopSearch } = reverseSearch;
+    if (isCtrlShortcut(e, "r")) {
+      e.preventDefault(); // the browser would reload the page
+      searchOlder();
+    } else if (isCtrlShortcut(e, "g") || e.key === "Escape") {
+      // cancel: back to the line the search started from
+      e.preventDefault();
+      stopSearch();
+      replaceInputValue(draft);
+    } else if (isCtrlShortcut(e, "c") && !isTextSelected()) {
+      e.preventDefault();
+      stopSearch();
+      dropLine(line);
+    } else if (e.key === "Enter") {
+      stopSearch();
+      resetHistoryBrowsing();
+      submitLine(line);
+    } else if (SEARCH_ACCEPT_KEYS.includes(e.key)) {
+      e.preventDefault();
+      stopSearch();
+      resetHistoryBrowsing();
+      replaceInputValue(line);
+    } else {
+      return false;
+    }
+    return true;
+  };
+
   const handleKeyDownInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (reverseSearch.isSearching && handleSearchKeyDown(e)) return;
+
     const isContinue = commandsHintHandleKeyDownInput(e);
     if (!isContinue) {
       // Tab autocomplete replaced the line
@@ -108,24 +170,24 @@ const Input: React.FC = () => {
       return;
     }
 
-    // Ctrl+C drops the typed line as in bash: it is echoed with ^C and not added to history;
-    // with text selected on the page it stays a copy
+    // Ctrl+R searches the history backwards (TASK-61)
+    if (isCtrlShortcut(e, "r")) {
+      e.preventDefault(); // the browser would reload the page
+      consoleDispatch(setCommandsHint([]));
+      resetHistoryBrowsing();
+      reverseSearch.searchOlder();
+      return;
+    }
+
+    // with text selected on the page Ctrl+C stays a copy
     if (isCtrlShortcut(e, "c") && !isTextSelected()) {
       e.preventDefault();
-      consoleDispatch(addUserLog(`${inputValue}^C`, pathnameLocation));
-      consoleDispatch(setCommandsHint([]));
-      setInputValue("");
-      resetHistoryBrowsing();
+      dropLine(inputValue);
       return;
     }
 
     // e.code is empty on virtual keyboards, e.key is reliable
-    if (e.key === "Enter") {
-      setInputValue("");
-      // the visitor got used to typing: the quick commands give way (clicks don't count)
-      if (inputValue.trim()) consoleDispatch(countTypedCommand());
-      executeCommand(inputValue);
-    }
+    if (e.key === "Enter") submitLine(inputValue);
   };
 
   React.useEffect(() => {
@@ -181,12 +243,18 @@ const Input: React.FC = () => {
 
   return (
     <div className={styles.wrapper} ref={consoleInputRef}>
-      <span className={styles.locator}>{pathnameLocation}&gt;</span>
+      <span className={styles.locator}>
+        {reverseSearch.isSearching
+          ? t({ key: reverseSearch.isFailing ? "reverseSearchFailing" : "reverseSearch" })
+          : `${pathnameLocation}>`}
+      </span>
       <input
         className={styles.nativeInput}
         type="text"
-        aria-label={t({ key: "inputLabel" })}
-        aria-describedby={isHintShown ? hintId : undefined}
+        aria-label={t({ key: reverseSearch.isSearching ? "reverseSearchLabel" : "inputLabel" })}
+        aria-describedby={
+          isHintShown ? hintId : reverseSearch.isSearching ? searchMatchId : undefined
+        }
         value={inputValue}
         onChange={handleChangeInput}
         onKeyDown={handleKeyDownInput}
@@ -212,6 +280,11 @@ const Input: React.FC = () => {
           </Char>
         ))}
       </div>
+      {reverseSearch.isSearching && (
+        <span id={searchMatchId} className={styles.searchMatch}>
+          {`': ${reverseSearch.match ?? ""}`}
+        </span>
+      )}
       {isHintShown && (
         <span id={hintId} className={styles.hint}>
           {withNode((help) => t({ key: "inputHint", args: { help } }), {

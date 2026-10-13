@@ -11,7 +11,9 @@ const createInitialState = (): ConsoleState => ({
   logs: [],
   nextLogId: 0,
   typedLogId: 0,
-  history: [],
+  // the commands of earlier visits too (TASK-61)
+  history: storage.getHistory(),
+  historyAdded: 0,
   typedCommandsCount: 0,
   caretMode: storage.getCaretMode(),
   crtMode: storage.getCrtMode(),
@@ -33,6 +35,10 @@ export const ConsoleSessionLayout: React.FC = () => {
     pathnameRef.current = pathname;
     dispatch(setMatrixShown(false));
   }, [pathname]);
+
+  React.useEffect(() => {
+    storage.setHistory(state.history);
+  }, [state.history]);
 
   const consoleContextValue = React.useMemo(
     () => ({ consoleState: state, consoleDispatch: dispatch }),

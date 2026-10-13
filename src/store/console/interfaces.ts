@@ -42,8 +42,11 @@ export interface ConsoleState {
   // logs with a smaller id are shown in full; the log with this id is being typed out,
   // later ones wait for it (see Logs)
   typedLogId: number;
-  // executed commands, newest first
+  // executed commands, newest first, at most HISTORY_LIMIT; kept in storage between visits
   history: string[];
+  // commands added to the history in this session: the history is capped, so its length
+  // doesn't show that an entry was added (browsing and Ctrl+R follow new entries by this)
+  historyAdded: number;
   // commands the visitor typed and entered, not clicked: the quick commands hide after a few
   typedCommandsCount: number;
   caretMode: CaretMode;
@@ -58,6 +61,7 @@ export type ConsoleActionType =
   | ActionAddLogs
   | ActionClearLogs
   | ActionAddHistoryCommand
+  | ActionClearHistory
   | ActionCountTypedCommand
   | ActionSetCaretMode
   | ActionSetCrtMode
@@ -76,6 +80,7 @@ export type ActionAddHistoryCommand = ActionTypeGenerator<
   ConsoleActionKind.AddHistoryCommand,
   string
 >;
+export type ActionClearHistory = ActionTypeGenerator<ConsoleActionKind.ClearHistory>;
 export type ActionCountTypedCommand = ActionTypeGenerator<ConsoleActionKind.CountTypedCommand>;
 export type ActionSetCaretMode = ActionTypeGenerator<ConsoleActionKind.SetCaretMode, CaretMode>;
 export type ActionSetCrtMode = ActionTypeGenerator<ConsoleActionKind.SetCrtMode, CrtMode>;
@@ -88,6 +93,7 @@ export enum ConsoleActionKind {
   AddLogs = "addLogs",
   ClearLogs = "clearLogs",
   AddHistoryCommand = "addHistoryCommand",
+  ClearHistory = "clearHistory",
   CountTypedCommand = "countTypedCommand",
   SetCaretMode = "setCaretMode",
   SetCrtMode = "setCrtMode",

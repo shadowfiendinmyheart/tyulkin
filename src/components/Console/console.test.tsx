@@ -221,7 +221,7 @@ describe("command registry (TASK-33)", () => {
     const { user } = renderConsole();
     await user.keyboard("ls{Enter}");
     expect(getLogs().at(-1)).toBe(
-      "about   back   changelog   clear   contacts   cv   education   experience   gui   help   ls   matrix   menu   neofetch   projects   secrets   settings   share   skills",
+      "about   back   changelog   clear   contacts   cv   date   echo   education   experience   gui   help   history   ls   matrix   menu   neofetch   projects   pwd   secrets   settings   share   skills   whoami",
     );
   });
 
@@ -1047,5 +1047,124 @@ describe("easter eggs (TASK-63)", () => {
     await user.keyboard("secrets{Enter}");
     expect(getLogs().at(-1)).toContain(t({ key: "secretsAll", args: { total: "10" } }));
     expect(getLogs().at(-1)).toContain(eng.secretKonami);
+  });
+});
+
+describe("shell habits (TASK-61)", () => {
+  it("lists the history oldest first and forgets it by history -c", async () => {
+    const { user } = renderConsole();
+    await user.keyboard("history{Enter}");
+    expect(getLogs().at(-1)).toBe(eng.historyEmpty);
+
+    await user.keyboard("about{Enter}whoami{Enter}history{Enter}");
+    expect(getLogs().at(-1)).toBe("    1  history\n    2  about\n    3  whoami");
+
+    await user.keyboard("history -c{Enter}");
+    expect(getLogs().at(-1)).toBe(eng.historyCleared);
+    expect(JSON.parse(localStorage.getItem("history")!)).toEqual([]);
+    await user.keyboard("history foo{Enter}");
+    expect(getLogs().at(-1)).toBe(eng.historyUsage);
+  });
+
+  it("keeps the history between visits", async () => {
+    localStorage.setItem("history", JSON.stringify(["skills", 42, "about"]));
+    const { user, input } = renderConsole();
+    await user.keyboard("{ArrowUp}");
+    expect(input.value).toBe("skills");
+    await user.clear(input);
+    await user.keyboard("help{Enter}");
+    expect(JSON.parse(localStorage.getItem("history")!)).toEqual(["help", "skills", "about"]);
+  });
+
+  it("repeats the previous command by !!, anywhere in the line", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("!!{Enter}");
+    expect(getLogs().slice(-2)).toEqual(["cv> !!", eng.historyNotFound]);
+
+    await user.keyboard("about{Enter}!!{Enter}");
+    expect(getLogs().slice(-3)).toEqual(["cv> !!", "about", eng.about]);
+    // the history keeps the expanded command
+    await user.keyboard("{ArrowUp}");
+    expect(input.value).toBe("about");
+
+    await user.clear(input);
+    await user.keyboard("echo !! twice{Enter}");
+    expect(getLogs().at(-1)).toBe("about twice");
+  });
+
+  it("prints the text by echo, the user, the directory and the date", async () => {
+    const { user } = renderConsole();
+    await user.keyboard('echo "hello   world"{Enter}');
+    expect(getLogs().at(-1)).toBe("hello world");
+    await user.keyboard("whoami{Enter}");
+    expect(getLogs().at(-1)).toBe("visitor");
+    await user.keyboard("pwd{Enter}");
+    expect(getLogs().at(-1)).toBe("/home/visitor");
+    await user.keyboard("date{Enter}");
+    expect(getLogs().at(-1)).toContain(String(new Date().getFullYear()));
+
+    cleanup();
+    const settings = renderConsole("/settings");
+    await settings.user.keyboard("pwd{Enter}");
+    expect(getLogs().at(-1)).toBe("/home/visitor/settings");
+  });
+
+  it("does not echo by a deep link: nobody links the site with their own text", async () => {
+    renderConsole("/?cmd=echo+hired");
+    await waitFor(() => expect(getLogs()).toContain("cv> echo hired"));
+    expect(getLogs()).not.toContain("hired");
+  });
+
+  it("filters the output by | grep and highlights the word", async () => {
+    const { user } = renderConsole("/settings");
+    await user.keyboard("help | grep caret{Enter}");
+    const rows = within(screen.getAllByRole("listitem").at(-1)!).getAllByRole("row");
+    expect(rows.map((row) => row.textContent)).toEqual([
+      "set caret" + eng.helpSetCaret,
+      "show carets" + eng.helpShowCarets,
+    ]);
+
+    await user.keyboard("echo one two | grep -i TWO{Enter}");
+    expect(getLogs().at(-1)).toBe("one two");
+    await user.keyboard("echo one two | grep TWO{Enter}");
+    expect(getLogs().at(-1)).toBe("settings> echo one two | grep TWO");
+
+    await user.keyboard("help | wc{Enter}");
+    expect(getLogs().at(-1)).toBe(eng.pipeUsage);
+  });
+
+  it("searches the history by Ctrl+R", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("about{Enter}skills{Enter}help{Enter}");
+
+    await user.keyboard("{Control>}r{/Control}");
+    expect(screen.getByText(eng.reverseSearch)).toBeTruthy();
+    expect(input.getAttribute("aria-label")).toBe(eng.reverseSearchLabel);
+    await user.keyboard("l");
+    expect(screen.getByText("': help")).toBeTruthy();
+    // the next older match; none after it, so it stays
+    await user.keyboard("{Control>}r{/Control}");
+    expect(screen.getByText("': skills")).toBeTruthy();
+    await user.keyboard("{Control>}r{/Control}");
+    expect(screen.getByText("': skills")).toBeTruthy();
+    await user.keyboard("x");
+    expect(screen.getByText(eng.reverseSearchFailing)).toBeTruthy();
+    await user.keyboard("{Backspace}{Enter}");
+    expect(getLogs().slice(-2)).toEqual(["cv> skills", eng.skills]);
+    expect(input.value).toBe("");
+  });
+
+  it("puts the found entry into the line or cancels the search", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("about{Enter}draft");
+
+    await user.keyboard("{Control>}r{/Control}ab{ArrowRight}");
+    expect(input.value).toBe("about");
+    expect(screen.queryByText(eng.reverseSearch)).toBeNull();
+
+    await user.clear(input);
+    await user.keyboard("draft{Control>}r{/Control}ab{Escape}");
+    expect(input.value).toBe("draft");
+    expect(screen.queryByText(eng.reverseSearch)).toBeNull();
   });
 });

@@ -12,7 +12,7 @@ export const useHistoryCommands = (
   const historyPosition = React.useRef<number>(DRAFT_POSITION);
   const draft = React.useRef<string>("");
   const { consoleState } = useConsoleContext();
-  const { history } = consoleState;
+  const { history, historyAdded } = consoleState;
 
   // any edit (typing, Tab autocomplete) turns the current line into the new draft
   const resetHistoryBrowsing = () => {
@@ -21,13 +21,17 @@ export const useHistoryCommands = (
 
   // a command clicked in logs is added to the history start while an entry may be browsed:
   // the position follows that entry, so the line and the draft stay as they were
-  const historyLength = React.useRef(history.length);
+  const handledHistoryAdded = React.useRef(historyAdded);
   React.useEffect(() => {
     if (historyPosition.current !== DRAFT_POSITION) {
-      historyPosition.current += history.length - historyLength.current;
+      historyPosition.current += historyAdded - handledHistoryAdded.current;
+      // `history -c` dropped the entry: the line becomes the draft
+      if (historyPosition.current < 0 || historyPosition.current >= history.length) {
+        historyPosition.current = DRAFT_POSITION;
+      }
     }
-    historyLength.current = history.length;
-  }, [history]);
+    handledHistoryAdded.current = historyAdded;
+  }, [history, historyAdded]);
 
   const historyCommandsHandleKeyDownInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
     switch (e.key) {

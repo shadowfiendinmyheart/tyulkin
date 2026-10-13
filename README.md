@@ -97,7 +97,7 @@ src/
 Реестр — [`src/commandHandlers/commands/`](src/commandHandlers/commands):
 
 - `global.ts` — команды, доступные на любой странице (`help`, `ls`, `clear`, `back`, `menu`,
-  `neofetch`, `gui`, `share`, `matrix`, `secrets`);
+  `neofetch`, `gui`, `share`, `matrix`, `secrets`, `history`, `echo`, `whoami`, `pwd`, `date`);
 - `main.ts`, `settings.ts` — команды страниц;
 - `secrets.ts` — пасхалки (`sudo …`, `rm -rf /`, `vim`, `cowsay`, `fortune`, `sl`, `coffee`):
   `SecretCommand` без описания, их нет в `help`, `ls`, автодополнении и «did you mean»; они
@@ -116,6 +116,17 @@ src/
 ([`scripts/git-log.cjs`](scripts/git-log.cjs), `__GIT_LOG__` через `DefinePlugin`), в историю идут
 коммиты формата `[add]|[fix]|[refactor] …`; без `--all` — последние 10. Сборке нужна полная история
 (в CI — `fetch-depth: 0`, там ошибка git роняет сборку); локально без git команда сообщает, что истории нет.
+
+**Привычки шелла** ([`commandHandlers/shell.ts`](src/commandHandlers/shell.ts)). `!!` в строке
+заменяется предыдущей командой (`sudo !!`), в историю попадает развёрнутая строка. `<команда> | grep
+[-i] <слово>` (можно несколько `| grep` подряд) выполняет команду и оставляет в её выводе только строки
+со словом, подсвечивая его: строка таблицы из однострочных ячеек (как в `help`) — одна строка,
+многострочные ячейки и `pre` фильтруются построчно; после `|` поддерживается только `grep`. `Ctrl+R` в
+поле ввода — обратный поиск по истории, как в bash: `Ctrl+R` ещё раз — более старое совпадение, Enter —
+выполнить, стрелки/Tab/Home/End — вставить в строку, Esc/`Ctrl+G` — отменить
+([`Input/hooks/useReverseSearch.ts`](src/components/Input/hooks/useReverseSearch.ts)). `pwd` пока
+выводит каталог страницы (`/home/visitor`, `/home/visitor/settings`) — `getWorkingDirectory`, её
+заменит виртуальная ФС (TASK-60). `echo` помечен `linkable: false`: deep link его не выполняет.
 
 **Добавить команду:**
 
@@ -172,8 +183,9 @@ CRT-эффект терминала: свечение текста и слой �
 
 ### Хранилище
 
-[`src/storage`](src/storage/index.ts) сохраняет тему, каретку, язык и время прошлого визита в
-`localStorage`, а флаг начатой сессии (boot-анимация — раз за вкладку) — в `sessionStorage`. Прочитанное
+[`src/storage`](src/storage/index.ts) сохраняет тему, каретку, язык, время прошлого визита, найденные
+секреты и историю команд (не больше `HISTORY_LIMIT`, `history -c` очищает) в `localStorage`, а флаг
+начатой сессии (boot-анимация — раз за вкладку) — в `sessionStorage`. Прочитанное
 значение проходит через `oneOf` — мусор или устаревшее значение заменяется дефолтом; ошибки доступа к
 `localStorage` (приватный режим, квота) молча игнорируются.
 

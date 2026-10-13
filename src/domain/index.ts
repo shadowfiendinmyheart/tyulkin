@@ -38,3 +38,6 @@ export const secretIds = [
   "konami",
 ] as const;
 export type SecretId = (typeof secretIds)[number];
+
+// commands kept in the history (and in storage between visits), the newest ones (TASK-61)
+export const HISTORY_LIMIT = 100;

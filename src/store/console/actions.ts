@@ -2,6 +2,7 @@ import { CaretMode, CrtMode } from "../../domain";
 import {
   ActionAddHistoryCommand,
   ActionAddLogs,
+  ActionClearHistory,
   ActionClearLogs,
   ActionCountTypedCommand,
   ActionFinishTyping,
@@ -38,6 +39,8 @@ export const addHistoryCommand = (command: string): ActionAddHistoryCommand => (
   type: ConsoleActionKind.AddHistoryCommand,
   payload: command,
 });
+// `history -c`
+export const clearHistory = (): ActionClearHistory => ({ type: ConsoleActionKind.ClearHistory });
 export const countTypedCommand = (): ActionCountTypedCommand => ({
   type: ConsoleActionKind.CountTypedCommand,
 });

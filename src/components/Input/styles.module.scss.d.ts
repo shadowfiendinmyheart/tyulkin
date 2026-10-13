@@ -3,6 +3,7 @@ export type Styles = {
   hint: string;
   locator: string;
   nativeInput: string;
+  searchMatch: string;
   wrapper: string;
   zeroChar: string;
 };

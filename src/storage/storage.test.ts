@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { CaretMode } from "../domain";
+import { CaretMode, HISTORY_LIMIT } from "../domain";
 import storage from ".";
 
 afterEach(() => {
@@ -137,5 +137,24 @@ describe("found secrets (TASK-63)", () => {
     expect(storage.addFoundSecret("vim")).toBeUndefined();
     expect(storage.getFoundSecrets()).toEqual(["vim"]);
     vi.restoreAllMocks();
+  });
+});
+
+describe("history (TASK-61)", () => {
+  it("round-trips the history", () => {
+    expect(storage.getHistory()).toEqual([]);
+    storage.setHistory(["help", "about"]);
+    expect(storage.getHistory()).toEqual(["help", "about"]);
+  });
+
+  it("drops garbage and keeps at most HISTORY_LIMIT commands", () => {
+    localStorage.setItem("history", JSON.stringify(["help", 1, null, " ", "about"]));
+    expect(storage.getHistory()).toEqual(["help", "about"]);
+    localStorage.setItem("history", "{");
+    expect(storage.getHistory()).toEqual([]);
+    localStorage.setItem("history", JSON.stringify({ 0: "help" }));
+    expect(storage.getHistory()).toEqual([]);
+    localStorage.setItem("history", JSON.stringify(Array(HISTORY_LIMIT + 5).fill("ls")));
+    expect(storage.getHistory()).toHaveLength(HISTORY_LIMIT);
   });
 });
