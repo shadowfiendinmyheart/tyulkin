@@ -14,13 +14,15 @@ export default defineConfig({
     __GITHUB_REPOS__: JSON.stringify([]),
     // no posts, as in a build without content/: the blog is tested with its own posts
     __BLOG_POSTS__: JSON.stringify([]),
+    // no proxy of `ask`, as in a build without ASK_PROXY_URL: the client is tested with its own URL
+    __ASK_URL__: JSON.stringify(""),
     // no service worker, as on the dev server
     __SERVICE_WORKER__: JSON.stringify(""),
   },
   test: {
     environment: "jsdom",
     // scripts/*.test.mjs: the build-time scripts (in the node environment, see the file comment)
-    include: ["src/**/*.test.{ts,tsx}", "scripts/**/*.test.mjs"],
+    include: ["src/**/*.test.{ts,tsx}", "scripts/**/*.test.mjs", "ask-proxy/**/*.test.ts"],
     setupFiles: ["src/setupTests.ts"],
     // above asyncUtilTimeout (src/setupTests.ts): a test may wait several times, and
     // App.routing.test re-imports the whole app per test, which takes seconds under load

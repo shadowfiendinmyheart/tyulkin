@@ -5,3 +5,6 @@ dist-e2e
 .claude/fuck-tokens.json
 test-results
 playwright-report
+# the local secrets and state of the ask proxy (wrangler dev)
+ask-proxy/.dev.vars
+.wrangler

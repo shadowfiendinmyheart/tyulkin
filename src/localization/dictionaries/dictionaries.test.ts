@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { commandsByRoute, globalCommands } from "../../commandHandlers/commands";
+import { askCommand } from "../../commandHandlers/commands/main";
 import eng from "./eng.json";
 import ru from "./ru.json";
 
 const dictionaries = { eng, ru };
 
-const allCommands = [...globalCommands, ...Object.values(commandsByRoute).flat()];
+// `ask` is listed only in a build with its proxy (TASK-71), but is described in every one
+const allCommands = [...globalCommands, ...Object.values(commandsByRoute).flat(), askCommand];
 // the file system commands are made for every page (TASK-60): a key is repeated by the copies
 const descriptionKeys = [...new Set(allCommands.map(({ descriptionKey }) => descriptionKey))];
 

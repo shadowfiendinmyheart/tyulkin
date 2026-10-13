@@ -24,6 +24,10 @@ declare const __GITHUB_REPOS__: {
   stars: number;
 }[];
 
+// the proxy of `ask` (TASK-71, ask-proxy/) from ASK_PROXY_URL at build time; empty without it (and in
+// vitest): the command is not there
+declare const __ASK_URL__: string;
+
 // the service worker file of the production build ("sw.js", scripts/pwa.cjs); empty on the dev server and in vitest
 declare const __SERVICE_WORKER__: string;
 

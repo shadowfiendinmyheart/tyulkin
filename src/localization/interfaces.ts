@@ -77,6 +77,14 @@ export interface CommonDictionary {
   blogFeedDescription: string;
   blogPageAllPosts: string;
   blogPageTerminal: string;
+  // `ask` (TASK-71): without a question; while the answer is awaited; no answer (the proxy or the
+  // API failed), too many questions from the visitor, the daily budget is spent, the answer broke off
+  askUsage: string;
+  askThinking: string;
+  askUnavailable: string;
+  askRateLimited: string;
+  askBudgetSpent: string;
+  askInterrupted: string;
 }
 
 // one line of `help` per command, see commandHandlers/commands
@@ -121,6 +129,7 @@ export interface CommandDescriptionDictionary {
   helpDate: string;
   helpBlog: string;
   helpRead: string;
+  helpAsk: string;
 }
 
 export interface DictionaryWithArgs {
@@ -191,6 +200,8 @@ export interface DictionaryWithArgs {
   // `read` without a post, $blog is a command placeholder; no post $slug typed by the visitor
   readUsage: string;
   readNotFound: string;
+  // `ask` with a question longer than $max characters
+  askTooLong: string;
 }
 
 export type Dictionary = CommonDictionary & CommandDescriptionDictionary & DictionaryWithArgs;
@@ -252,6 +263,7 @@ type FsErrorLocale = LocaleWithArgsGenerator<
 type CatUsageLocale = LocaleWithArgsGenerator<"catUsage", "ls">;
 type ReadUsageLocale = LocaleWithArgsGenerator<"readUsage", "blog">;
 type ReadNotFoundLocale = LocaleWithArgsGenerator<"readNotFound", "slug" | "blog">;
+type AskTooLongLocale = LocaleWithArgsGenerator<"askTooLong", "max">;
 type NeofetchLocale = LocaleWithArgsGenerator<
   "neofetch",
   "uptime" | "theme" | "caret" | "language"
@@ -300,7 +312,8 @@ export type LocaleWithArgs =
   | FsErrorLocale
   | CatUsageLocale
   | ReadUsageLocale
-  | ReadNotFoundLocale;
+  | ReadNotFoundLocale
+  | AskTooLongLocale;
 export type LocaleParams = CommonLocale | LocaleWithArgs;
 
 export const languages = ["ru", "eng"] as const;

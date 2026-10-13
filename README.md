@@ -57,6 +57,40 @@ push в `master`, если прошли проверки и e2e. В настро
   [`e2e/server.mjs`](e2e/server.mjs) раздаёт её как Pages (подкаталог, `404.html`, редирект
   `/tyulkin` → `/tyulkin/`). Со своим доменом в `ci.yml` достаточно поставить `E2E_BASE_PATH: /`.
 
+## ИИ-ассистент `ask`
+
+`ask <вопрос>` отвечает на вопросы о владельце резюме только по текстам разделов из `eng.json`
+(`about`, `experience`, `skills`, `projects`, `education`, `contacts`) и отказывается от остального.
+Ключ Claude API не попадает на сайт: запросы идут через прокси
+[`ask-proxy/`](ask-proxy/worker.ts) — Cloudflare Worker, который проверяет `Origin`, ограничивает
+вопросы с одного IP (5 в минуту и `IP_DAILY_LIMIT` в сутки, по умолчанию 20), считает ответы за
+сутки (`DAILY_LIMIT`, по умолчанию 100; `"0"` выключает ассистента) и стримит ответ простым текстом;
+неполный ответ (обрезан `max_tokens`, отклонён) обрывает поток. Сайт печатает ответ построчно
+([`commandHandlers/ask.ts`](src/commandHandlers/ask.ts)); новый `ask` и `clear` останавливают
+печатающийся ответ; если ответ не начался за минуту — «недоступен». Общее у сайта и прокси —
+[`ask-proxy/protocol.ts`](ask-proxy/protocol.ts).
+
+Команда есть, только если сборка получила адрес прокси `ASK_PROXY_URL` (в CI — переменная
+репозитория); без него `ask` нет ни в `help`, ни в автодополнении, остальной сайт не меняется.
+Настройка (один раз, из корня репозитория):
+
+1. `npx wrangler login`, затем `npx wrangler kv namespace create BUDGET` — `id` вписать в
+   [`ask-proxy/wrangler.toml`](ask-proxy/wrangler.toml); там же `ALLOWED_ORIGINS` (адрес сайта,
+   со своим доменом — и его) и `DAILY_LIMIT`.
+2. `npx wrangler secret put ANTHROPIC_API_KEY --config ask-proxy/wrangler.toml` — ключ из Claude
+   Console; ключу лучше отдельный workspace с лимитом расходов (Console → Limits): счётчик в KV
+   может немного превысить `DAILY_LIMIT` при всплеске, жёсткий потолок — лимит workspace.
+3. `npx wrangler deploy --config ask-proxy/wrangler.toml` — адрес воркера
+   (`https://tyulkin-ask.<аккаунт>.workers.dev`) задать переменной репозитория `ASK_PROXY_URL`.
+
+Тексты резюме попадают в воркер при его деплое: после правки разделов в `eng.json` воркер нужно
+передеплоить (шаг 3), иначе ассистент отвечает по старым.
+
+Модель — `claude-opus-5-5` с низким `effort` и `max_tokens` 2048; другую можно задать переменной
+`MODEL` в `wrangler.toml`. Локально: `npx wrangler dev --config ask-proxy/wrangler.toml` (ключ — в
+`ask-proxy/.dev.vars`, `ALLOWED_ORIGINS` — с `http://localhost:8080`) и
+`ASK_PROXY_URL=http://localhost:8787 npm start`.
+
 ## Структура
 
 ```

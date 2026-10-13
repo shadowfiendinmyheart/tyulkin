@@ -137,5 +137,13 @@
   "blogPageAllPosts": "All posts in the terminal",
   "blogPageTerminal": "Open this post in the terminal",
   "readUsage": "Which post? Type read <post>; the posts are listed by $blog",
-  "readNotFound": "No post $slug. The posts are listed by $blog"
+  "readNotFound": "No post $slug. The posts are listed by $blog",
+  "helpAsk": "ask the AI assistant about me: ask <question>",
+  "askUsage": "Ask a question about me: ask <question>, e.g. ask what is your main stack?",
+  "askThinking": "Thinking...",
+  "askTooLong": "The question is too long: at most $max characters",
+  "askUnavailable": "The assistant is unavailable right now. Try later or see contacts",
+  "askRateLimited": "Too many questions: wait a minute and ask again",
+  "askBudgetSpent": "The assistant has answered enough for today. Come back tomorrow or see contacts",
+  "askInterrupted": "The answer broke off. Try asking again"
 }

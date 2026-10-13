@@ -95,6 +95,7 @@
   "include": [
     "src",
     "e2e",
+    "ask-proxy",
     "vitest.config.mts",
     "playwright.config.ts",
     "typed-scss-modules.config.ts"

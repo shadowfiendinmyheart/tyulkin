@@ -246,6 +246,14 @@ const getAnalytics = (siteUrl) => {
   };
 };
 
+// the proxy of `ask` (TASK-71, ask-proxy/): ASK_PROXY_URL turns the command on (the published
+// build: a repository variable in ci.yml); without it there is no `ask`. The dev server takes it
+// too: `npx wrangler dev` runs the proxy locally
+const getAskUrl = () => {
+  const url = process.env.ASK_PROXY_URL;
+  return url ? new URL(url).href : "";
+};
+
 // "tyulkin", "/tyulkin" or "/tyulkin/" -> "/tyulkin/"; nothing -> "/"
 const normalizeBasePath = (basePath) => {
   // `--env basePath` without a value gives `true`
@@ -364,6 +372,7 @@ module.exports = async (env, argv) => {
         __GITHUB_REPOS__: JSON.stringify(githubRepos),
         // the posts for `blog` and `read` (scripts/blog.cjs)
         __BLOG_POSTS__: JSON.stringify(blogPosts),
+        __ASK_URL__: JSON.stringify(getAskUrl()),
         // the service worker is registered by the published build only (src/serviceWorker)
         __SERVICE_WORKER__: JSON.stringify(isProduction ? pwa.SERVICE_WORKER_FILE : ""),
       }),

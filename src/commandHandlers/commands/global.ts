@@ -2,6 +2,7 @@ import { ROUTES } from "../../router/const";
 import { clearHistory, clearLogs, setMatrixShown } from "../../store/console/actions";
 import { withNode } from "../../store/console/logNodes";
 import { Command } from "../interfaces";
+import { stopAsk } from "../ask";
 import { gameCommands } from "./games";
 import { getNeofetch } from "../neofetch";
 import { getSecretsLog } from "../secrets";
@@ -23,7 +24,11 @@ export const globalCommands: Command[] = [
     name: "clear",
     descriptionKey: "helpClear",
     shareable: false,
-    run: ({ consoleDispatch }) => consoleDispatch(clearLogs()),
+    run: ({ consoleDispatch }) => {
+      // an answer of `ask` would go on printing into the cleared console
+      stopAsk();
+      consoleDispatch(clearLogs());
+    },
   },
   {
     name: "menu",

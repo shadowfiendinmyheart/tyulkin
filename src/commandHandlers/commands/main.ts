@@ -1,10 +1,23 @@
 import { ROUTES } from "../../router/const";
 import { GuiLocationState } from "../../router/interfaces";
 import { withNodes } from "../../store/console/logNodes";
+import { ask, askUrl } from "../ask";
 import { blogPosts, getBlogList, getBlogPost } from "../blog";
 import { changes, getChangelog } from "../changelog";
 import { Command } from "../interfaces";
 import { sections } from "../sections";
+
+// the AI assistant about the owner (TASK-71): listed only in a build with its proxy (ASK_PROXY_URL)
+export const askCommand: Command = {
+  name: "ask",
+  anyArgs: true,
+  descriptionKey: "helpAsk",
+  // every answer is paid for: a link must not ask on the recipient's behalf
+  shareable: false,
+  linkable: false,
+  run: ({ log, t, language }, args) =>
+    void ask({ url: askUrl, question: args.join(" "), language, log, t }),
+};
 
 export const mainCommands: Command[] = [
   {
@@ -80,6 +93,7 @@ export const mainCommands: Command[] = [
     descriptionKey: "helpRead",
     run: ({ log, t }, [slug]) => getBlogPost(t, blogPosts, slug).forEach((content) => log(content)),
   },
+  ...(askUrl ? [askCommand] : []),
   {
     // `cd settings` too (commands/fileSystem.ts)
     name: "settings",
