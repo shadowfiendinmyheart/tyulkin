@@ -113,6 +113,14 @@ const getBrowserLanguage = (): Languages => {
   return "eng";
 };
 
+// a light system color scheme gets the White theme, anything else the Black one;
+// jsdom has no matchMedia
+const getPreferredTheme = (): ThemeMode =>
+  typeof window.matchMedia === "function" &&
+  window.matchMedia("(prefers-color-scheme: light)").matches
+    ? "White"
+    : "Black";
+
 class Storage {
   setCaretMode = (mode: CaretMode) => {
     writeItem(StorageKeys.CaretMode, mode);
@@ -124,7 +132,10 @@ class Storage {
     writeItem(StorageKeys.ThemeMode, theme);
   };
 
-  getThemeMode = (): ThemeMode => readOneOf(StorageKeys.ThemeMode, allThemeModes, "Black");
+  // until a theme is set, the one of the system color scheme at load (not stored, so the next
+  // visit follows the system again, TASK-73)
+  getThemeMode = (): ThemeMode =>
+    oneOf(allThemeModes, readItem(StorageKeys.ThemeMode)) ?? getPreferredTheme();
 
   setCrtMode = (mode: CrtMode) => {
     writeItem(StorageKeys.CrtMode, mode);

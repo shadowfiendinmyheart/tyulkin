@@ -8,7 +8,20 @@ export enum CaretMode {
 }
 
 // themes a visitor can list and set
-export const themeModes = ["White", "Black", "Light", "Dark", "Hacker"] as const;
+export const themeModes = [
+  "White",
+  "Black",
+  "Light",
+  "Dark",
+  "Hacker",
+  "Dracula",
+  "Solarized",
+  "Gruvbox",
+  "Nord",
+  "Monokai",
+] as const;
+// `set theme random` (TASK-73): any listed theme but the current one, never the secret one
+export const RANDOM_THEME = "random";
 // unlocked by the Konami code only: not listed, not settable by `set theme`
 export const SECRET_THEME = "Amber";
 export const allThemeModes = [...themeModes, SECRET_THEME] as const;

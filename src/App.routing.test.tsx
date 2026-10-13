@@ -20,7 +20,7 @@ vi.mock("./localization", async (importOriginal) => {
 Element.prototype.scrollIntoView = () => undefined;
 
 beforeEach(() => {
-  vi.stubGlobal("matchMedia", () => ({ matches: true }));
+  vi.stubGlobal("matchMedia", (query: string) => ({ matches: query.includes("reduced-motion") }));
   localStorage.clear();
   localStorage.setItem("language", "eng");
   dictionaryLoad.fails = false;
@@ -52,7 +52,9 @@ it("opens /settings/ with a trailing slash as /settings (TASK-28)", async () => 
   // settings commands work and `back` leads to the main menu
   const user = userEvent.setup();
   await user.keyboard("show themes{Enter}");
-  expect(getLastLog()).toBe("Available themes: White, Black, Light, Dark, Hacker");
+  expect(getLastLog()).toBe(
+    "Available themes: White, Black, Light, Dark, Hacker, Dracula, Solarized, Gruvbox, Nord, Monokai",
+  );
   await user.keyboard("back{Enter}");
   await waitFor(() => expect(window.location.pathname).toBe("/"));
   await screen.findByText(eng.welcome);

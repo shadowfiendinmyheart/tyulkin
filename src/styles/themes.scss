@@ -9,13 +9,25 @@
   --error-color: #ff5f5f;
 }
 
-[data-theme="White"] {
+@mixin white-theme {
   --bg-color: #fff;
   --text-color: #222;
   --muted-color: #777;
   --caret-color: #000;
   --accent-color: #0057b8;
   --error-color: #c62828;
+}
+
+// until the app sets data-theme, the default theme of the system color scheme
+// (storage.getThemeMode, TASK-73): no black flash before the White theme on a light system
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    @include white-theme;
+  }
+}
+
+[data-theme="White"] {
+  @include white-theme;
 }
 
 [data-theme="Light"] {
@@ -43,6 +55,52 @@
   --caret-color: #33ff33;
   --accent-color: #b3ffb3;
   --error-color: #ff4d4d;
+}
+
+// TASK-73: classic editor palettes, dark variants
+[data-theme="Dracula"] {
+  --bg-color: #282a36;
+  --text-color: #f8f8f2;
+  --muted-color: #6272a4;
+  --caret-color: #f8f8f2;
+  --accent-color: #bd93f9;
+  --error-color: #ff5555;
+}
+
+[data-theme="Solarized"] {
+  --bg-color: #002b36;
+  --text-color: #839496;
+  --muted-color: #657b83;
+  --caret-color: #93a1a1;
+  --accent-color: #268bd2;
+  --error-color: #dc322f;
+}
+
+[data-theme="Gruvbox"] {
+  --bg-color: #282828;
+  --text-color: #ebdbb2;
+  --muted-color: #928374;
+  --caret-color: #ebdbb2;
+  --accent-color: #fabd2f;
+  --error-color: #fb4934;
+}
+
+[data-theme="Nord"] {
+  --bg-color: #2e3440;
+  --text-color: #d8dee9;
+  --muted-color: #7b88a1;
+  --caret-color: #d8dee9;
+  --accent-color: #88c0d0;
+  --error-color: #bf616a;
+}
+
+[data-theme="Monokai"] {
+  --bg-color: #272822;
+  --text-color: #f8f8f2;
+  --muted-color: #75715e;
+  --caret-color: #f8f8f0;
+  --accent-color: #a6e22e;
+  --error-color: #f92672;
 }
 
 // the secret one: an amber phosphor monitor, unlocked by the Konami code

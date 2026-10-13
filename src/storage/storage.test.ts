@@ -97,6 +97,34 @@ describe("language by browser (TASK-72)", () => {
   });
 });
 
+describe("theme by the system color scheme (TASK-73)", () => {
+  const mockColorScheme = (scheme: "light" | "dark") => {
+    vi.stubGlobal("matchMedia", (query: string) => ({
+      matches: query === `(prefers-color-scheme: ${scheme})`,
+    }));
+  };
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("follows the system color scheme until a theme is set", () => {
+    mockColorScheme("light");
+    expect(storage.getThemeMode()).toBe("White");
+    mockColorScheme("dark");
+    expect(storage.getThemeMode()).toBe("Black");
+    expect(localStorage.length).toBe(0);
+  });
+
+  it("prefers the stored theme, the secret one too", () => {
+    mockColorScheme("light");
+    storage.setThemeMode("Nord");
+    expect(storage.getThemeMode()).toBe("Nord");
+    storage.setThemeMode("Amber");
+    expect(storage.getThemeMode()).toBe("Amber");
+  });
+});
+
 describe("session and last login (TASK-53)", () => {
   it("remembers the session start in the session storage", () => {
     expect(storage.isSessionStarted()).toBe(false);

@@ -279,7 +279,7 @@ describe("command registry (TASK-33)", () => {
     const help = within(screen.getAllByRole("listitem").at(-1)!)
       .getAllByRole("row")
       .map((row) => Array.from((row as HTMLTableRowElement).cells, (cell) => cell.textContent));
-    expect(help[0]).toEqual(["set theme", "set the theme"]);
+    expect(help[0]).toEqual(["set theme", "set the theme (random: any other one)"]);
     expect(help).toContainEqual(["show languages", "list languages"]);
     expect(help).toContainEqual(["back (cd..)", "go back"]);
     expect(help.at(-1)).toEqual(["share", eng.helpShare]);
@@ -1023,6 +1023,22 @@ describe("matrix and the Konami code (TASK-65)", () => {
     await user.keyboard("set theme amber{Enter}");
     expect(getLogs().at(-1)).toBe(t({ key: "wrongTheme", args: { themeName: "Amber" } }));
     expect(appDispatch).not.toHaveBeenCalled();
+  });
+
+  it("sets a random theme, never the current or the secret one (TASK-73)", async () => {
+    const appDispatch = vi.fn();
+    const { user } = renderConsole("/settings", appDispatch);
+    const others = themeModes.filter((theme) => theme !== "Black");
+    const random = vi.spyOn(Math, "random");
+    // every pick in turn: the lowest value of each slot, then the highest one Math.random gives
+    others.forEach((_, index) => random.mockReturnValueOnce(index / others.length));
+    random.mockReturnValueOnce(1 - Number.EPSILON);
+    for (let i = 0; i <= others.length; i++) await user.keyboard("set theme RANDOM{Enter}");
+    expect(appDispatch.mock.calls).toEqual(
+      [...others, others.at(-1)].map((theme) => [setTheme(theme!)]),
+    );
+    expect(localStorage.getItem("themeMode")).toBe(others.at(-1));
+    expect(getLogs().at(-1)).toBe(t({ key: "changeTheme", args: { themeName: others.at(-1)! } }));
   });
 });
 

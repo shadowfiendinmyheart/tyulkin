@@ -5,7 +5,9 @@ import {
   crtModes,
   oneOf,
   SoundMode,
+  RANDOM_THEME,
   soundModes,
+  ThemeMode,
   themeModes,
 } from "../../domain";
 import { languages, TFunction } from "../../localization/interfaces";
@@ -27,6 +29,12 @@ const getLanguageListLocale = (t: TFunction) =>
 const getThemeListLocale = (t: TFunction) =>
   t({ key: "themeList", args: { themes: getParamsString(themeModes) } });
 
+// any listed theme but the current one: the command always changes something
+const getRandomTheme = (current: ThemeMode): ThemeMode => {
+  const others = themeModes.filter((theme) => theme !== current);
+  return others[Math.floor(Math.random() * others.length)];
+};
+
 const CRT_MODES = getParamsString(crtModes);
 
 // the state in words of the language: "on" / "включён"
@@ -38,9 +46,9 @@ const SOUND_MODES = getParamsString(soundModes);
 export const settingsCommands: Command[] = [
   {
     name: "set theme",
-    params: themeModes,
+    params: [...themeModes, RANDOM_THEME],
     descriptionKey: "helpSetTheme",
-    run: ({ log, t, appDispatch }, [param]) => {
+    run: ({ log, t, theme: currentTheme, appDispatch }, [param]) => {
       if (!param) {
         log(getThemeListLocale(t));
         return;
@@ -48,7 +56,10 @@ export const settingsCommands: Command[] = [
 
       const themeName = makeCapitalize(param);
       // the secret theme is not settable: only the Konami code unlocks it
-      const theme = oneOf(themeModes, themeName);
+      const theme =
+        param.toLowerCase() === RANDOM_THEME
+          ? getRandomTheme(currentTheme)
+          : oneOf(themeModes, themeName);
 
       if (!theme) {
         log(t({ key: "wrongTheme", args: { themeName } }));

@@ -9,7 +9,7 @@ import ru from "./localization/dictionaries/ru.json";
 Element.prototype.scrollIntoView = () => undefined;
 
 beforeEach(() => {
-  vi.stubGlobal("matchMedia", () => ({ matches: true }));
+  vi.stubGlobal("matchMedia", (query: string) => ({ matches: query.includes("reduced-motion") }));
   localStorage.clear();
   localStorage.setItem("language", "eng");
 });
@@ -34,7 +34,9 @@ it("switches the language without a reload (TASK-34)", async () => {
 
   // commands use the new dictionary right away
   await user.keyboard("show themes{Enter}");
-  expect(getLastLog()).toBe("Доступные темы: White, Black, Light, Dark, Hacker");
+  expect(getLastLog()).toBe(
+    "Доступные темы: White, Black, Light, Dark, Hacker, Dracula, Solarized, Gruvbox, Nord, Monokai",
+  );
   await user.keyboard("set language{Enter}");
   expect(getLastLog()).toBe("Доступные языки: ru, eng");
   // and the welcome text is not logged again

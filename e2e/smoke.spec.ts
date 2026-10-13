@@ -161,6 +161,16 @@ test("shares a deep link that runs the command under the base path (TASK-62)", a
   );
 });
 
+test("takes the theme of a light system until one is set (TASK-73)", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light" });
+  await open(page, "settings");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "White");
+  await page.keyboard.type("set theme nord");
+  await page.keyboard.press("Enter");
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "Nord");
+});
+
 test("opens the site root without the trailing slash", async ({ page }) => {
   await page.goto(BASE_PATH.replace(/\/$/, ""));
   await expect(page.getByRole("log")).toContainText(eng.welcome);

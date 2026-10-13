@@ -18,6 +18,8 @@ export default defineConfig({
     locale: "en-US",
     // skips the loading animation
     reducedMotion: "reduce",
+    // the default theme follows the color scheme (TASK-73): the tests expect the Black one
+    colorScheme: "dark",
     trace: "retain-on-failure",
   },
   projects: [

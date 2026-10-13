@@ -191,6 +191,10 @@ BCP 47-тег в `htmlLangByLanguage` ([`localization/utils.ts`](src/localizatio
 **Добавить тему:** имя в `themeModes` и блок `[data-theme="<Имя>"]` с теми же переменными в
 `themes.scss`.
 
+`set theme random` выбирает любую тему из `themeModes`, кроме текущей. Пока тема не задана,
+`storage.getThemeMode` берёт её по `prefers-color-scheme` (светлая система — White, иначе Black) и не
+сохраняет; до установки `data-theme` то же делает `@media` в `themes.scss`.
+
 Секретная тема `SECRET_THEME` (Amber) не входит в `themeModes`: её нет в `show themes` и `set theme`,
 включает её только код Konami ↑↑↓↓←→←→BA на странице терминала
 ([`hooks/useKonamiCode.ts`](src/hooks/useKonamiCode.ts)); сохраняется как обычная тема. Команда
