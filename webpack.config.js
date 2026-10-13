@@ -5,6 +5,7 @@ const { DefinePlugin } = require("webpack");
 const eng = require("./src/localization/dictionaries/eng.json");
 const { OG_IMAGE, escapeXml, getOgImageAlt, renderOgImage } = require("./scripts/og-image.cjs");
 const { getGitLog } = require("./scripts/git-log.cjs");
+const { getGithubRepos } = require("./scripts/github-repos.cjs");
 
 // static CV text for crawlers and no-JS visitors, taken from the dictionary (single source)
 const toHtmlLines = (text) => escapeXml(text).split("\n").join("<br />");
@@ -157,7 +158,8 @@ const getSiteUrl = (basePath) => {
   return url.href;
 };
 
-module.exports = (env, argv) => {
+// async: the GitHub repositories for `projects` are fetched before the build (only when listed)
+module.exports = async (env, argv) => {
   const mode = argv.mode || "development";
   const isProduction = mode === "production";
   const devtool = isProduction ? false : "inline-source-map";
@@ -167,6 +169,9 @@ module.exports = (env, argv) => {
   const siteUrl = isProduction ? getSiteUrl(basePath) : undefined;
   // the published site only: the dev server doesn't count visits
   const analytics = isProduction ? getAnalytics(siteUrl) : undefined;
+  // GITHUB_REPOS lists them; without it nothing is fetched and `projects` shows the dictionary text.
+  // Production builds only: the dev server starts without the network round-trip
+  const githubRepos = isProduction ? await getGithubRepos() : [];
 
   const htmlOptions = {
     template: "./src/index.html",
@@ -244,6 +249,8 @@ module.exports = (env, argv) => {
         __BASE_PATH__: JSON.stringify(basePath),
         // the commits for `changelog` as of the build; the dev server reads them once at start
         __GIT_LOG__: JSON.stringify(getGitLog()),
+        // the repositories for `projects` as of the build (scripts/github-repos.cjs)
+        __GITHUB_REPOS__: JSON.stringify(githubRepos),
       }),
       new FontPreloadPlugin(),
       // the card is for the published site: the dev server skips the render

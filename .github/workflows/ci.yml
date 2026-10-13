@@ -59,6 +59,9 @@ jobs:
       # variables → Actions → Variables); without UMAMI_WEBSITE_ID the build has no analytics
       UMAMI_WEBSITE_ID: ${{ vars.UMAMI_WEBSITE_ID }}
       UMAMI_SCRIPT_URL: ${{ vars.UMAMI_SCRIPT_URL }}
+      # the GitHub repositories `projects` lists ("owner/repo, owner/other", see scripts/github-repos.cjs):
+      # a repository variable; without it `projects` shows the dictionary text and nothing is fetched
+      GITHUB_REPOS: ${{ vars.GITHUB_REPOS }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -78,6 +81,10 @@ jobs:
       # builds dist-e2e/ with the base path and serves it like Pages does (e2e/server.mjs)
       - name: E2E tests
         run: npm run test:e2e
+        env:
+          # lifts the GitHub API rate limit for the GITHUB_REPOS fetch in the build; only this step
+          # gets it (read-only: permissions above)
+          GITHUB_TOKEN: ${{ github.token }}
 
       - uses: actions/upload-artifact@v4
         if: failure()

@@ -72,6 +72,8 @@
   "changelog": "How this site is made, from its git log. Changes: $total, the latest $shown below. All of them: $all",
   "changelogAll": "How this site is made, from its git log. Changes: $total",
   "changelogEmpty": "The change history is not included in this build",
+  "projectsGithub": "My repositories on GitHub, as of the last site update:",
+  "projectsStars": "★ $stars",
   "helpSecrets": "how many secrets of this terminal you have found",
   "sudo": "visitor is not in the sudoers file. This incident will be reported.",
   "sudoHireMe": "[sudo] password for visitor: ********\nAccess granted. Hiring is one message away:",

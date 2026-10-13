@@ -3,6 +3,7 @@ import { GuiLocationState } from "../../router/interfaces";
 import { linkify, withNodes } from "../../store/console/logNodes";
 import { changes, getChangelog } from "../changelog";
 import { Command } from "../interfaces";
+import { getProjects, githubRepos } from "../projects";
 
 export const mainCommands: Command[] = [
   {
@@ -28,7 +29,8 @@ export const mainCommands: Command[] = [
   {
     name: "projects",
     descriptionKey: "helpProjects",
-    run: ({ log, t }) => log(linkify(t({ key: "projects" }))),
+    // the GitHub repositories from the build, or the dictionary text (TASK-68)
+    run: ({ log, t }) => getProjects(t, githubRepos).forEach((content) => log(content)),
   },
   {
     name: "contacts",

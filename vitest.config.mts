@@ -10,6 +10,8 @@ export default defineConfig({
       { date: "2026-10-12", subject: "[fix] stable app tests TASK-79" },
       { date: "2023-12-18", subject: "init" },
     ]),
+    // no repositories, as in a build without GITHUB_REPOS: tests never reach the GitHub API
+    __GITHUB_REPOS__: JSON.stringify([]),
   },
   test: {
     environment: "jsdom",

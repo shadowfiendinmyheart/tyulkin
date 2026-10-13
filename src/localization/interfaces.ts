@@ -29,6 +29,8 @@ export interface CommonDictionary {
   matrixExit: string;
   // `changelog` in a build without the git history
   changelogEmpty: string;
+  // `projects` header over the GitHub repositories fetched at build time (TASK-68)
+  projectsGithub: string;
   // easter eggs (TASK-63), see commandHandlers/commands/secrets
   sudo: string;
   sudoHireMe: string;
@@ -133,6 +135,8 @@ export interface DictionaryWithArgs {
   changelog: string;
   // `changelog` listing all $total changes
   changelogAll: string;
+  // the stars column of `projects` (TASK-68), $stars is the count
+  projectsStars: string;
   // `vim`: $quit and $forceQuit are command placeholders
   vim: string;
   // `sl`: $ls is a command placeholder
@@ -186,6 +190,7 @@ type ThemeListLocale = LocaleWithArgsGenerator<"themeList", "themes">;
 type SecretThemeLocale = LocaleWithArgsGenerator<"secretTheme", "themeName">;
 type ChangelogLocale = LocaleWithArgsGenerator<"changelog", "total" | "shown" | "all">;
 type ChangelogAllLocale = LocaleWithArgsGenerator<"changelogAll", "total">;
+type ProjectsStarsLocale = LocaleWithArgsGenerator<"projectsStars", "stars">;
 type VimLocale = LocaleWithArgsGenerator<"vim", "quit" | "forceQuit">;
 type SlLocale = LocaleWithArgsGenerator<"sl", "ls">;
 type SecretsProgressLocale = LocaleWithArgsGenerator<"secretsProgress", "found" | "total">;
@@ -223,6 +228,7 @@ export type LocaleWithArgs =
   | SecretThemeLocale
   | ChangelogLocale
   | ChangelogAllLocale
+  | ProjectsStarsLocale
   | VimLocale
   | SlLocale
   | SecretsProgressLocale
