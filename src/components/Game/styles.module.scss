@@ -1,0 +1,66 @@
+// over the whole page, as the matrix rain: the toolbar and the console included
+.game {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  color: var(--text-color);
+  background: var(--bg-color);
+  // swipes play, not scroll or zoom the page
+  touch-action: none;
+  user-select: none;
+
+  // focused to take the keys from the command line, not to be shown
+  &:focus {
+    outline: none;
+  }
+}
+
+.grid {
+  margin: 0;
+  line-height: 1.2;
+  // the whole grid fits the screen (--columns × --rows characters, set by GameScreen): a character
+  // is about 0.6em wide and 1.2em high; the lines over and under the grid take up to 220px (the hint
+  // of tetris wraps on a phone)
+  font-size: min(
+    1.25rem,
+    calc((100vw - 32px) / var(--columns) / 0.6),
+    calc((100vh - 220px) / var(--rows) / 1.2)
+  );
+  font-size: min(
+    1.25rem,
+    calc((100vw - 32px) / var(--columns) / 0.6),
+    calc((100dvh - 220px) / var(--rows) / 1.2)
+  );
+}
+
+.score {
+  margin: 0;
+  color: var(--accent-color);
+}
+
+.hint {
+  margin: 0;
+  text-align: center;
+  color: var(--muted-color);
+}
+
+.exit {
+  padding: 2px 1ch;
+  border: 1px solid var(--muted-color);
+  border-radius: 4px;
+  font: inherit;
+  color: var(--accent-color);
+  background: none;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--accent-color);
+  }
+}

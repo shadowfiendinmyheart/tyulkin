@@ -101,6 +101,14 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
       };
     }
 
+    case ConsoleActionKind.SetGame: {
+      if (action.payload === state.game) return state;
+      return {
+        ...state,
+        game: action.payload,
+      };
+    }
+
     case ConsoleActionKind.SetCommandsHint: {
       return {
         ...state,

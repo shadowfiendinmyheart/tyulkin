@@ -2,6 +2,7 @@ import { ROUTES } from "../../router/const";
 import { clearHistory, clearLogs, setMatrixShown } from "../../store/console/actions";
 import { withNode } from "../../store/console/logNodes";
 import { Command } from "../interfaces";
+import { gameCommands } from "./games";
 import { getNeofetch } from "../neofetch";
 import { getSecretsLog } from "../secrets";
 import { formatDate, formatHistory, getWorkingDirectory, unquote, USER_NAME } from "../shell";
@@ -105,6 +106,7 @@ export const globalCommands: Command[] = [
     shareable: false,
     run: ({ consoleDispatch }) => consoleDispatch(setMatrixShown(true)),
   },
+  ...gameCommands,
   {
     // how many easter eggs the visitor has found (TASK-63)
     name: "secrets",

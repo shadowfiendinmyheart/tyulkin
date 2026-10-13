@@ -28,6 +28,13 @@ export interface CommonDictionary {
   quickCommandsLabel: string;
   // shown over the `matrix` digital rain
   matrixExit: string;
+  // the mini-games (TASK-66): the exit button, the end of a game, a chunk that didn't load
+  gameExit: string;
+  gameOver: string;
+  gameLoadFailed: string;
+  // the controls under the grid
+  gameHintMove: string;
+  gameHintTetris: string;
   // `changelog` in a build without the git history
   changelogEmpty: string;
   // `projects` header over the GitHub repositories fetched at build time (TASK-68)
@@ -91,6 +98,9 @@ export interface CommandDescriptionDictionary {
   helpCv: string;
   helpShare: string;
   helpMatrix: string;
+  helpSnake: string;
+  helpGame2048: string;
+  helpTetris: string;
   helpChangelog: string;
   helpSecrets: string;
   helpHistory: string;
@@ -146,6 +156,10 @@ export interface DictionaryWithArgs {
   changelogAll: string;
   // the stars column of `projects` (TASK-68), $stars is the count
   projectsStars: string;
+  // the mini-games (TASK-66): the line over the grid; logged on exit, $game is the command
+  gameScore: string;
+  gameResult: string;
+  gameNewRecord: string;
   // `vim`: $quit and $forceQuit are command placeholders
   vim: string;
   // `sl`: $ls is a command placeholder
@@ -209,6 +223,9 @@ type SecretThemeLocale = LocaleWithArgsGenerator<"secretTheme", "themeName">;
 type ChangelogLocale = LocaleWithArgsGenerator<"changelog", "total" | "shown" | "all">;
 type ChangelogAllLocale = LocaleWithArgsGenerator<"changelogAll", "total">;
 type ProjectsStarsLocale = LocaleWithArgsGenerator<"projectsStars", "stars">;
+type GameScoreLocale = LocaleWithArgsGenerator<"gameScore", "score" | "record">;
+type GameResultLocale = LocaleWithArgsGenerator<"gameResult", "game" | "score" | "record">;
+type GameNewRecordLocale = LocaleWithArgsGenerator<"gameNewRecord", "game" | "score">;
 type VimLocale = LocaleWithArgsGenerator<"vim", "quit" | "forceQuit">;
 type SlLocale = LocaleWithArgsGenerator<"sl", "ls">;
 type SecretsProgressLocale = LocaleWithArgsGenerator<"secretsProgress", "found" | "total">;
@@ -255,6 +272,9 @@ export type LocaleWithArgs =
   | ChangelogLocale
   | ChangelogAllLocale
   | ProjectsStarsLocale
+  | GameScoreLocale
+  | GameResultLocale
+  | GameNewRecordLocale
   | VimLocale
   | SlLocale
   | SecretsProgressLocale

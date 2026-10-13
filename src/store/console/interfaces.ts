@@ -1,4 +1,4 @@
-import { CaretMode, CrtMode, SoundMode } from "../../domain";
+import { CaretMode, CrtMode, GameId, SoundMode } from "../../domain";
 import { ActionTypeGenerator } from "../interfaces";
 
 // theme colors of a text, see styles/themes.scss
@@ -58,6 +58,8 @@ export interface ConsoleState {
   commandsHint: string[];
   // the `matrix` digital rain covers the console until any key or tap
   isMatrixShown: boolean;
+  // the mini-game played over the console (TASK-66), null when none
+  game: GameId | null;
 }
 
 export type ConsoleActionType =
@@ -72,7 +74,8 @@ export type ConsoleActionType =
   | ActionSetCommandsHint
   | ActionFinishTyping
   | ActionSkipTyping
-  | ActionSetMatrixShown;
+  | ActionSetMatrixShown
+  | ActionSetGame;
 
 export type ActionAddLogs = ActionTypeGenerator<ConsoleActionKind.AddLogs, NewLog>;
 export type ActionClearLogs = ActionTypeGenerator<ConsoleActionKind.ClearLogs>;
@@ -80,6 +83,7 @@ export type ActionClearLogs = ActionTypeGenerator<ConsoleActionKind.ClearLogs>;
 export type ActionFinishTyping = ActionTypeGenerator<ConsoleActionKind.FinishTyping, number>;
 export type ActionSkipTyping = ActionTypeGenerator<ConsoleActionKind.SkipTyping>;
 export type ActionSetMatrixShown = ActionTypeGenerator<ConsoleActionKind.SetMatrixShown, boolean>;
+export type ActionSetGame = ActionTypeGenerator<ConsoleActionKind.SetGame, GameId | null>;
 export type ActionAddHistoryCommand = ActionTypeGenerator<
   ConsoleActionKind.AddHistoryCommand,
   string
@@ -107,4 +111,5 @@ export enum ConsoleActionKind {
   FinishTyping = "finishTyping",
   SkipTyping = "skipTyping",
   SetMatrixShown = "setMatrixShown",
+  SetGame = "setGame",
 }

@@ -191,3 +191,40 @@ describe("history (TASK-61)", () => {
     expect(storage.getHistory()).toHaveLength(HISTORY_LIMIT);
   });
 });
+
+describe("game records (TASK-66)", () => {
+  it("keeps a score only when it beats the record", () => {
+    expect(storage.getGameRecord("snake")).toBe(0);
+    expect(storage.setGameRecord("snake", 12)).toBe(true);
+    expect(storage.setGameRecord("snake", 7)).toBe(false);
+    expect(storage.setGameRecord("snake", 12)).toBe(false);
+    expect(storage.setGameRecord("2048", 300)).toBe(true);
+    expect(storage.getGameRecord("snake")).toBe(12);
+    expect(storage.getGameRecord("2048")).toBe(300);
+    expect(storage.getGameRecord("tetris")).toBe(0);
+  });
+
+  it("drops garbage", () => {
+    localStorage.setItem(
+      "gameRecords",
+      JSON.stringify({ snake: 5, tetris: -1, "2048": 1.5, pong: 9 }),
+    );
+    expect(storage.getGameRecord("snake")).toBe(5);
+    expect(storage.getGameRecord("tetris")).toBe(0);
+    expect(storage.getGameRecord("2048")).toBe(0);
+    for (const value of ["{", "[5]", '"snake"', "null"]) {
+      localStorage.setItem("gameRecords", value);
+      expect(storage.getGameRecord("snake")).toBe(0);
+    }
+  });
+
+  // last: a record kept without storage stays in memory for the rest of the file
+  it("remembers records in memory when storage is blocked", () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new DOMException("blocked", "SecurityError");
+    });
+    expect(storage.setGameRecord("tetris", 100)).toBe(true);
+    expect(storage.getGameRecord("tetris")).toBe(100);
+    vi.restoreAllMocks();
+  });
+});

@@ -1,4 +1,4 @@
-import { CaretMode, CrtMode, SoundMode } from "../../domain";
+import { CaretMode, CrtMode, GameId, SoundMode } from "../../domain";
 import {
   ActionAddHistoryCommand,
   ActionAddLogs,
@@ -11,6 +11,7 @@ import {
   ActionSetSoundMode,
   ActionSetCommandsHint,
   ActionSetMatrixShown,
+  ActionSetGame,
   ActionSkipTyping,
   ConsoleActionKind,
   LogContent,
@@ -36,6 +37,11 @@ export const skipTyping = (): ActionSkipTyping => ({ type: ConsoleActionKind.Ski
 export const setMatrixShown = (isShown: boolean): ActionSetMatrixShown => ({
   type: ConsoleActionKind.SetMatrixShown,
   payload: isShown,
+});
+// starts a mini-game over the console (TASK-66); null ends it
+export const setGame = (game: GameId | null): ActionSetGame => ({
+  type: ConsoleActionKind.SetGame,
+  payload: game,
 });
 export const addHistoryCommand = (command: string): ActionAddHistoryCommand => ({
   type: ConsoleActionKind.AddHistoryCommand,

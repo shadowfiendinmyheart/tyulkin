@@ -1341,3 +1341,82 @@ describe("virtual file system edge cases (TASK-60)", () => {
     expect(screen.getByText("tree")).toBeTruthy();
   });
 });
+
+describe("mini-games (TASK-66)", () => {
+  const findGame = (name: string) => screen.findByRole("dialog", { name });
+  const queryGame = () => screen.queryByRole("dialog");
+
+  it("loads a game over the console, Esc closes it and logs the score", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("snake{Enter}");
+    const game = await findGame("snake");
+    expect(within(game).getByText(eng.gameHintMove)).toBeTruthy();
+
+    // the keys play: nothing is typed or browsed in the history
+    await user.keyboard("{ArrowUp}{ArrowLeft}w");
+    expect(input.value).toBe("");
+    await user.keyboard("{Escape}");
+    expect(queryGame()).toBeNull();
+    expect(getLogs().at(-1)).toBe(
+      t({ key: "gameResult", args: { game: "snake", score: "0", record: "0" } }),
+    );
+    // the console works as before
+    await user.keyboard("x");
+    expect(input.value).toBe("x");
+  });
+
+  it("shows the stored record and closes by the exit button", async () => {
+    localStorage.setItem("gameRecords", JSON.stringify({ tetris: 50 }));
+    const { user } = renderConsole();
+    await user.keyboard("tetris{Enter}");
+    const game = await findGame("tetris");
+    expect(
+      within(game).getByText(t({ key: "gameScore", args: { score: "0", record: "50" } })),
+    ).toBeTruthy();
+    expect(within(game).getByText(eng.gameHintTetris)).toBeTruthy();
+    const logsCount = getLogs().length;
+    await user.click(within(game).getByRole("button", { name: eng.gameExit }));
+    expect(queryGame()).toBeNull();
+    expect(getLogs()).toHaveLength(logsCount + 1);
+    expect(getLogs().at(-1)).toBe(
+      t({ key: "gameResult", args: { game: "tetris", score: "0", record: "50" } }),
+    );
+  });
+
+  it("keeps a new record of 2048", async () => {
+    // every new tile is a 4 in the first empty cell: the two first ones merge to the left
+    const random = vi.spyOn(Math, "random").mockReturnValue(0);
+    const { user } = renderConsole();
+    await user.keyboard("2048{Enter}");
+    await findGame("2048");
+    await user.keyboard("{ArrowLeft}{Escape}");
+    random.mockRestore();
+    const record = JSON.parse(localStorage.getItem("gameRecords") ?? "{}") as { 2048?: number };
+    expect(record[2048]).toBe(8);
+    expect(getLogs().at(-1)).toBe(
+      t({ key: "gameNewRecord", args: { game: "2048", score: String(record[2048]) } }),
+    );
+  });
+
+  it("keeps the focus in the game: Tab reaches the exit, Enter presses it", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("2048{Enter}");
+    const game = await findGame("2048");
+    expect(document.activeElement).toBe(game);
+    await user.keyboard("{Tab}");
+    expect(document.activeElement).toBe(within(game).getByRole("button", { name: eng.gameExit }));
+    await user.keyboard("{Enter}");
+    expect(queryGame()).toBeNull();
+    // the command line has its focus back
+    expect(document.activeElement).toBe(input);
+  });
+
+  it("closes the game when the page is left", async () => {
+    const { user, router } = renderConsole();
+    await user.keyboard("settings{Enter}snake{Enter}");
+    await findGame("snake");
+    await act(() => router.navigate(-1));
+    expect(router.state.location.pathname).toBe("/");
+    expect(queryGame()).toBeNull();
+  });
+});

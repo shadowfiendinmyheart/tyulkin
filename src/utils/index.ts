@@ -12,3 +12,7 @@ export const prefersReducedMotion = () =>
 // the input as commands are matched: "  Set   Theme " -> "set theme"
 export const normalizeInput = (userCommand: string) =>
   userCommand.trim().replace(/\s+/g, " ").toLowerCase();
+
+// the browser's own keys (reload, DevTools, back, fullscreen): kept working under a full-page overlay
+export const isBrowserShortcut = (e: KeyboardEvent) =>
+  e.ctrlKey || e.metaKey || e.altKey || /^F\d{1,2}$/.test(e.key);

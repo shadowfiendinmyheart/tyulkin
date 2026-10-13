@@ -3,6 +3,7 @@ import cn from "clsx";
 import { Navigate, useLocation } from "react-router";
 import Console from "../../components/Console";
 import DeepLinkCommand from "../../components/DeepLinkCommand";
+import Game from "../../components/Game";
 import MatrixRain from "../../components/MatrixRain";
 import ViewSwitch from "../../components/ViewSwitch";
 import WithCommandHandler from "../../commandHandlers/WithCommandHandler";
@@ -173,6 +174,7 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
       </div>
       <DeepLinkCommand />
       {state.isMatrixShown && <MatrixRain onExit={exitMatrix} />}
+      {state.game && <Game key={state.game} game={state.game} />}
       {isCrt && <div className={styles.crt} aria-hidden="true" />}
     </WithCommandHandler>
   );

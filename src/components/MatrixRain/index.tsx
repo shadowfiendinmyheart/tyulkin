@@ -1,6 +1,6 @@
 import React from "react";
 import { useT } from "../../context/localizationContext";
-import { prefersReducedMotion } from "../../utils";
+import { isBrowserShortcut, prefersReducedMotion } from "../../utils";
 
 import styles from "./styles.module.scss";
 
@@ -24,10 +24,6 @@ const readThemeColors = () => {
   const read = (name: string) => style.getPropertyValue(name).trim();
   return { bg: read("--bg-color"), trail: read("--text-color"), head: read("--accent-color") };
 };
-
-// keeps the browser's own keys (reload, DevTools, back, fullscreen) working while the rain is shown
-const isBrowserShortcut = (e: KeyboardEvent) =>
-  e.ctrlKey || e.metaKey || e.altKey || /^Fd{1,2}$/.test(e.key);
 
 interface MatrixRainProps {
   onExit: () => void;

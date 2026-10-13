@@ -29,6 +29,7 @@ const initialState: ConsoleState = {
   soundMode: "off",
   commandsHint: [],
   isMatrixShown: false,
+  game: null,
 };
 
 describe("console reducer", () => {

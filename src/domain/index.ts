@@ -37,6 +37,10 @@ export type CrtMode = (typeof crtModes)[number];
 export const soundModes = ["on", "off"] as const;
 export type SoundMode = (typeof soundModes)[number];
 
+// the mini-games in the terminal (TASK-66), each with its own record in storage
+export const gameIds = ["snake", "2048", "tetris"] as const;
+export type GameId = (typeof gameIds)[number];
+
 // narrows an arbitrary (e.g. user- or storage-provided) value to one of the allowed ones
 export const oneOf = <T extends string>(allowed: readonly T[], value: unknown): T | undefined =>
   allowed.find((item) => item === value);

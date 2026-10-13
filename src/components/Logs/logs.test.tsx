@@ -26,6 +26,7 @@ const renderLog = (content: LogNode[]) => {
           soundMode: "off",
           commandsHint: [],
           isMatrixShown: false,
+          game: null,
         },
         consoleDispatch: () => undefined,
       }}

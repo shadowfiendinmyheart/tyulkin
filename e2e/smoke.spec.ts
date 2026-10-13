@@ -100,6 +100,48 @@ test("rains in the theme colors by matrix, closes on a key (TASK-65)", async ({ 
   await expect(input(page)).toHaveValue("");
 });
 
+test.describe("mini-games (TASK-66)", () => {
+  const runGame = async (page: Page, game: string) => {
+    await page.keyboard.type(game);
+    await page.keyboard.press("Enter");
+    return page.getByRole("dialog", { name: game });
+  };
+
+  test("loads the games on the first run only and plays by keys", async ({ page }) => {
+    const chunks: string[] = [];
+    page.on("request", (request) => {
+      if (/\/games\.[^/]*\.js$/.test(request.url())) chunks.push(request.url());
+    });
+    await open(page);
+    expect(chunks).toEqual([]);
+
+    const game = await runGame(page, "tetris");
+    await expect(game.locator("pre")).toContainText("<!====================!>");
+    expect(chunks).toHaveLength(1);
+    // a hard drop scores 2 a row
+    await page.keyboard.press("Space");
+    await expect(game).not.toContainText("score: 0 ");
+    await page.keyboard.press("Escape");
+    await expect(game).toBeHidden();
+    await expect(lastLog(page)).toContainText("tetris: ");
+    await expect(input(page)).toHaveValue("");
+  });
+
+  test("fits a phone screen and closes by a tap @mobile", async ({ page }) => {
+    await open(page);
+    await page.getByRole("log").tap();
+    const game = await runGame(page, "snake");
+    const grid = await game.locator("pre").boundingBox();
+    const viewport = page.viewportSize()!;
+    expect(grid!.x).toBeGreaterThanOrEqual(0);
+    expect(grid!.x + grid!.width).toBeLessThanOrEqual(viewport.width);
+    expect(grid!.y + grid!.height).toBeLessThanOrEqual(viewport.height);
+    await game.getByRole("button", { name: eng.gameExit }).tap();
+    await expect(game).toBeHidden();
+    await expect(lastLog(page)).toContainText("snake: ");
+  });
+});
+
 test("navigates between pages under the base path", async ({ page }) => {
   await open(page);
   await page.keyboard.type("settings");
@@ -318,6 +360,10 @@ test.describe("installable app (TASK-77)", () => {
     await expect(lastLog(page)).toContainText("Ivan Tyulkin");
     await page.goto("settings");
     await expect(page.getByRole("log")).toContainText(eng.settingsWelcome);
+    // the lazily loaded games are precached too (TASK-66)
+    await page.keyboard.type("2048");
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("dialog", { name: "2048" })).toBeVisible();
     await context.setOffline(false);
   });
 });

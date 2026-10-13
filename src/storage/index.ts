@@ -4,6 +4,8 @@ import {
   caretModes,
   CrtMode,
   crtModes,
+  GameId,
+  gameIds,
   HISTORY_LIMIT,
   oneOf,
   SecretId,
@@ -27,6 +29,8 @@ enum StorageKeys {
   FoundSecrets = "foundSecrets",
   // executed commands, newest first, a JSON array of strings (TASK-61)
   History = "history",
+  // the best scores of the mini-games (TASK-66), a JSON object { [game id]: score }
+  GameRecords = "gameRecords",
 }
 
 // kept for the browser tab only: a new tab or window is a new session
@@ -95,6 +99,26 @@ const parseHistory = (value: string | null): string[] => {
       .slice(0, HISTORY_LIMIT);
   } catch {
     return [];
+  }
+};
+
+// without localStorage records last until a reload
+const gameRecordsInMemory: Partial<Record<GameId, number>> = {};
+
+// the records of a stored JSON object: known games with a whole non-negative score, the rest dropped
+const parseGameRecords = (value: string | null): Partial<Record<GameId, number>> => {
+  try {
+    const parsed: unknown = value ? JSON.parse(value) : {};
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    const records: Partial<Record<GameId, number>> = {};
+    for (const [game, score] of Object.entries(parsed)) {
+      const id = oneOf(gameIds, game);
+      if (id && typeof score === "number" && Number.isSafeInteger(score) && score >= 0)
+        records[id] = score;
+    }
+    return records;
+  } catch {
+    return {};
   }
 };
 
@@ -195,6 +219,24 @@ class Storage {
   };
 
   getHistory = (): string[] => parseHistory(readItem(StorageKeys.History));
+
+  // the best score of a mini-game, 0 before the first one (TASK-66)
+  getGameRecord = (game: GameId): number =>
+    Math.max(
+      parseGameRecords(readItem(StorageKeys.GameRecords))[game] ?? 0,
+      gameRecordsInMemory[game] ?? 0,
+    );
+
+  // keeps the score when it beats the record; true when it does
+  setGameRecord = (game: GameId, score: number): boolean => {
+    const stored = parseGameRecords(readItem(StorageKeys.GameRecords));
+    if (score <= Math.max(stored[game] ?? 0, gameRecordsInMemory[game] ?? 0)) return false;
+    const records = { ...stored, [game]: score };
+    if (!writeItem(StorageKeys.GameRecords, JSON.stringify(records))) {
+      gameRecordsInMemory[game] = score;
+    }
+    return true;
+  };
 
   // the boot animation plays once per session (browser tab)
   setSessionStarted = () => setSessionFlag(SessionStorageKeys.SessionStarted);
