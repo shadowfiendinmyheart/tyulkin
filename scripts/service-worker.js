@@ -3,7 +3,8 @@
 //
 // - Pages (navigations) come from the network first: online, a deploy is seen on the next visit,
 //   and deep links (/gui, ?cmd=…) get what the server answers (404.html for an unknown path).
-//   Offline, the precached index.html is served for any page of the site: the router picks the page.
+//   Offline, a precached page is served as it is (the static pages of blog posts), and the
+//   precached index.html for any other page of the site: the router picks the page.
 // - Everything else of the site is served from the cache of this version (the file names are
 //   content-hashed), falling back to the network; other origins (analytics) are not touched.
 // - A new deploy is a new version: the new worker precaches it into its own cache and takes over
@@ -43,7 +44,9 @@ const fromNetworkFirst = async (request) => {
   try {
     return await fetch(request);
   } catch (error) {
-    const cached = await caches.match(APP_SHELL, { cacheName: CACHE });
+    const cached =
+      (await caches.match(request, { cacheName: CACHE, ignoreSearch: true })) ||
+      (await caches.match(APP_SHELL, { cacheName: CACHE }));
     if (cached) return cached;
     throw error;
   }

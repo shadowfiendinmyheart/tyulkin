@@ -12,12 +12,15 @@ export default defineConfig({
     ]),
     // no repositories, as in a build without GITHUB_REPOS: tests never reach the GitHub API
     __GITHUB_REPOS__: JSON.stringify([]),
+    // no posts, as in a build without content/: the blog is tested with its own posts
+    __BLOG_POSTS__: JSON.stringify([]),
     // no service worker, as on the dev server
     __SERVICE_WORKER__: JSON.stringify(""),
   },
   test: {
     environment: "jsdom",
-    include: ["src/**/*.test.{ts,tsx}"],
+    // scripts/*.test.mjs: the build-time scripts (in the node environment, see the file comment)
+    include: ["src/**/*.test.{ts,tsx}", "scripts/**/*.test.mjs"],
     setupFiles: ["src/setupTests.ts"],
     // above asyncUtilTimeout (src/setupTests.ts): a test may wait several times, and
     // App.routing.test re-imports the whole app per test, which takes seconds under load

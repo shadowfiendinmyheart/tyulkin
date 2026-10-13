@@ -127,5 +127,15 @@
   "fsNotFound": "$command: $path: нет такого файла или каталога",
   "fsNotDirectory": "$command: $path: это не каталог",
   "fsIsDirectory": "$command: $path: это каталог",
-  "catUsage": "Укажите файл: cat <файл>. Список файлов — $ls"
+  "catUsage": "Укажите файл: cat <файл>. Список файлов — $ls",
+  "helpBlog": "посты моего блога: прочитать — read <пост>",
+  "helpRead": "прочитать пост блога: read <пост>",
+  "blogEmpty": "Постов пока нет",
+  "blogList": "Посты блога, новые сверху; нажмите на заголовок, чтобы прочитать",
+  "blogFeedTitle": "Блог Ивана Тюлькина",
+  "blogFeedDescription": "Заметки фронтенд-разработчика",
+  "blogPageAllPosts": "Все посты в терминале",
+  "blogPageTerminal": "Открыть пост в терминале",
+  "readUsage": "Какой пост? Введите read <пост>; список постов — $blog",
+  "readNotFound": "Поста $slug нет. Список постов — $blog"
 }

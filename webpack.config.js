@@ -7,6 +7,7 @@ const { OG_IMAGE, escapeXml, getOgImageAlt, renderOgImage } = require("./scripts
 const { getGitLog } = require("./scripts/git-log.cjs");
 const { getGithubRepos } = require("./scripts/github-repos.cjs");
 const pwa = require("./scripts/pwa.cjs");
+const blog = require("./scripts/blog.cjs");
 
 // static CV text for crawlers and no-JS visitors, taken from the dictionary (single source)
 const toHtmlLines = (text) => escapeXml(text).split("\n").join("<br />");
@@ -160,6 +161,53 @@ class PwaPlugin {
   }
 }
 
+// the blog (scripts/blog.cjs): a static page per post for search engines and, with the absolute
+// site URL (RSS links must be absolute), the feed with its <link> in the page. No posts: nothing
+class BlogPlugin {
+  constructor({ posts, basePath, siteUrl }) {
+    this.posts = posts;
+    this.basePath = basePath;
+    this.siteUrl = siteUrl;
+    this.hasFeed = Boolean(siteUrl && posts.length);
+  }
+
+  apply(compiler) {
+    const { RawSource } = compiler.webpack.sources;
+    compiler.hooks.thisCompilation.tap("BlogPlugin", (compilation) => {
+      compilation.hooks.processAssets.tap(
+        { name: "BlogPlugin", stage: compiler.webpack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL },
+        () => {
+          const options = { basePath: this.basePath, siteUrl: this.siteUrl, hasFeed: this.hasFeed };
+          this.posts.forEach((post) =>
+            compilation.emitAsset(
+              blog.getPagePath(post.slug),
+              new RawSource(blog.renderPostPage(post, options)),
+            ),
+          );
+          if (this.hasFeed) {
+            compilation.emitAsset(
+              blog.FEED_FILE,
+              new RawSource(blog.renderFeed(this.posts, this.siteUrl)),
+            );
+          }
+        },
+      );
+      if (!this.hasFeed) return;
+      HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tap("BlogPlugin", (data) => {
+        data.headTags.push(
+          HtmlWebpackPlugin.createHtmlTagObject("link", {
+            rel: "alternate",
+            type: "application/rss+xml",
+            title: eng.blogFeedTitle,
+            href: data.publicPath + blog.FEED_FILE,
+          }),
+        );
+        return data;
+      });
+    });
+  }
+}
+
 // cookieless analytics (Umami): its script, only when the website id is given; events are sent
 // from src/analytics. data-domains keeps local and e2e runs of the published build out of the stats
 class AnalyticsPlugin {
@@ -233,6 +281,8 @@ module.exports = async (env, argv) => {
   // GITHUB_REPOS lists them; without it nothing is fetched and `projects` shows the dictionary text.
   // Production builds only: the dev server starts without the network round-trip
   const githubRepos = isProduction ? await getGithubRepos() : [];
+  // the owner's posts, content/*.md; read once: the dev server needs a restart for a new post
+  const blogPosts = blog.readPosts();
 
   const htmlOptions = {
     template: "./src/index.html",
@@ -312,12 +362,15 @@ module.exports = async (env, argv) => {
         __GIT_LOG__: JSON.stringify(getGitLog()),
         // the repositories for `projects` as of the build (scripts/github-repos.cjs)
         __GITHUB_REPOS__: JSON.stringify(githubRepos),
+        // the posts for `blog` and `read` (scripts/blog.cjs)
+        __BLOG_POSTS__: JSON.stringify(blogPosts),
         // the service worker is registered by the published build only (src/serviceWorker)
         __SERVICE_WORKER__: JSON.stringify(isProduction ? pwa.SERVICE_WORKER_FILE : ""),
       }),
       new FontPreloadPlugin(),
       // the card is for the published site: the dev server skips the render
       ...(isProduction ? [new OgImagePlugin(siteUrl)] : []),
+      ...(isProduction ? [new BlogPlugin({ posts: blogPosts, basePath, siteUrl })] : []),
       ...(isProduction ? [new PwaPlugin(basePath)] : []),
       ...(analytics ? [new AnalyticsPlugin(analytics)] : []),
       ...(isProduction ? [new MiniCssExtractPlugin({ filename: "[name].[contenthash].css" })] : []),

@@ -25,9 +25,9 @@ export default defineConfig([
       "@eslint-react/dom-no-unknown-property": "error",
     },
   },
-  // node scripts: the e2e static server and tool configs
+  // node scripts: the e2e static server, tests of the build-time scripts and tool configs
   {
-    files: ["e2e/*.mjs", "*.config.{ts,mts}"],
+    files: ["e2e/*.mjs", "scripts/*.mjs", "*.config.{ts,mts}"],
     languageOptions: { globals: globals.node },
   },
   // build-time scripts loaded by webpack.config.js (CommonJS)

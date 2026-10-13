@@ -69,6 +69,14 @@ export interface CommonDictionary {
   reverseSearchFailing: string;
   // accessible name of the command line while it searches the history
   reverseSearchLabel: string;
+  // the blog (TASK-70): `blog` without posts, the header of the list; the title of the feed and
+  // of the post pages, the description of the feed, the links of a post page (scripts/blog.cjs)
+  blogEmpty: string;
+  blogList: string;
+  blogFeedTitle: string;
+  blogFeedDescription: string;
+  blogPageAllPosts: string;
+  blogPageTerminal: string;
 }
 
 // one line of `help` per command, see commandHandlers/commands
@@ -111,6 +119,8 @@ export interface CommandDescriptionDictionary {
   helpCat: string;
   helpTree: string;
   helpDate: string;
+  helpBlog: string;
+  helpRead: string;
 }
 
 export interface DictionaryWithArgs {
@@ -178,6 +188,9 @@ export interface DictionaryWithArgs {
   fsIsDirectory: string;
   // `cat` without a file, $ls is a command placeholder
   catUsage: string;
+  // `read` without a post, $blog is a command placeholder; no post $slug typed by the visitor
+  readUsage: string;
+  readNotFound: string;
 }
 
 export type Dictionary = CommonDictionary & CommandDescriptionDictionary & DictionaryWithArgs;
@@ -237,6 +250,8 @@ type FsErrorLocale = LocaleWithArgsGenerator<
   "command" | "path"
 >;
 type CatUsageLocale = LocaleWithArgsGenerator<"catUsage", "ls">;
+type ReadUsageLocale = LocaleWithArgsGenerator<"readUsage", "blog">;
+type ReadNotFoundLocale = LocaleWithArgsGenerator<"readNotFound", "slug" | "blog">;
 type NeofetchLocale = LocaleWithArgsGenerator<
   "neofetch",
   "uptime" | "theme" | "caret" | "language"
@@ -283,7 +298,9 @@ export type LocaleWithArgs =
   | SecretFoundLocale
   | NeofetchLocale
   | FsErrorLocale
-  | CatUsageLocale;
+  | CatUsageLocale
+  | ReadUsageLocale
+  | ReadNotFoundLocale;
 export type LocaleParams = CommonLocale | LocaleWithArgs;
 
 export const languages = ["ru", "eng"] as const;

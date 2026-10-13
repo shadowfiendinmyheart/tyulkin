@@ -1,6 +1,7 @@
 import { ROUTES } from "../../router/const";
 import { GuiLocationState } from "../../router/interfaces";
 import { withNodes } from "../../store/console/logNodes";
+import { blogPosts, getBlogList, getBlogPost } from "../blog";
 import { changes, getChangelog } from "../changelog";
 import { Command } from "../interfaces";
 import { sections } from "../sections";
@@ -65,6 +66,19 @@ export const mainCommands: Command[] = [
     descriptionKey: "helpChangelog",
     run: ({ log, t }, [param]) =>
       getChangelog(t, changes, param?.toLowerCase() === "--all").forEach((content) => log(content)),
+  },
+  {
+    // the owner's posts (TASK-70), compiled at build time; "No posts yet" without them
+    name: "blog",
+    descriptionKey: "helpBlog",
+    run: ({ log, t }) => getBlogList(t, blogPosts).forEach((content) => log(content)),
+  },
+  {
+    name: "read",
+    // Tab completes the slugs of the posts
+    params: blogPosts.map(({ slug }) => slug),
+    descriptionKey: "helpRead",
+    run: ({ log, t }, [slug]) => getBlogPost(t, blogPosts, slug).forEach((content) => log(content)),
   },
   {
     // `cd settings` too (commands/fileSystem.ts)

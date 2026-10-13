@@ -26,3 +26,30 @@ declare const __GITHUB_REPOS__: {
 
 // the service worker file of the production build ("sw.js", scripts/pwa.cjs); empty on the dev server and in vitest
 declare const __SERVICE_WORKER__: string;
+
+// the owner's blog posts, content/*.md compiled at build time, newest first (scripts/blog.cjs,
+// TASK-70); empty without them, and in vitest
+declare const __BLOG_POSTS__: {
+  slug: string;
+  title: string;
+  // YYYY-MM-DD
+  date: string;
+  description: string;
+  lang: "en" | "ru";
+  blocks: BlogBlock[];
+}[];
+
+// a line of a post: bold, italic and code are not nested; links are absolute http(s) or mailto
+type BlogInline = (
+  | { type: "text" | "strong" | "em" | "code"; text: string }
+  | { type: "link"; text: string; href: string }
+)[];
+
+// a block of a post: a small Markdown subset
+type BlogBlock =
+  | { type: "heading"; level: number; inline: BlogInline }
+  | { type: "paragraph"; inline: BlogInline }
+  | { type: "list"; ordered: boolean; start: number; items: BlogInline[] }
+  | { type: "code"; text: string }
+  | { type: "quote"; inline: BlogInline }
+  | { type: "rule" };

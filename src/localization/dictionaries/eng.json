@@ -127,5 +127,15 @@
   "fsNotFound": "$command: $path: No such file or directory",
   "fsNotDirectory": "$command: $path: Not a directory",
   "fsIsDirectory": "$command: $path: Is a directory",
-  "catUsage": "Specify a file: cat <file>. Type $ls to see the files"
+  "catUsage": "Specify a file: cat <file>. Type $ls to see the files",
+  "helpBlog": "posts of my blog: read one with read <post>",
+  "helpRead": "read a blog post: read <post>",
+  "blogEmpty": "No posts yet",
+  "blogList": "Blog posts, newest first; click a title to read it",
+  "blogFeedTitle": "Ivan Tyulkin's blog",
+  "blogFeedDescription": "Notes of a frontend developer",
+  "blogPageAllPosts": "All posts in the terminal",
+  "blogPageTerminal": "Open this post in the terminal",
+  "readUsage": "Which post? Type read <post>; the posts are listed by $blog",
+  "readNotFound": "No post $slug. The posts are listed by $blog"
 }
