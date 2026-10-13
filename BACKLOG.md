@@ -123,7 +123,7 @@
 | TASK-74 | P1 | M | **Деплой и домен** | Автодеплой из CI (GitHub Pages / Cloudflare Pages / Vercel), свой домен, HTTPS, SPA-фолбэк (прямой заход на `/settings`, `/gui` не даёт 404). Разблокирует TASK-51 (og:url, canonical) и TASK-75. _(частично: деплой на GitHub Pages из CI в `/tyulkin/` есть; нет своего домена — тогда `CNAME`, `E2E_BASE_PATH: /` и `SITE_URL` в `ci.yml`)_ |
 | ✅ TASK-75 | P2 | M | **Картинка превью (og:image)** | Генерация при сборке PNG 1200×630 в стиле терминала (промпт + `neofetch`-блок) — красивая карточка в Telegram/LinkedIn/Slack. Закрывает остаток TASK-51. |
 | TASK-76 | P2 | S | **Аналитика без cookies** | Umami / Plausible / GoatCounter: визиты + события «какая команда введена» и «какая не найдена» — подскажет, какие алиасы и разделы добавить. Без персональных данных, не нужен cookie-баннер. _(частично: интеграция Umami готова и включается переменной `UMAMI_WEBSITE_ID` при сборке; осталось завести сайт в Umami Cloud или своём Umami и задать переменные репозитория `UMAMI_WEBSITE_ID` (и `UMAMI_SCRIPT_URL` для своего инстанса))_ |
-| TASK-77 | P3 | M | **PWA и Lighthouse 100** | manifest, иконки, service worker (офлайн-доступ, «установить терминал» на телефон); цель — 100 во всех категориях Lighthouse, бейдж в README. |
+| TASK-77 | P3 | M | **PWA и Lighthouse 100** | manifest, иконки, service worker (офлайн-доступ, «установить терминал» на телефон); цель — 100 во всех категориях Lighthouse, бейдж в README. _(частично: локально desktop 100/100/100/100, mobile Performance 95 — LCP ждёт минимальную анимацию загрузки; замер опубликованной версии и бейдж в README)_ |
 
 ---
 

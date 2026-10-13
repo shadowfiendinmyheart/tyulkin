@@ -12,7 +12,7 @@
 @mixin white-theme {
   --bg-color: #fff;
   --text-color: #222;
-  --muted-color: #777;
+  --muted-color: #767676; // the lightest gray with 4.5:1 on white (WCAG AA)
   --caret-color: #000;
   --accent-color: #0057b8;
   --error-color: #c62828;

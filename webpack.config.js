@@ -6,6 +6,7 @@ const eng = require("./src/localization/dictionaries/eng.json");
 const { OG_IMAGE, escapeXml, getOgImageAlt, renderOgImage } = require("./scripts/og-image.cjs");
 const { getGitLog } = require("./scripts/git-log.cjs");
 const { getGithubRepos } = require("./scripts/github-repos.cjs");
+const pwa = require("./scripts/pwa.cjs");
 
 // static CV text for crawlers and no-JS visitors, taken from the dictionary (single source)
 const toHtmlLines = (text) => escapeXml(text).split("\n").join("<br />");
@@ -92,6 +93,66 @@ class OgImagePlugin {
           meta("og:image:height", String(OG_IMAGE.height)),
           meta("og:image:alt", getOgImageAlt()),
           tag("meta", { name: "twitter:card", content: "summary_large_image" }),
+        );
+        return data;
+      });
+    });
+  }
+}
+
+// the installable app (scripts/pwa.cjs): the manifest with its icons, their tags in the page, and
+// the service worker with the list of the emitted files to precache
+class PwaPlugin {
+  constructor(basePath) {
+    this.basePath = basePath;
+  }
+
+  apply(compiler) {
+    const { Compilation } = compiler.webpack;
+    const { RawSource } = compiler.webpack.sources;
+    compiler.hooks.thisCompilation.tap("PwaPlugin", (compilation) => {
+      compilation.hooks.processAssets.tap(
+        { name: "PwaPlugin", stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL },
+        () => {
+          // drawn once, like the og:image card
+          this.icons =
+            this.icons ||
+            [...pwa.ICONS, pwa.APPLE_TOUCH_ICON].map((icon) => [
+              icon.fileName,
+              pwa.renderIcon(icon),
+            ]);
+          this.icons.forEach(([fileName, png]) =>
+            compilation.emitAsset(fileName, new RawSource(png)),
+          );
+          compilation.emitAsset(
+            pwa.MANIFEST_FILE,
+            new RawSource(JSON.stringify(pwa.getManifest(this.basePath), null, 2)),
+          );
+        },
+      );
+      // after the HTML pages, minification and the real content hashes: the list holds the final files
+      compilation.hooks.processAssets.tap(
+        { name: "PwaPlugin", stage: Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_TRANSFER },
+        () => {
+          const assets = compilation
+            .getAssets()
+            .map(({ name, source }) => ({ name, source: source.buffer() }));
+          compilation.emitAsset(
+            pwa.SERVICE_WORKER_FILE,
+            new RawSource(pwa.getServiceWorker(assets)),
+          );
+        },
+      );
+      HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tap("PwaPlugin", (data) => {
+        data.headTags.push(
+          HtmlWebpackPlugin.createHtmlTagObject("link", {
+            rel: "manifest",
+            href: data.publicPath + pwa.MANIFEST_FILE,
+          }),
+          HtmlWebpackPlugin.createHtmlTagObject("link", {
+            rel: "apple-touch-icon",
+            href: data.publicPath + pwa.APPLE_TOUCH_ICON.fileName,
+          }),
         );
         return data;
       });
@@ -251,10 +312,13 @@ module.exports = async (env, argv) => {
         __GIT_LOG__: JSON.stringify(getGitLog()),
         // the repositories for `projects` as of the build (scripts/github-repos.cjs)
         __GITHUB_REPOS__: JSON.stringify(githubRepos),
+        // the service worker is registered by the published build only (src/serviceWorker)
+        __SERVICE_WORKER__: JSON.stringify(isProduction ? pwa.SERVICE_WORKER_FILE : ""),
       }),
       new FontPreloadPlugin(),
       // the card is for the published site: the dev server skips the render
       ...(isProduction ? [new OgImagePlugin(siteUrl)] : []),
+      ...(isProduction ? [new PwaPlugin(basePath)] : []),
       ...(analytics ? [new AnalyticsPlugin(analytics)] : []),
       ...(isProduction ? [new MiniCssExtractPlugin({ filename: "[name].[contenthash].css" })] : []),
     ],

@@ -23,3 +23,6 @@ declare const __GITHUB_REPOS__: {
   language: string;
   stars: number;
 }[];
+
+// the service worker file of the production build ("sw.js", scripts/pwa.cjs); empty on the dev server and in vitest
+declare const __SERVICE_WORKER__: string;

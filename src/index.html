@@ -19,7 +19,11 @@
     <meta property="og:locale" content="en_US" />
     <meta property="profile:first_name" content="Ivan" />
     <meta property="profile:last_name" content="Tyulkin" />
-    <!-- og:image, og:url, canonical and twitter:card: OgImagePlugin in webpack.config.js -->
+    <!-- the browser UI color of the default theme: Black, White on a light system (TASK-73) -->
+    <meta name="theme-color" content="#000" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#fff" media="(prefers-color-scheme: light)" />
+    <!-- og:image, og:url, canonical and twitter:card: OgImagePlugin in webpack.config.js; the manifest
+         and the Apple touch icon: PwaPlugin -->
     <link
       rel="icon"
       type="image/svg+xml"

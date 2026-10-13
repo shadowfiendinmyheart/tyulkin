@@ -36,6 +36,18 @@ export default defineConfig([
     languageOptions: { sourceType: "commonjs", globals: globals.node },
     rules: { "@typescript-eslint/no-require-imports": "off" },
   },
+  // the service worker template (scripts/pwa.cjs fills the placeholders at build time)
+  {
+    files: ["scripts/service-worker.js"],
+    languageOptions: {
+      sourceType: "script",
+      globals: {
+        ...globals.serviceworker,
+        __CACHE_VERSION__: "readonly",
+        __PRECACHE_URLS__: "readonly",
+      },
+    },
+  },
   // must be last: disables stylistic rules and reports prettier diffs as eslint errors
   prettierRecommended,
 ]);

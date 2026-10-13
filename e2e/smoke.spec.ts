@@ -285,3 +285,39 @@ test("serves the link preview card (TASK-75)", async ({ page, request }) => {
     await expect(ogImage).toHaveCount(0);
   }
 });
+
+test.describe("installable app (TASK-77)", () => {
+  test("serves the manifest for the whole site under the base path", async ({ page, request }) => {
+    await page.goto("");
+    const href = await page.locator('link[rel="manifest"]').getAttribute("href");
+    expect(href).toBe(`${BASE_PATH}manifest.webmanifest`);
+    const response = await request.get(href!);
+    expect(response.headers()["content-type"]).toContain("application/manifest+json");
+    const manifest = await response.json();
+    expect(manifest).toMatchObject({
+      start_url: BASE_PATH,
+      scope: BASE_PATH,
+      display: "standalone",
+    });
+    for (const icon of manifest.icons) {
+      expect(icon.src.startsWith(BASE_PATH)).toBe(true);
+      expect((await request.get(icon.src)).status()).toBe(200);
+    }
+  });
+
+  test("works offline once visited, deep links included", async ({ page, context }) => {
+    await open(page);
+    // the worker precaches the site and takes the page over (clients.claim)
+    await page.evaluate(() => navigator.serviceWorker.ready);
+    await expect
+      .poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller)))
+      .toBe(true);
+
+    await context.setOffline(true);
+    await page.goto("?cmd=about");
+    await expect(lastLog(page)).toContainText("Ivan Tyulkin");
+    await page.goto("settings");
+    await expect(page.getByRole("log")).toContainText(eng.settingsWelcome);
+    await context.setOffline(false);
+  });
+});

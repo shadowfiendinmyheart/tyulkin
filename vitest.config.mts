@@ -12,6 +12,8 @@ export default defineConfig({
     ]),
     // no repositories, as in a build without GITHUB_REPOS: tests never reach the GitHub API
     __GITHUB_REPOS__: JSON.stringify([]),
+    // no service worker, as on the dev server
+    __SERVICE_WORKER__: JSON.stringify(""),
   },
   test: {
     environment: "jsdom",
