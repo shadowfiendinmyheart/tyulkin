@@ -59,7 +59,7 @@ const getNodeLength = (node: LogNode): number => {
   if ("decorative" in node && node.decorative) return 0;
   switch (node.type) {
     case "command":
-      return node.command.length;
+      return (node.label ?? node.command).length;
     case "table":
       return node.rows.flat().reduce((sum, cell) => sum + getNodesLength(cell), 0);
     default:
@@ -76,7 +76,7 @@ const sliceNode = (node: LogNode, length: number): LogNode => {
   switch (node.type) {
     // plain text until typed out in full: a click must not run a half-typed command
     case "command":
-      return node.command.slice(0, length);
+      return (node.label ?? node.command).slice(0, length);
     case "table": {
       const rows: LogNode[][][] = [];
       let left = length;

@@ -6,10 +6,14 @@ import ru from "./ru.json";
 const dictionaries = { eng, ru };
 
 const allCommands = [...globalCommands, ...Object.values(commandsByRoute).flat()];
-const descriptionKeys = allCommands.map(({ descriptionKey }) => descriptionKey);
+// the file system commands are made for every page (TASK-60): a key is repeated by the copies
+const descriptionKeys = [...new Set(allCommands.map(({ descriptionKey }) => descriptionKey))];
 
 it("every command has its own description key", () => {
-  expect(new Set(descriptionKeys).size).toBe(descriptionKeys.length);
+  for (const key of descriptionKeys) {
+    const commands = allCommands.filter((command) => command.descriptionKey === key);
+    expect(new Set(commands.map(({ name }) => name)).size, key).toBe(1);
+  }
 });
 
 describe.each(Object.entries(dictionaries))("%s dictionary", (_, dictionary) => {

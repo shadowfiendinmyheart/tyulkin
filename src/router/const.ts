@@ -1,6 +1,8 @@
-// pages of the terminal: each has its own commands and welcome (see commandsByRoute)
+// pages of the terminal: each has its own commands and welcome (see commandsByRoute) and is
+// a directory of the virtual file system (commandHandlers/fileSystem.ts): "/" is the home
 export const CONSOLE_ROUTES = {
   MAIN: "/",
+  PROJECTS: "/projects",
   SETTINGS: "/settings",
 } as const;
 

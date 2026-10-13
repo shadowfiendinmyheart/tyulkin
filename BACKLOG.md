@@ -91,7 +91,7 @@
 
 | ID | Pri | Est | Задача | Суть |
 |---|---|---|---|---|
-| TASK-60 | P2 | L | **Виртуальная файловая система** | `ls`, `cd`, `cat`, `tree`, `pwd`; разделы резюме — файлы (`cat about.md`, `ls projects/`), промпт `visitor@tyulkin:~/projects$`, автодополнение путей по Tab. cwd синхронизирован с URL. Требует пересмотра [router](src/router/const.ts) и `commandsByRoute`: `/settings` становится каталогом. |
+| ✅ TASK-60 | P2 | L | **Виртуальная файловая система** | `ls`, `cd`, `cat`, `tree`, `pwd`; разделы резюме — файлы (`cat about.md`, `ls projects/`), промпт `visitor@tyulkin:~/projects$`, автодополнение путей по Tab. cwd синхронизирован с URL. Требует пересмотра [router](src/router/const.ts) и `commandsByRoute`: `/settings` становится каталогом. |
 | ✅ TASK-61 | P2 | M | **Привычки шелла** | `history`, `!!`, `Ctrl+R` (reverse search), `echo`, `whoami`, `date`, `pwd`; пайп `\| grep <слово>` по выводу команды; история сохраняется между визитами (через `src/storage`). |
 | ✅ TASK-62 | P2 | S | **Deep links** | `/?cmd=projects` выполняет команду при загрузке; команда `share` копирует ссылку на последний вывод. Позволяет давать в резюме/LinkedIn ссылки сразу на нужный раздел. |
 | ✅ TASK-72 | P2 | S | **Язык по браузеру** | При первом визите (в storage пусто) — язык из `navigator.languages`, иначе `eng`. [storage](src/storage/index.ts) |

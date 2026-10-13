@@ -12,8 +12,9 @@ export type LogNode =
   // only for the owner's texts (see linkify), never for echoed input, so a visitor
   // can't make a link that looks like part of the CV
   | { type: "link"; text: string; href: string }
-  // a command name, highlighted
-  | { type: "command"; command: string }
+  // a command name, highlighted; a click runs it. label: shown instead of the command
+  // (`ls` shows "about.md", a click runs "cat ~/about.md")
+  | { type: "command"; command: string; label?: string }
   // rows of cells, a cell is a list of nodes
   | { type: "table"; rows: LogNode[][][] }
   // kept as is: no wrapping, scrolls horizontally (ASCII art, aligned columns)

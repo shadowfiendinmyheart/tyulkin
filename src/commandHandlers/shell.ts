@@ -4,14 +4,20 @@ import { LogNode } from "../store/console/interfaces";
 
 // shell habits (TASK-61): `whoami`, `pwd`, `!!`, `| grep`, history search
 
-// who the visitor is in the terminal (`whoami`) and where their home is (`pwd`)
+// who the visitor is in the terminal (`whoami`), on which machine and where their home is (`pwd`)
 export const USER_NAME = "visitor";
+export const HOST_NAME = "tyulkin";
 export const HOME_DIRECTORY = `/home/${USER_NAME}`;
 
-// the directory of a terminal page: the main page is the home, "/settings" is "~/settings";
-// a virtual file system (TASK-60) will replace the pages with its own directories
+// the directory of a terminal page: every directory of the virtual file system (TASK-60) is a
+// page, the main page is the home, "/settings" is "~/settings"
+const getHomeSubpath = (pathname: string) => pathname.replace(/\/+$/, "");
 export const getWorkingDirectory = (pathname: string) =>
-  `${HOME_DIRECTORY}${pathname.replace(/\/+$/, "")}`;
+  `${HOME_DIRECTORY}${getHomeSubpath(pathname)}`;
+
+// the prompt of the command line and of the echoed input: "visitor@tyulkin:~/settings$"
+export const getPrompt = (pathname: string) =>
+  `${USER_NAME}@${HOST_NAME}:~${getHomeSubpath(pathname)}$`;
 
 // "Tuesday, October 13, 2026 at 2:03:12 PM GMT+3" in the language of the terminal
 export const formatDate = (now: Date, language: Languages) =>
@@ -94,7 +100,7 @@ const getNodeText = (node: LogNode): string => {
   if (typeof node === "string") return node;
   switch (node.type) {
     case "command":
-      return node.command;
+      return node.label ?? node.command;
     case "table":
       return node.rows.map((row) => row.map(getNodesText).join(" ")).join("\n");
     default:

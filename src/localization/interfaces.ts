@@ -1,6 +1,7 @@
 export interface CommonDictionary {
   welcome: string;
   settingsWelcome: string;
+  projectsWelcome: string;
   // lines typed out before the first welcome of a session, one per line
   bootLines: string;
   education: string;
@@ -95,6 +96,9 @@ export interface CommandDescriptionDictionary {
   helpEcho: string;
   helpWhoami: string;
   helpPwd: string;
+  helpCd: string;
+  helpCat: string;
+  helpTree: string;
   helpDate: string;
 }
 
@@ -149,6 +153,12 @@ export interface DictionaryWithArgs {
   secretFound: string;
   // "key: value" lines of neofetch, the first line is the title
   neofetch: string;
+  // the virtual file system (TASK-60): $command failed on the $path typed by the visitor
+  fsNotFound: string;
+  fsNotDirectory: string;
+  fsIsDirectory: string;
+  // `cat` without a file, $ls is a command placeholder
+  catUsage: string;
 }
 
 export type Dictionary = CommonDictionary & CommandDescriptionDictionary & DictionaryWithArgs;
@@ -197,6 +207,11 @@ type SecretsProgressLocale = LocaleWithArgsGenerator<"secretsProgress", "found" 
 type SecretsAllLocale = LocaleWithArgsGenerator<"secretsAll", "total">;
 type SecretsListLocale = LocaleWithArgsGenerator<"secretsList", "list">;
 type SecretFoundLocale = LocaleWithArgsGenerator<"secretFound", "found" | "total" | "secrets">;
+type FsErrorLocale = LocaleWithArgsGenerator<
+  "fsNotFound" | "fsNotDirectory" | "fsIsDirectory",
+  "command" | "path"
+>;
+type CatUsageLocale = LocaleWithArgsGenerator<"catUsage", "ls">;
 type NeofetchLocale = LocaleWithArgsGenerator<
   "neofetch",
   "uptime" | "theme" | "caret" | "language"
@@ -235,7 +250,9 @@ export type LocaleWithArgs =
   | SecretsAllLocale
   | SecretsListLocale
   | SecretFoundLocale
-  | NeofetchLocale;
+  | NeofetchLocale
+  | FsErrorLocale
+  | CatUsageLocale;
 export type LocaleParams = CommonLocale | LocaleWithArgs;
 
 export const languages = ["ru", "eng"] as const;

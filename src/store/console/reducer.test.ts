@@ -32,10 +32,10 @@ const initialState: ConsoleState = {
 describe("console reducer", () => {
   it("adds and clears logs", () => {
     let state = reducer(initialState, addConsoleLog("hello"));
-    state = reducer(state, addUserLog("ls", "~"));
+    state = reducer(state, addUserLog("ls", "~$"));
     expect(state.logs).toEqual([
       { content: ["hello"], id: 0 },
-      { content: ["~> ls"], id: 1 },
+      { content: ["~$ ls"], id: 1 },
     ]);
     expect(reducer(state, clearLogs()).logs).toEqual([]);
   });
@@ -117,7 +117,7 @@ describe("console reducer", () => {
 
     it("shows the echoed input and everything before it at once", () => {
       let state = reducer(initialState, addConsoleLog("a"));
-      state = reducer(state, addUserLog("ls", "~"));
+      state = reducer(state, addUserLog("ls", "~$"));
       expect(state.typedLogId).toBe(2);
     });
 

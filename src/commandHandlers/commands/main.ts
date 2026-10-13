@@ -1,41 +1,40 @@
 import { ROUTES } from "../../router/const";
 import { GuiLocationState } from "../../router/interfaces";
-import { linkify, withNodes } from "../../store/console/logNodes";
+import { withNodes } from "../../store/console/logNodes";
 import { changes, getChangelog } from "../changelog";
 import { Command } from "../interfaces";
-import { getProjects, githubRepos } from "../projects";
+import { sections } from "../sections";
 
 export const mainCommands: Command[] = [
   {
     name: "education",
     descriptionKey: "helpEducation",
-    run: ({ log, t }) => log(t({ key: "education" })),
+    run: ({ log, t }) => sections.education(t).forEach((content) => log(content)),
   },
   {
     name: "about",
     descriptionKey: "helpAbout",
-    run: ({ log, t }) => log(t({ key: "about" })),
+    run: ({ log, t }) => sections.about(t).forEach((content) => log(content)),
   },
   {
     name: "experience",
     descriptionKey: "helpExperience",
-    run: ({ log, t }) => log(t({ key: "experience" })),
+    run: ({ log, t }) => sections.experience(t).forEach((content) => log(content)),
   },
   {
     name: "skills",
     descriptionKey: "helpSkills",
-    run: ({ log, t }) => log(t({ key: "skills" })),
+    run: ({ log, t }) => sections.skills(t).forEach((content) => log(content)),
   },
   {
     name: "projects",
     descriptionKey: "helpProjects",
-    // the GitHub repositories from the build, or the dictionary text (TASK-68)
-    run: ({ log, t }) => getProjects(t, githubRepos).forEach((content) => log(content)),
+    run: ({ log, t }) => sections.projects(t).forEach((content) => log(content)),
   },
   {
     name: "contacts",
     descriptionKey: "helpContacts",
-    run: ({ log, t }) => log(linkify(t({ key: "contacts" }))),
+    run: ({ log, t }) => sections.contacts(t).forEach((content) => log(content)),
   },
   {
     // the CV is saved as PDF by printing its regular (gui) view; opening the view alone is `gui`
@@ -68,8 +67,8 @@ export const mainCommands: Command[] = [
       getChangelog(t, changes, param?.toLowerCase() === "--all").forEach((content) => log(content)),
   },
   {
+    // `cd settings` too (commands/fileSystem.ts)
     name: "settings",
-    aliases: ["cd settings"],
     descriptionKey: "helpSettings",
     shareable: false,
     run: ({ navigate }) => navigate(ROUTES.SETTINGS),

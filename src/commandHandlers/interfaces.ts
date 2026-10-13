@@ -27,11 +27,13 @@ export interface CommandContext {
 // what is needed to match and run a command
 export interface CommandBase {
   name: string;
-  // alternative spellings, e.g. "cd .." for "back"; work and autocomplete like the name
+  // alternative spellings, e.g. "cd.." for "back"; work and autocomplete like the name
   aliases?: string[];
   // values of the single optional argument, used for autocomplete;
   // a command without params accepts no arguments
   params?: readonly string[];
+  // Tab completes the command without an argument too: it is mostly run so (`ls`, `cd`)
+  bareCompletion?: true;
   // takes any number of arguments, as typed (`cowsay hello world`)
   anyArgs?: true;
   run: (ctx: CommandContext, args: string[]) => void;

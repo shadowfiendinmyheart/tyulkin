@@ -95,7 +95,12 @@ export const getParamsString = (obj: object) => {
 export const getAllCommandsWithParams = (commands: Command[]) => {
   return commands.flatMap((command) =>
     getCommandPhrases(command).flatMap((phrase) =>
-      command.params ? command.params.map((param) => `${phrase} ${param}`) : [phrase],
+      command.params
+        ? [
+            ...(command.bareCompletion ? [phrase] : []),
+            ...command.params.map((param) => `${phrase} ${param}`),
+          ]
+        : [phrase],
     ),
   );
 };

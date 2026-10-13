@@ -96,11 +96,12 @@ src/
 
 Реестр — [`src/commandHandlers/commands/`](src/commandHandlers/commands):
 
-- `global.ts` — команды, доступные на любой странице (`help`, `ls`, `clear`, `back`, `menu`,
+- `global.ts` — команды, доступные на любой странице (`help`, `clear`, `back`, `menu`,
   `neofetch`, `gui`, `share`, `matrix`, `secrets`, `history`, `echo`, `whoami`, `pwd`, `date`);
 - `main.ts`, `settings.ts` — команды страниц;
+- `fileSystem.ts` — `ls`, `cd`, `cat`, `tree`: создаются для каждой страницы-каталога (см. ниже);
 - `secrets.ts` — пасхалки (`sudo …`, `rm -rf /`, `vim`, `cowsay`, `fortune`, `sl`, `coffee`):
-  `SecretCommand` без описания, их нет в `help`, `ls`, автодополнении и «did you mean»; они
+  `SecretCommand` без описания, их нет в `help`, автодополнении и «did you mean»; они
   проверяются, только если не подошла ни одна обычная команда. Первый запуск отмечает секрет
   найденным (`storage`, список — `secretIds` в `src/domain`, туда же входит код Konami), прогресс
   показывает `secrets`. Deep link (`?cmd=`) пасхалки не запускает;
@@ -133,9 +134,20 @@ src/
 многострочные ячейки и `pre` фильтруются построчно; после `|` поддерживается только `grep`. `Ctrl+R` в
 поле ввода — обратный поиск по истории, как в bash: `Ctrl+R` ещё раз — более старое совпадение, Enter —
 выполнить, стрелки/Tab/Home/End — вставить в строку, Esc/`Ctrl+G` — отменить
-([`Input/hooks/useReverseSearch.ts`](src/components/Input/hooks/useReverseSearch.ts)). `pwd` пока
-выводит каталог страницы (`/home/visitor`, `/home/visitor/settings`) — `getWorkingDirectory`, её
-заменит виртуальная ФС (TASK-60). `echo` помечен `linkable: false`: deep link его не выполняет.
+([`Input/hooks/useReverseSearch.ts`](src/components/Input/hooks/useReverseSearch.ts)). `echo` помечен
+`linkable: false`: deep link его не выполняет.
+
+**Виртуальная файловая система** ([`commandHandlers/fileSystem.ts`](src/commandHandlers/fileSystem.ts)).
+Домашний каталог `~` (`/home/visitor`) — главная страница; разделы резюме — файлы (`about.md`,
+`contacts.md`, `education.md`, `experience.md`, `skills.md`, `projects/README.md`), их содержимое —
+те же тексты словарей, что выводят одноимённые команды. Каждый каталог — страница терминала
+(`~/projects` — `/projects`, `~/settings` — `/settings`), поэтому рабочий каталог всегда в URL: `cd`
+переходит на страницу каталога, а `pwd` и промпт (`visitor@tyulkin:~/projects$`, `getPrompt` в
+`shell.ts`) берут его из адреса. Пути — относительные, от `~` или абсолютные, имена
+регистронезависимы, `..` выше `~` остаётся в `~`. Tab дополняет пути (`params` команд — пути
+относительно каталога страницы). В `ls` имена кликабельны: клик выполняет `cd`/`cat` с путём от `~`,
+поэтому работает и из логов другой страницы. Новый каталог = узел в `HOME` + маршрут в
+`CONSOLE_ROUTES` (тест сверяет, что они совпадают).
 
 **Добавить команду:**
 

@@ -4,6 +4,7 @@ import {
   expandHistory,
   findHistoryMatch,
   formatHistory,
+  getPrompt,
   getWorkingDirectory,
   grep,
   parsePipeline,
@@ -15,6 +16,14 @@ describe("getWorkingDirectory (TASK-61)", () => {
     expect(getWorkingDirectory("/")).toBe("/home/visitor");
     expect(getWorkingDirectory("/settings")).toBe("/home/visitor/settings");
     expect(getWorkingDirectory("/settings/")).toBe("/home/visitor/settings");
+  });
+});
+
+describe("getPrompt (TASK-60)", () => {
+  it("shows the directory of the page from the home", () => {
+    expect(getPrompt("/")).toBe("visitor@tyulkin:~$");
+    expect(getPrompt("/projects")).toBe("visitor@tyulkin:~/projects$");
+    expect(getPrompt("/settings/")).toBe("visitor@tyulkin:~/settings$");
   });
 });
 

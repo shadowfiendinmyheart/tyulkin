@@ -20,9 +20,10 @@ export const addConsoleLog = (content: LogContent): ActionAddLogs => ({
   payload: { content: Array.isArray(content) ? content : [content] },
 });
 // the echoed input is plain text: never a link or a command
-export const addUserLog = (message: string, location: string): ActionAddLogs => ({
+// prompt: "visitor@tyulkin:~$" (see getPrompt)
+export const addUserLog = (message: string, prompt: string): ActionAddLogs => ({
   type: ConsoleActionKind.AddLogs,
-  payload: { content: [`${location}> ${message}`], instant: true },
+  payload: { content: [`${prompt} ${message}`], instant: true },
 });
 export const clearLogs = (): ActionClearLogs => ({ type: ConsoleActionKind.ClearLogs });
 export const finishTyping = (logId: number): ActionFinishTyping => ({

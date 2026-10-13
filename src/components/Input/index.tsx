@@ -9,7 +9,7 @@ import {
   countTypedCommand,
   setCommandsHint,
 } from "../../store/console/actions";
-import { usePathnameLocation } from "../../hooks/usePathnameLocation";
+import { usePrompt } from "../../hooks/usePrompt";
 import { useCommandsHint } from "./hooks/useCommandsHint";
 import { useHistoryCommands } from "./hooks/useHistoryCommands";
 import { useReverseSearch } from "./hooks/useReverseSearch";
@@ -59,7 +59,7 @@ const Input: React.FC = () => {
   const [caretToEndRequest, setCaretToEndRequest] = React.useState<number>(0);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const consoleInputRef = React.useRef<HTMLDivElement>(null);
-  const pathnameLocation = usePathnameLocation();
+  const prompt = usePrompt();
   const t = useT();
   const hintId = React.useId();
   const searchMatchId = React.useId();
@@ -114,7 +114,7 @@ const Input: React.FC = () => {
 
   // Ctrl+C drops the typed line as in bash: it is echoed with ^C and not added to history
   const dropLine = (line: string) => {
-    consoleDispatch(addUserLog(`${line}^C`, pathnameLocation));
+    consoleDispatch(addUserLog(`${line}^C`, prompt));
     consoleDispatch(setCommandsHint([]));
     setInputValue("");
     resetHistoryBrowsing();
@@ -246,7 +246,7 @@ const Input: React.FC = () => {
       <span className={styles.locator}>
         {reverseSearch.isSearching
           ? t({ key: reverseSearch.isFailing ? "reverseSearchFailing" : "reverseSearch" })
-          : `${pathnameLocation}>`}
+          : prompt}
       </span>
       <input
         className={styles.nativeInput}

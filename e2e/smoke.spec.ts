@@ -114,6 +114,24 @@ test("navigates between pages under the base path", async ({ page }) => {
   await expect(lastLog(page)).toHaveText(eng.welcome);
 });
 
+test("walks the virtual file system, the directory is in the URL (TASK-60)", async ({ page }) => {
+  await open(page);
+  await page.keyboard.type("cd projects");
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(`${BASE_PATH}projects`);
+  await expect(lastLog(page)).toHaveText(eng.projectsWelcome);
+  await expect(page.getByText("visitor@tyulkin:~/projects$", { exact: true })).toBeVisible();
+
+  await page.keyboard.type("ls ..");
+  await page.keyboard.press("Enter");
+  await lastLog(page).getByRole("button", { name: "about.md" }).click();
+  await expect(lastLog(page)).toContainText("Ivan Tyulkin");
+
+  // a reload keeps the directory: the SPA fallback opens the same page
+  await page.reload();
+  await expect(page.getByRole("log")).toContainText(eng.projectsWelcome);
+});
+
 test("opens a page by a direct link (SPA fallback)", async ({ page }) => {
   // the static host has no /settings file and answers with 404.html, which is the same app
   const response = await open(page, "settings");

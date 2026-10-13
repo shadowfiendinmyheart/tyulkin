@@ -85,6 +85,11 @@ describe("getAllCommandsWithParams", () => {
       "cd..",
     ]);
   });
+
+  it("keeps the command without an argument when it is completed bare (TASK-60)", () => {
+    const ls: Command = { ...setTheme, name: "ls", params: ["projects"], bareCompletion: true };
+    expect(getAllCommandsWithParams([ls])).toEqual(["ls", "ls projects"]);
+  });
 });
 
 describe("getAutocompleteCommands", () => {

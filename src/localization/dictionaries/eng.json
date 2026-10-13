@@ -1,6 +1,7 @@
 {
   "welcome": "Hi everyone!",
   "settingsWelcome": "Settings menu",
+  "projectsWelcome": "Projects directory: type cat README.md to see the projects",
   "bootLines": "Initializing terminal... ok\nLoading dictionaries... ok\nMounting /cv... ok\nStarting cv [####################] done",
   "education": "Udmurt State University, higher education\nFaculty of Information Technology and Computer Engineering\nApplied Computer Science, 2022",
   "about": "Ivan Tyulkin\nFrontend developer / React, TypeScript\nSaint Petersburg · remote, hybrid or office · open to relocation\n\nFrontend developer working with React and TypeScript, 4+ years of commercial development. I build complex interfaces and think through their architecture.\nI lead large tasks as a feature lead: I research, design the solution, defend it at design review and own the result after the release. I work at the junction with designers, analysts and backend: I agree on the solution before the code is written. I care about Developer Experience: from convenient components to transparent processes in the team.\n\nEnglish — B1",
@@ -20,7 +21,7 @@
   "helpClear": "clear the console",
   "helpMenu": "return to the main menu",
   "helpHelp": "show help; any output can be filtered: help | grep theme",
-  "helpLs": "list commands",
+  "helpLs": "list the files of a directory: ls projects",
   "helpEducation": "education",
   "helpAbout": "a few words about me...",
   "helpExperience": "work experience",
@@ -40,7 +41,7 @@
   "helpCv": "save the CV as PDF: cv --download",
   "helpShare": "copy a link that opens this page with the last command",
   "helpMatrix": "wake up, Neo...",
-  "404command": "Command $unknownCommand not found\nType $help or $ls to see the available commands",
+  "404command": "Command $unknownCommand not found\nType $help to see the available commands or $ls to see the files",
   "loading": "loading",
   "inputLabel": "command line",
   "quickCommandsLabel": "quick commands",
@@ -96,6 +97,9 @@
   "helpEcho": "print a text: echo <text>",
   "helpWhoami": "who you are here",
   "helpPwd": "the current directory",
+  "helpCd": "change the directory: cd projects",
+  "helpCat": "print a file: cat about.md",
+  "helpTree": "show the directory tree",
   "helpDate": "the current date and time",
   "historyEmpty": "The history is empty: no commands have been run yet",
   "historyCleared": "The history is cleared",
@@ -104,5 +108,9 @@
   "pipeUsage": "Only grep works after |: <command> | grep [-i] <word>, e.g. help | grep theme",
   "reverseSearch": "(reverse-i-search)`",
   "reverseSearchFailing": "(failing reverse-i-search)`",
-  "reverseSearchLabel": "Search the command history"
+  "reverseSearchLabel": "Search the command history",
+  "fsNotFound": "$command: $path: No such file or directory",
+  "fsNotDirectory": "$command: $path: Not a directory",
+  "fsIsDirectory": "$command: $path: Is a directory",
+  "catUsage": "Specify a file: cat <file>. Type $ls to see the files"
 }

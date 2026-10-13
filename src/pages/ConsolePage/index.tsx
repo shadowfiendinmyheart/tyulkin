@@ -28,6 +28,7 @@ import { ConsoleRouteValues } from "../../router/interfaces";
 
 const welcomeLocaleByRoute: { [key in ConsoleRouteValues]: CommonDictionaryKeys } = {
   [ROUTES.MAIN]: "welcome",
+  [ROUTES.PROJECTS]: "projectsWelcome",
   [ROUTES.SETTINGS]: "settingsWelcome",
 };
 

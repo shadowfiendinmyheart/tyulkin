@@ -6,7 +6,7 @@ import { useConsoleContext } from "../context/consoleContext";
 import { HandlerContext } from "../context/handlerContext";
 import { HandlerContextType } from "../context/interfaces";
 import { useLocalization } from "../context/localizationContext";
-import { usePathnameLocation } from "../hooks/usePathnameLocation";
+import { usePrompt } from "../hooks/usePrompt";
 import {
   addConsoleLog,
   addHistoryCommand,
@@ -36,7 +36,7 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
   React.useLayoutEffect(() => {
     historyRef.current = history;
   }, [history]);
-  const pathnameLocation = usePathnameLocation();
+  const prompt = usePrompt();
   const { appState, appDispatch } = useAppContext();
   const { theme } = appState;
   const { t, language, changeLanguage } = useLocalization();
@@ -151,7 +151,7 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
       // `!!` is the previous command (TASK-61); a link runs what it says
       const command = fromLink ? typed : expandHistory(typed, historyRef.current[0]);
       consoleDispatch(setCommandsHint([]));
-      consoleDispatch(addUserLog(typed, pathnameLocation));
+      consoleDispatch(addUserLog(typed, prompt));
       if (command === undefined) {
         consoleDispatch(
           addConsoleLog({ type: "text", text: t({ key: "historyNotFound" }), color: "error" }),
@@ -163,7 +163,7 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
       if (command !== typed) consoleDispatch(addConsoleLog(command));
       commandHandler(command, fromLink);
     },
-    [consoleDispatch, pathnameLocation, commandHandler, t],
+    [consoleDispatch, prompt, commandHandler, t],
   );
 
   const handlerContextValue = React.useMemo(

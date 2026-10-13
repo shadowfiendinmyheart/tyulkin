@@ -30,8 +30,8 @@ const COLORS = {
   caret: "#fff",
   frame: "#1a1a1a",
 };
-// the prompt of the main page (usePathnameLocation)
-const PROMPT = "cv>";
+// the prompt of the main page (getPrompt in src/commandHandlers/shell.ts)
+const PROMPT = "visitor@tyulkin:~$";
 
 // resvg reads TrueType/OpenType only, @fontsource ships WOFF: unpack the zlib-compressed tables
 // back into a plain sfnt (https://www.w3.org/TR/WOFF/)

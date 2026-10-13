@@ -1,7 +1,6 @@
 import { ROUTES } from "../../router/const";
 import { clearHistory, clearLogs, setMatrixShown } from "../../store/console/actions";
-import { LogNode } from "../../store/console/interfaces";
-import { joinNodes, withNode } from "../../store/console/logNodes";
+import { withNode } from "../../store/console/logNodes";
 import { Command } from "../interfaces";
 import { getNeofetch } from "../neofetch";
 import { getSecretsLog } from "../secrets";
@@ -11,7 +10,8 @@ import { getCommandLink, getHelpRow, getParentPath, getShareableCommand } from "
 export const globalCommands: Command[] = [
   {
     name: "back",
-    aliases: ["cd ..", "cd.."],
+    // "cd .." is `cd` (commands/fileSystem.ts)
+    aliases: ["cd.."],
     descriptionKey: "helpBack",
     shareable: false,
     run: ({ navigate, pathname }) => {
@@ -39,19 +39,6 @@ export const globalCommands: Command[] = [
         getHelpRow(command, t({ key: command.descriptionKey })),
       );
       log({ type: "table", rows });
-    },
-  },
-  {
-    name: "ls",
-    descriptionKey: "helpLs",
-    run: ({ log, commands }) => {
-      const names = commands.map(({ name }) => name).sort();
-      log(
-        joinNodes(
-          names.map((name): LogNode => ({ type: "command", command: name })),
-          "   ",
-        ),
-      );
     },
   },
   {
