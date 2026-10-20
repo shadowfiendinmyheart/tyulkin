@@ -14,6 +14,7 @@ import { addConsoleLog, setMatrixShown } from "../../store/console/actions";
 import { setTheme } from "../../store/app/actions";
 import { SECRET_THEME } from "../../domain";
 import { useKonamiCode } from "../../hooks/useKonamiCode";
+import { useViewportHeight } from "../../hooks/useViewportHeight";
 import { withNode } from "../../store/console/logNodes";
 import storage from "../../storage";
 import { useLocalization } from "../../context/localizationContext";
@@ -155,6 +156,17 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
     }, [appDispatch, dispatch]),
   );
 
+  // the virtual keyboard opened (TASK-92): the prompt being typed in stays in view. Only on touch
+  // screens: on a desktop the window is resized while reading the output, and the place is kept
+  const wrapperRef = React.useRef<HTMLDivElement>(null);
+  useViewportHeight(
+    React.useCallback((previousHeight: number, height: number) => {
+      const wrapper = wrapperRef.current;
+      if (height >= previousHeight || !window.matchMedia("(pointer: coarse)").matches) return;
+      if (wrapper?.contains(document.activeElement)) wrapper.scrollTop = wrapper.scrollHeight;
+    }, []),
+  );
+
   const isCrt = state.crtMode === "on";
   const exitMatrix = React.useCallback(() => dispatch(setMatrixShown(false)), [dispatch]);
 
@@ -166,11 +178,13 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
 
   return (
     <WithCommandHandler commands={commandsByRoute[route]}>
-      <nav className={cn(styles.toolbar, isCrt && styles.crtGlow)}>
-        <ViewSwitch to="gui" />
-      </nav>
-      <div className={cn(styles.wrapper, isCrt && styles.crtGlow)}>
-        <Console />
+      <div className={styles.page}>
+        <nav className={cn(styles.toolbar, isCrt && styles.crtGlow)}>
+          <ViewSwitch to="gui" quiet />
+        </nav>
+        <div className={cn(styles.wrapper, isCrt && styles.crtGlow)} ref={wrapperRef}>
+          <Console />
+        </div>
       </div>
       <DeepLinkCommand />
       {state.isMatrixShown && <MatrixRain onExit={exitMatrix} />}

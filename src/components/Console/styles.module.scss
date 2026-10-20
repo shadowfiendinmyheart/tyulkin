@@ -1,6 +1,11 @@
+// fills the scroll container of the page with the prompt at the bottom; the lines are not wider
+// than ~100ch on wide screens (TASK-81)
 .wrapper {
   display: flex;
+  flex: 1 0 auto;
   flex-direction: column;
   justify-content: flex-end;
-  min-height: 100%;
+  width: 100%;
+  max-width: 100ch;
+  margin-inline: auto;
 }

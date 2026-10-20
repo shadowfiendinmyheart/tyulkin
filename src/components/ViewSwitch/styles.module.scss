@@ -12,6 +12,16 @@
   }
 }
 
+.quiet {
+  border-color: transparent;
+  color: var(--muted-color);
+
+  &:hover,
+  &:focus-visible {
+    color: var(--accent-color);
+  }
+}
+
 @media print {
   .switch {
     display: none;

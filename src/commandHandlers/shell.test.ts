@@ -21,9 +21,9 @@ describe("getWorkingDirectory (TASK-61)", () => {
 
 describe("getPrompt (TASK-60)", () => {
   it("shows the directory of the page from the home", () => {
-    expect(getPrompt("/")).toBe("visitor@tyulkin:~$");
-    expect(getPrompt("/projects")).toBe("visitor@tyulkin:~/projects$");
-    expect(getPrompt("/settings/")).toBe("visitor@tyulkin:~/settings$");
+    expect(getPrompt("/")).toBe("visitor@tyulkin ~ ❯");
+    expect(getPrompt("/projects")).toBe("visitor@tyulkin ~/projects ❯");
+    expect(getPrompt("/settings/")).toBe("visitor@tyulkin ~/settings ❯");
   });
 });
 

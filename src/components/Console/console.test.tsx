@@ -73,13 +73,13 @@ describe("console", () => {
   it("does not crash on Enter before the first input (TASK-22)", async () => {
     const { user } = renderConsole();
     await user.keyboard("{Enter}");
-    expect(getLogs()).toEqual([...mainWelcome, "visitor@tyulkin:~$ "]);
+    expect(getLogs()).toEqual([...mainWelcome, "visitor@tyulkin ~ ❯ "]);
   });
 
   it("runs a command", async () => {
     const { user } = renderConsole();
     await user.keyboard("about{Enter}");
-    expect(getLogs()).toContain("visitor@tyulkin:~$ about");
+    expect(getLogs()).toContain("visitor@tyulkin ~ ❯ about");
     expect(getLogs()).toContain(eng.about);
   });
 
@@ -107,7 +107,7 @@ describe("console", () => {
   it("does not turn typed input into links (TASK-48)", async () => {
     const { user } = renderConsole();
     await user.keyboard("https://example.com{Enter}");
-    expect(getLogs()).toContain("visitor@tyulkin:~$ https://example.com");
+    expect(getLogs()).toContain("visitor@tyulkin ~ ❯ https://example.com");
     expect(within(screen.getByRole("log")).queryByRole("link")).toBeNull();
   });
 
@@ -315,7 +315,7 @@ describe("history (TASK-23)", () => {
     await user.keyboard("about{Enter}draft");
     await user.keyboard("{ArrowUp}{Enter}");
 
-    expect(getLogs().filter((log) => log === "visitor@tyulkin:~$ about")).toHaveLength(2);
+    expect(getLogs().filter((log) => log === "visitor@tyulkin ~ ❯ about")).toHaveLength(2);
     await user.keyboard("{ArrowUp}");
     expect(input.value).toBe("about");
     await user.keyboard("{ArrowUp}");
@@ -506,7 +506,7 @@ describe("clickable commands (TASK-55)", () => {
     await user.click(
       within(screen.getAllByRole("listitem").at(-1)!).getByRole("button", { name: "about" }),
     );
-    expect(getLogs().slice(-2)).toEqual(["visitor@tyulkin:~$ about", eng.about]);
+    expect(getLogs().slice(-2)).toEqual(["visitor@tyulkin ~ ❯ about", eng.about]);
     // the keyboard is not popped up on mobile
     expect(document.activeElement).not.toBe(input);
 
@@ -536,7 +536,7 @@ describe("clickable commands (TASK-55)", () => {
     await user.keyboard("help{Enter}");
     within(screen.getAllByRole("listitem").at(-1)!).getByRole("button", { name: "about" }).focus();
     await user.keyboard("{Enter}");
-    expect(getLogs().slice(-2)).toEqual(["visitor@tyulkin:~$ about", eng.about]);
+    expect(getLogs().slice(-2)).toEqual(["visitor@tyulkin ~ ❯ about", eng.about]);
   });
 
   it("makes help, ls and the suggestion clickable in the unknown command output", async () => {
@@ -549,14 +549,14 @@ describe("clickable commands (TASK-55)", () => {
       "about",
     ]);
     await user.click(log.getByRole("button", { name: "help" }));
-    expect(getLogs().at(-2)).toBe("visitor@tyulkin:~$ help");
+    expect(getLogs().at(-2)).toBe("visitor@tyulkin ~ ❯ help");
   });
 
   it("runs help from the input hint", async () => {
     const { user } = renderConsole();
     const hint = document.querySelector<HTMLElement>(`.${inputStyles.hint}`)!;
     await user.click(within(hint).getByRole("button", { name: "help" }));
-    expect(getLogs().at(-2)).toBe("visitor@tyulkin:~$ help");
+    expect(getLogs().at(-2)).toBe("visitor@tyulkin ~ ❯ help");
     expect(document.querySelector(`.${inputStyles.hint}`)).toBeNull();
   });
 });
@@ -574,7 +574,7 @@ describe("quick commands (TASK-58)", () => {
     input.blur();
 
     await user.click(within(queryChips()!).getByRole("button", { name: "projects" }));
-    expect(getLogs().slice(-2)).toEqual(["visitor@tyulkin:~$ projects", eng.projects]);
+    expect(getLogs().slice(-2)).toEqual(["visitor@tyulkin ~ ❯ projects", eng.projects]);
     expect(document.activeElement).not.toBe(input);
   });
 
@@ -637,7 +637,7 @@ describe("UX shortcuts (TASK-52)", () => {
     await user.keyboard("about{Enter}draft");
     await user.keyboard("{Control>}c{/Control}");
     expect(input.value).toBe("");
-    expect(getLogs().at(-1)).toBe("visitor@tyulkin:~$ draft^C");
+    expect(getLogs().at(-1)).toBe("visitor@tyulkin ~ ❯ draft^C");
 
     await user.keyboard("{ArrowUp}");
     expect(input.value).toBe("about");
@@ -754,7 +754,7 @@ describe("boot and typing out (TASK-53)", () => {
     fireEvent.keyDown(input, { key: "Enter" });
     act(() => vi.advanceTimersByTime(50));
 
-    expect(getLogs().at(-2)).toBe("visitor@tyulkin:~$ about");
+    expect(getLogs().at(-2)).toBe("visitor@tyulkin ~ ❯ about");
     const typed = getLogs().at(-1) ?? "";
     expect(typed.length).toBeLessThan(eng.about.length);
     expect(eng.about.startsWith(typed)).toBe(true);
@@ -784,9 +784,9 @@ describe("regular view (TASK-59)", () => {
     // the earlier output and history are kept, the page greets again
     expect(getLogs()).toEqual([
       ...mainWelcome,
-      "visitor@tyulkin:~$ about",
+      "visitor@tyulkin ~ ❯ about",
       eng.about,
-      "visitor@tyulkin:~$ gui",
+      "visitor@tyulkin ~ ❯ gui",
       ...mainWelcome,
     ]);
     await user.keyboard("{ArrowUp}{ArrowUp}");
@@ -867,7 +867,7 @@ describe("deep links (TASK-62)", () => {
   it("runs the command of the link once, after the welcome, and drops it from the address", async () => {
     const { router } = renderConsole("/?cmd=about#top");
     await waitFor(() =>
-      expect(getLogs()).toEqual([...mainWelcome, "visitor@tyulkin:~$ about", eng.about]),
+      expect(getLogs()).toEqual([...mainWelcome, "visitor@tyulkin ~ ❯ about", eng.about]),
     );
     expect(router.state.location).toMatchObject({ pathname: "/", search: "", hash: "#top" });
     // the command went to the history like a typed one
@@ -880,7 +880,7 @@ describe("deep links (TASK-62)", () => {
     await waitFor(() =>
       expect(getLogs()).toEqual([
         eng.settingsWelcome,
-        "visitor@tyulkin:~/settings$ show themes",
+        "visitor@tyulkin ~/settings ❯ show themes",
         t({ key: "themeList", args: { themes: getParamsString(themeModes) } }),
       ]),
     );
@@ -891,7 +891,7 @@ describe("deep links (TASK-62)", () => {
     await waitFor(() => expect(router.state.location.pathname).toBe("/settings"));
     await act(() => router.navigate(-1));
     expect(router.state.location).toMatchObject({ pathname: "/", search: "" });
-    expect(getLogs().filter((log) => log === "visitor@tyulkin:~$ settings")).toHaveLength(1);
+    expect(getLogs().filter((log) => log === "visitor@tyulkin ~ ❯ settings")).toHaveLength(1);
   });
 
   it("ignores an empty command", async () => {
@@ -1157,10 +1157,10 @@ describe("shell habits (TASK-61)", () => {
   it("repeats the previous command by !!, anywhere in the line", async () => {
     const { user, input } = renderConsole();
     await user.keyboard("!!{Enter}");
-    expect(getLogs().slice(-2)).toEqual(["visitor@tyulkin:~$ !!", eng.historyNotFound]);
+    expect(getLogs().slice(-2)).toEqual(["visitor@tyulkin ~ ❯ !!", eng.historyNotFound]);
 
     await user.keyboard("about{Enter}!!{Enter}");
-    expect(getLogs().slice(-3)).toEqual(["visitor@tyulkin:~$ !!", "about", eng.about]);
+    expect(getLogs().slice(-3)).toEqual(["visitor@tyulkin ~ ❯ !!", "about", eng.about]);
     // the history keeps the expanded command
     await user.keyboard("{ArrowUp}");
     expect(input.value).toBe("about");
@@ -1189,7 +1189,7 @@ describe("shell habits (TASK-61)", () => {
 
   it("does not echo by a deep link: nobody links the site with their own text", async () => {
     renderConsole("/?cmd=echo+hired");
-    await waitFor(() => expect(getLogs()).toContain("visitor@tyulkin:~$ echo hired"));
+    await waitFor(() => expect(getLogs()).toContain("visitor@tyulkin ~ ❯ echo hired"));
     expect(getLogs()).not.toContain("hired");
   });
 
@@ -1205,7 +1205,7 @@ describe("shell habits (TASK-61)", () => {
     await user.keyboard("echo one two | grep -i TWO{Enter}");
     expect(getLogs().at(-1)).toBe("one two");
     await user.keyboard("echo one two | grep TWO{Enter}");
-    expect(getLogs().at(-1)).toBe("visitor@tyulkin:~/settings$ echo one two | grep TWO");
+    expect(getLogs().at(-1)).toBe("visitor@tyulkin ~/settings ❯ echo one two | grep TWO");
 
     await user.keyboard("help | wc{Enter}");
     expect(getLogs().at(-1)).toBe(eng.pipeUsage);
@@ -1228,7 +1228,7 @@ describe("shell habits (TASK-61)", () => {
     await user.keyboard("x");
     expect(screen.getByText(eng.reverseSearchFailing)).toBeTruthy();
     await user.keyboard("{Backspace}{Enter}");
-    expect(getLogs().slice(-2)).toEqual(["visitor@tyulkin:~$ skills", eng.skills]);
+    expect(getLogs().slice(-2)).toEqual(["visitor@tyulkin ~ ❯ skills", eng.skills]);
     expect(input.value).toBe("");
   });
 
@@ -1257,7 +1257,7 @@ describe("virtual file system (TASK-60)", () => {
       "about.md   contacts.md   education.md   experience.md   projects/   settings/   skills.md",
     );
     await user.click(getLastLog().getByRole("button", { name: "about.md" }));
-    expect(getLogs().slice(-2)).toEqual(["visitor@tyulkin:~$ cat ~/about.md", eng.about]);
+    expect(getLogs().slice(-2)).toEqual(["visitor@tyulkin ~ ❯ cat ~/about.md", eng.about]);
 
     input.focus();
     await user.keyboard("ls projects/{Enter}");
@@ -1269,11 +1269,12 @@ describe("virtual file system (TASK-60)", () => {
     await user.keyboard("cd projects{Enter}");
     expect(router.state.location.pathname).toBe("/projects");
     expect(getLogs().at(-1)).toBe(eng.projectsWelcome);
-    expect(screen.getByText("visitor@tyulkin:~/projects$")).toBeTruthy();
+    // the directory is a segment of the prompt (TASK-81)
+    expect(screen.getByText("~/projects")).toBeTruthy();
 
     await user.keyboard("pwd{Enter}");
     expect(getLogs().slice(-2)).toEqual([
-      "visitor@tyulkin:~/projects$ pwd",
+      "visitor@tyulkin ~/projects ❯ pwd",
       "/home/visitor/projects",
     ]);
     await user.keyboard("cat README.md{Enter}");
@@ -1316,7 +1317,7 @@ describe("virtual file system (TASK-60)", () => {
   it("prints a file by a deep link", async () => {
     renderConsole("/?cmd=cat+skills.md");
     await waitFor(() =>
-      expect(getLogs().slice(-2)).toEqual(["visitor@tyulkin:~$ cat skills.md", eng.skills]),
+      expect(getLogs().slice(-2)).toEqual(["visitor@tyulkin ~ ❯ cat skills.md", eng.skills]),
     );
   });
 });

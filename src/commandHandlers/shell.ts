@@ -15,9 +15,18 @@ const getHomeSubpath = (pathname: string) => pathname.replace(/\/+$/, "");
 export const getWorkingDirectory = (pathname: string) =>
   `${HOME_DIRECTORY}${getHomeSubpath(pathname)}`;
 
-// the prompt of the command line and of the echoed input: "visitor@tyulkin:~/settings$"
-export const getPrompt = (pathname: string) =>
-  `${USER_NAME}@${HOST_NAME}:~${getHomeSubpath(pathname)}$`;
+// the segments of the prompt (TASK-81), the command line draws each in its own color
+export const getPromptSegments = (pathname: string) => ({
+  user: `${USER_NAME}@${HOST_NAME}`,
+  directory: `~${getHomeSubpath(pathname)}`,
+  symbol: "❯",
+});
+
+// the prompt of the command line and of the echoed input: "visitor@tyulkin ~/settings ❯"
+export const getPrompt = (pathname: string) => {
+  const { user, directory, symbol } = getPromptSegments(pathname);
+  return `${user} ${directory} ${symbol}`;
+};
 
 // "Tuesday, October 13, 2026 at 2:03:12 PM GMT+3" in the language of the terminal
 export const formatDate = (now: Date, language: Languages) =>

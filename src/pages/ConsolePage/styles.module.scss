@@ -1,25 +1,66 @@
-// the terminal ⇄ gui switch in the top corner, over the console
-$toolbar-height: 40px;
-
-.toolbar {
+// the console takes the whole screen (TASK-81): the toolbar on top, the output scrolls under it.
+// The height follows the visual viewport (useViewportHeight, TASK-92): an open virtual keyboard
+// doesn't cover the prompt; until the script sets it — the dynamic viewport height
+// (Safari scrolls the visual viewport over the page instead: the page moves along, offset-top)
+.page {
+  position: fixed;
+  top: var(--viewport-offset-top, 0px);
+  inset-inline: 0;
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  width: 80%;
-  height: $toolbar-height;
-  margin: auto;
+  flex-direction: column;
+  height: var(--viewport-height, 100dvh);
 }
 
+// fields at the edges of the screen
+$gutter-x: 2ch;
+$gutter-bottom: 1ch;
+
+// the terminal ⇄ gui switch in the top corner, quiet until hovered (ViewSwitch `quiet`)
+.toolbar {
+  display: flex;
+  flex: none;
+  justify-content: flex-end;
+  padding: 4px $gutter-x 0;
+}
+
+// the scroll container spans the whole width, so the scrollbar is at the edge of the screen;
+// the lines are not wider than ~100ch to be read easily (the Console centers itself)
 .wrapper {
-  width: 80%;
-  height: calc(90vh - #{$toolbar-height});
-  overflow: scroll;
-  margin: auto;
-  -ms-overflow-style: none; /* hide scroll for IE and Edge */
-  scrollbar-width: none; /* hide scroll for Firefox */
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 0 $gutter-x $gutter-bottom;
+  // scrollIntoView of the prompt leaves the bottom field in view
+  scroll-padding-bottom: $gutter-bottom;
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted-color) transparent;
 
   &::-webkit-scrollbar {
-    display: none;
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: 3px;
+    background-color: var(--muted-color);
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+}
+
+// on paper the whole output is printed, not the visible part of it
+@media print {
+  .page {
+    position: static;
+    display: block;
+    height: auto;
+  }
+
+  .wrapper {
+    overflow: visible;
   }
 }
 

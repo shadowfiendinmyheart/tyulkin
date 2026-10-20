@@ -3,6 +3,9 @@ export type Styles = {
   hint: string;
   locator: string;
   nativeInput: string;
+  promptDirectory: string;
+  promptSymbol: string;
+  promptUser: string;
   searchMatch: string;
   wrapper: string;
   zeroChar: string;

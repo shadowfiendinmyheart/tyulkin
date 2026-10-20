@@ -2,6 +2,7 @@ export type Styles = {
   crt: string;
   crtFlicker: string;
   crtGlow: string;
+  page: string;
   toolbar: string;
   wrapper: string;
 };

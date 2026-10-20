@@ -162,7 +162,8 @@ test("walks the virtual file system, the directory is in the URL (TASK-60)", asy
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(`${BASE_PATH}projects`);
   await expect(lastLog(page)).toHaveText(eng.projectsWelcome);
-  await expect(page.getByText("visitor@tyulkin:~/projects$", { exact: true })).toBeVisible();
+  // the directory is a segment of the prompt (TASK-81)
+  await expect(page.getByText("~/projects", { exact: true })).toBeVisible();
 
   await page.keyboard.type("ls ..");
   await page.keyboard.press("Enter");
@@ -229,6 +230,46 @@ test("focuses the input by a tap on the console @mobile", async ({ page }) => {
   await page.keyboard.type("about");
   await page.keyboard.press("Enter");
   await expect(lastLog(page)).toContainText("Ivan Tyulkin");
+});
+
+test("keeps the prompt above the virtual keyboard (TASK-92) @mobile", async ({ page }) => {
+  await open(page);
+  await expect(page.locator('meta[name="viewport"]')).toHaveAttribute(
+    "content",
+    /interactive-widget=resizes-content/,
+  );
+  await page.getByRole("log").tap();
+  // enough output to scroll
+  for (let i = 0; i < 3; i++) {
+    await page.keyboard.type("help");
+    await page.keyboard.press("Enter");
+  }
+  // the keyboard opens: the visible part of the screen gets shorter
+  const { width, height } = page.viewportSize()!;
+  const keyboardHeight = Math.round(height * 0.4);
+  await page.setViewportSize({ width, height: height - keyboardHeight });
+  await expect(input(page)).toBeFocused();
+  await expect(async () => {
+    const prompt = await page.getByText("visitor@tyulkin", { exact: true }).boundingBox();
+    expect(prompt!.y).toBeGreaterThanOrEqual(0);
+    expect(prompt!.y + prompt!.height).toBeLessThanOrEqual(height - keyboardHeight);
+  }).toPass();
+  // the page itself doesn't scroll, only the output does
+  const pageScroll = await page.evaluate(
+    () => document.documentElement.scrollHeight - document.documentElement.clientHeight,
+  );
+  expect(pageScroll).toBe(0);
+});
+
+test("fills the screen, the lines are not wider than ~100ch (TASK-81)", async ({ page }) => {
+  await open(page);
+  const viewport = page.viewportSize()!;
+  const log = (await page.getByRole("log").boundingBox())!;
+  // the prompt is at the bottom of the screen, the log is centered and narrower than the screen
+  const prompt = (await page.getByText("visitor@tyulkin", { exact: true }).boundingBox())!;
+  expect(viewport.height - (prompt.y + prompt.height)).toBeLessThan(40);
+  expect(log.width).toBeLessThan(viewport.width);
+  expect(Math.abs(log.x - (viewport.width - log.x - log.width))).toBeLessThan(2);
 });
 
 test("fits the neofetch welcome into a phone screen @mobile", async ({ page }) => {

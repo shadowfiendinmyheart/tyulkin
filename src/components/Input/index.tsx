@@ -9,7 +9,7 @@ import {
   countTypedCommand,
   setCommandsHint,
 } from "../../store/console/actions";
-import { usePrompt } from "../../hooks/usePrompt";
+import { usePrompt, usePromptSegments } from "../../hooks/usePrompt";
 import { useCommandsHint } from "./hooks/useCommandsHint";
 import { useHistoryCommands } from "./hooks/useHistoryCommands";
 import { useReverseSearch } from "./hooks/useReverseSearch";
@@ -61,6 +61,7 @@ const Input: React.FC = () => {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const consoleInputRef = React.useRef<HTMLDivElement>(null);
   const prompt = usePrompt();
+  const promptSegments = usePromptSegments();
   const t = useT();
   const hintId = React.useId();
   const searchMatchId = React.useId();
@@ -248,9 +249,15 @@ const Input: React.FC = () => {
   return (
     <div className={styles.wrapper} ref={consoleInputRef}>
       <span className={styles.locator}>
-        {reverseSearch.isSearching
-          ? t({ key: reverseSearch.isFailing ? "reverseSearchFailing" : "reverseSearch" })
-          : prompt}
+        {reverseSearch.isSearching ? (
+          t({ key: reverseSearch.isFailing ? "reverseSearchFailing" : "reverseSearch" })
+        ) : (
+          <>
+            <span className={styles.promptUser}>{promptSegments.user}</span>{" "}
+            <span className={styles.promptDirectory}>{promptSegments.directory}</span>{" "}
+            <span className={styles.promptSymbol}>{promptSegments.symbol}</span>
+          </>
+        )}
       </span>
       <input
         className={styles.nativeInput}

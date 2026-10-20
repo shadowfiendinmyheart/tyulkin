@@ -2,6 +2,19 @@
   margin-right: 1ch;
 }
 
+// the prompt by segments (TASK-81): who is quiet, where stands out
+.promptUser {
+  color: var(--muted-color);
+}
+
+.promptDirectory {
+  color: var(--accent-color);
+}
+
+.promptSymbol {
+  color: var(--text-color);
+}
+
 .wrapper {
   position: relative;
   display: flex;

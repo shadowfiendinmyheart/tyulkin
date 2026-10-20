@@ -1,4 +1,5 @@
 export type Styles = {
+  quiet: string;
   switch: string;
 };
 
