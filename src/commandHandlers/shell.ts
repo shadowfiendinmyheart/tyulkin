@@ -1,6 +1,7 @@
 import { Languages } from "../localization/interfaces";
 import { htmlLangByLanguage } from "../localization/utils";
 import { LogNode } from "../store/console/interfaces";
+import { getNodesText, getNodeText } from "../store/console/logNodes";
 
 // shell habits (TASK-61): `whoami`, `pwd`, `!!`, `| grep`, history search
 
@@ -118,19 +119,6 @@ export const parsePipeline = (line: string) => {
 };
 
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-const getNodeText = (node: LogNode): string => {
-  if (typeof node === "string") return node;
-  switch (node.type) {
-    case "command":
-      return node.label ?? node.command;
-    case "table":
-      return node.rows.map((row) => row.map(getNodesText).join(" ")).join("\n");
-    default:
-      return node.text;
-  }
-};
-const getNodesText = (nodes: LogNode[]) => nodes.map(getNodeText).join("");
 
 // the matches of the pattern in strings and colored texts are highlighted
 const highlight = (nodes: LogNode[], regexp: RegExp): LogNode[] =>

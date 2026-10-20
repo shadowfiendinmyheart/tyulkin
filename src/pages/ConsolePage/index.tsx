@@ -16,6 +16,7 @@ import { addConsoleLog, setMatrixShown } from "../../store/console/actions";
 import { setTheme } from "../../store/app/actions";
 import { SECRET_THEME } from "../../domain";
 import { useKonamiCode } from "../../hooks/useKonamiCode";
+import { usePinchFontSize } from "../../hooks/usePinchFontSize";
 import { useViewportHeight } from "../../hooks/useViewportHeight";
 import { withNode } from "../../store/console/logNodes";
 import storage from "../../storage";
@@ -200,6 +201,9 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
     };
   }, [fontMode, fontSize]);
 
+  // a pinch over the console sets the font size (TASK-94)
+  const pinchHandlers = usePinchFontSize();
+
   const isCrt = state.crtMode === "on";
   const exitMatrix = React.useCallback(() => dispatch(setMatrixShown(false)), [dispatch]);
 
@@ -216,7 +220,11 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
           <PaletteButton onClick={openPalette} disabled={isOverlayShown} />
           <ViewSwitch to="gui" quiet />
         </nav>
-        <div className={cn(styles.wrapper, isCrt && styles.crtGlow)} ref={wrapperRef}>
+        <div
+          className={cn(styles.wrapper, isCrt && styles.crtGlow)}
+          ref={wrapperRef}
+          {...pinchHandlers}
+        >
           <Console onInputElement={setInputElement} />
         </div>
         <ExtraKeys input={inputElement} />

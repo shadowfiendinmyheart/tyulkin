@@ -17,6 +17,7 @@ export type Styles = {
   ansiWhite: string;
   ansiYellow: string;
   art: string;
+  copyStatus: string;
   echo: string;
   echoCommand: string;
   error: string;
@@ -24,6 +25,7 @@ export type Styles = {
   link: string;
   list: string;
   log: string;
+  marked: string;
   muted: string;
   pre: string;
   qr: string;

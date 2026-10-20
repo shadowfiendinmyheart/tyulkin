@@ -14,6 +14,7 @@ import {
 import { usePrompt, usePromptSegments } from "../../hooks/usePrompt";
 import { useCommandsHint } from "./hooks/useCommandsHint";
 import { useHistoryCommands } from "./hooks/useHistoryCommands";
+import { usePromptSwipe } from "./hooks/usePromptSwipe";
 import { useReverseSearch } from "./hooks/useReverseSearch";
 import { useThemePreview } from "./hooks/useThemePreview";
 import { useT } from "../../context/localizationContext";
@@ -103,11 +104,21 @@ const Input: React.FC<InputProps> = ({ onInputElement }) => {
     closeCommandsHint,
   } = useCommandsHint(inputValue, replaceInputValue);
   useThemePreview(commandsHintShownOption);
-  const { historyCommandsHandleKeyDownInput, resetHistoryBrowsing } = useHistoryCommands(
-    inputValue,
-    replaceInputValue,
-  );
+  const {
+    historyCommandsHandleKeyDownInput,
+    resetHistoryBrowsing,
+    showOlderCommand,
+    showNewerCommand,
+  } = useHistoryCommands(inputValue, replaceInputValue);
   const reverseSearch = useReverseSearch(inputValue, replaceInputValue);
+  // a swipe over the prompt browses the history as ↑ and ↓ do (TASK-94); not in Ctrl+R search,
+  // which browses its own matches
+  const promptSwipeHandlers = usePromptSwipe((direction) => {
+    if (reverseSearch.isSearching) return;
+    closeCommandsHint();
+    if (direction === "up") showOlderCommand();
+    else showNewerCommand();
+  });
   // a newcomer sees how to start until the first command is executed
   const isHintShown = history.length === 0 && inputValue.length === 0 && !reverseSearch.isSearching;
   // fish-like autosuggestion (TASK-87): shown in grey after the caret at the line end only
@@ -317,7 +328,7 @@ const Input: React.FC<InputProps> = ({ onInputElement }) => {
 
   return (
     <>
-      <div className={styles.wrapper} ref={consoleInputRef}>
+      <div className={styles.wrapper} ref={consoleInputRef} {...promptSwipeHandlers}>
         <span className={styles.locator}>
           {reverseSearch.isSearching ? (
             t({ key: reverseSearch.isFailing ? "reverseSearchFailing" : "reverseSearch" })

@@ -30,6 +30,9 @@ export interface CommonDictionary {
   quickCommandsLabel: string;
   // accessible name of the extra keys row over the virtual keyboard (TASK-93)
   extraKeysLabel: string;
+  // a long tap on the output (TASK-94): whether its block went to the clipboard
+  blockCopied: string;
+  blockNotCopied: string;
   // the command palette (TASK-90): its button, the dialog, the search field, the list, no results
   paletteOpen: string;
   paletteLabel: string;

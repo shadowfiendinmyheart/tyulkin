@@ -24,6 +24,7 @@ import { highlightLine } from "./highlight";
 import { findHelpTarget, getManPage } from "./man";
 import { getPaletteEntries } from "./palette";
 import { findSecret } from "./secrets";
+import { vibrateError } from "../utils/haptics";
 import { expandHistory, grep, parsePipeline } from "./shell";
 import { getAllCommandsWithParams, getSuggestion, separateCommand } from "./utils";
 
@@ -44,6 +45,11 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ route, children
   React.useLayoutEffect(() => {
     historyRef.current = history;
   }, [history]);
+  // read when a command fails, maybe later than it was run (`ask`): sound may be off by then
+  const soundModeRef = React.useRef(soundMode);
+  React.useLayoutEffect(() => {
+    soundModeRef.current = soundMode;
+  }, [soundMode]);
   const prompt = usePrompt();
   const { appState, appDispatch } = useAppContext();
   const { theme } = appState;
@@ -181,7 +187,14 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ route, children
       const echo = addUserLog(typed, prompt, command ?? typed);
       consoleDispatch(echo);
       const { blockId } = echo.payload.echo;
-      const fail = () => consoleDispatch(failCommand(blockId));
+      // `set sound on`: a failure buzzes too (TASK-94), once, even if several errors are told
+      let isFailed = false;
+      const fail = () => {
+        consoleDispatch(failCommand(blockId));
+        if (isFailed) return;
+        isFailed = true;
+        if (soundModeRef.current === "on") vibrateError();
+      };
       if (command === undefined) {
         consoleDispatch(
           addConsoleLog({ type: "text", text: t({ key: "historyNotFound" }), color: "error" }),

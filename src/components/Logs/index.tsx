@@ -4,9 +4,11 @@ import { useConsoleContext } from "../../context/consoleContext";
 import CommandButton from "../CommandButton";
 import TextLink from "../TextLink";
 import { Echo, Log, LogColor, LogNode } from "../../store/console/interfaces";
-import { getNodesLength, sliceNodes } from "../../store/console/logNodes";
+import { getNodesLength, getNodesText, sliceNodes } from "../../store/console/logNodes";
 import { finishTyping, skipTyping } from "../../store/console/actions";
 import { prefersReducedMotion } from "../../utils";
+import { useLongPress } from "../../hooks/useLongPress";
+import { useT } from "../../context/localizationContext";
 import styles from "./styles.module.scss";
 
 // typing out: a few characters a tick, a long output still takes at most ~MAX_TICKS ticks
@@ -131,11 +133,33 @@ const formatTime = (time: number) => {
     .join(":");
 };
 
+// a long tap copies the block of a command (TASK-94): its logs are marked while the finger is
+// held, then the first one tells whether the block was copied (visual only, as the gesture is)
+interface BlockProps {
+  // what the block is found by: the blockId of its echo, 0 before the first command
+  blockId: number;
+  isMarked: boolean;
+  copyStatus?: string;
+}
+
+const CopyStatus = ({ status }: { status?: string }) =>
+  status ? (
+    <span className={styles.copyStatus} aria-hidden="true">
+      {status}
+    </span>
+  ) : null;
+
 // the echoed input heads the block of its command (TASK-82): a click on the command runs it
 // again. The status and the time are drawn by CSS from empty spans, so the text of the line
 // (copied, read by screen readers) stays the input as it was entered
-const EchoItem = ({ prompt, input, command, time, failed }: Echo) => (
-  <li className={cn(styles.log, styles.echo)}>
+const EchoItem = ({
+  echo: { prompt, input, command, time, failed },
+  blockId,
+  isMarked,
+  copyStatus,
+}: { echo: Echo } & BlockProps) => (
+  <li className={cn(styles.log, styles.echo, isMarked && styles.marked)} data-block={blockId}>
+    <CopyStatus status={copyStatus} />
     {`${prompt} `}
     {command ? (
       <CommandButton command={command} label={input} className={styles.echoCommand} />
@@ -148,10 +172,39 @@ const EchoItem = ({ prompt, input, command, time, failed }: Echo) => (
 );
 
 // a typed out log never changes, so only the one being typed re-renders on a tick
-const LogItem = React.memo(function LogItem({ content, echo }: Pick<Log, "content" | "echo">) {
-  if (echo) return <EchoItem {...echo} />;
-  return <li className={styles.log}>{renderNodes(content)}</li>;
+const LogItem = React.memo(function LogItem({
+  content,
+  echo,
+  ...block
+}: Pick<Log, "content" | "echo"> & BlockProps) {
+  if (echo) return <EchoItem echo={echo} {...block} />;
+  return (
+    <li className={cn(styles.log, block.isMarked && styles.marked)} data-block={block.blockId}>
+      <CopyStatus status={block.copyStatus} />
+      {renderNodes(content)}
+    </li>
+  );
 });
+
+// a block: the echo of a command and the logs after it; the logs before the first echo are one too
+const getBlockIds = (logs: Log[]) => {
+  const blockIds = new Map<number, number>();
+  let blockId = 0;
+  for (const log of logs) {
+    if (log.echo) blockId = log.echo.blockId;
+    blockIds.set(log.id, blockId);
+  }
+  return blockIds;
+};
+
+interface BlockCopy {
+  blockId: number;
+  // held: the finger is still on it; then whether the clipboard took the text
+  status: "held" | "copied" | "failed";
+}
+
+// how long the block stays marked with its copy status
+export const COPY_STATUS_MS = 1500;
 
 // what shows everything being typed out at once: a key, a click or tap, scrolling up by wheel
 // or touch (or it would be pulled back to the bottom), selecting text (it would shift under the cursor)
@@ -195,10 +248,60 @@ const Logs: React.FC<LogsProps> = ({ onTypingProgress }) => {
     if (progress.logId !== -1) onTypingProgress?.();
   }, [progress, onTypingProgress]);
 
+  // a long tap copies the block under the finger (TASK-94): the echo and the output of a command,
+  // all of it, also what is still being typed out
+  const t = useT();
+  const blockIds = React.useMemo(() => getBlockIds(logs), [logs]);
+  const [copy, setCopy] = React.useState<BlockCopy | null>(null);
+  const longPressHandlers = useLongPress({
+    select: (target) => {
+      const item = target.closest<HTMLElement>("[data-block]");
+      return item ? Number(item.dataset.block) : undefined;
+    },
+    // the whole block is copied: what is still to be typed out is shown at once
+    onHold: (blockId) => {
+      consoleDispatch(skipTyping());
+      setCopy({ blockId, status: "held" });
+    },
+    onRelease: (blockId) => {
+      const text = logs
+        .filter((log) => blockIds.get(log.id) === blockId)
+        .map((log) => getNodesText(log.content))
+        .join("\n");
+      const tell = (status: BlockCopy["status"]) => setCopy({ blockId, status });
+      if (!navigator.clipboard) {
+        tell("failed");
+        return;
+      }
+      navigator.clipboard.writeText(text).then(
+        () => tell("copied"),
+        () => tell("failed"),
+      );
+    },
+    onAbort: () => setCopy(null),
+  });
+  // the status is gone after a while; a newer copy restarts the timer
+  React.useEffect(() => {
+    if (!copy || copy.status === "held") return;
+    const timer = setTimeout(() => setCopy(null), COPY_STATUS_MS);
+    return () => clearTimeout(timer);
+  }, [copy]);
+  const copyStatus =
+    copy && copy.status !== "held"
+      ? t({ key: copy.status === "copied" ? "blockCopied" : "blockNotCopied" })
+      : undefined;
+  const firstCopiedLogId = copy && logs.find((log) => blockIds.get(log.id) === copy.blockId)?.id;
+
   return (
     // role="log" is a polite live region: screen readers announce new logs (command output);
     // aria-busy holds the announcement until the log is typed out
-    <div className={styles.list} role="log" aria-live="polite" aria-busy={isTyping}>
+    <div
+      className={styles.list}
+      role="log"
+      aria-live="polite"
+      aria-busy={isTyping}
+      {...longPressHandlers}
+    >
       <ul>
         {/* id, not index: once the oldest logs are dropped, index keys would rewrite every
             item's text, and the live region could announce them all again */}
@@ -207,6 +310,9 @@ const Logs: React.FC<LogsProps> = ({ onTypingProgress }) => {
             key={log.id}
             content={log === typingLog ? sliceNodes(log.content, typedLength) : log.content}
             echo={log.echo}
+            blockId={blockIds.get(log.id) ?? 0}
+            isMarked={copy?.blockId === blockIds.get(log.id)}
+            copyStatus={log.id === firstCopiedLogId ? copyStatus : undefined}
           />
         ))}
       </ul>

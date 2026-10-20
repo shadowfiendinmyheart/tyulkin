@@ -75,6 +75,8 @@
   "cvUsage": "Введите $download, чтобы сохранить резюме в PDF, или $gui, чтобы открыть его обычной страницей",
   "shareCopied": "Ссылка на $command скопирована в буфер обмена:\n$link",
   "shareNotCopied": "Не удалось скопировать в буфер обмена, вот ссылка на $command:\n$link",
+  "blockCopied": "скопировано",
+  "blockNotCopied": "не скопировано",
   "wrongCaret": "Курсор $caretName не найден",
   "changeCaret": "Курсор $caretName успешно установлен",
   "caretList": "Доступные курсоры: $carets",

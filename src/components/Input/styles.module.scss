@@ -21,6 +21,8 @@
   margin-bottom: 1px;
   width: 100%;
   flex-wrap: wrap;
+  // a vertical swipe over the prompt browses the history (TASK-94): the console doesn't scroll by it
+  touch-action: pan-x;
 }
 
 .chars {

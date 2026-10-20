@@ -75,6 +75,8 @@
   "cvUsage": "Type $download to save the CV as PDF or $gui to open it as a regular page",
   "shareCopied": "Link to $command copied to the clipboard:\n$link",
   "shareNotCopied": "Could not copy to the clipboard, here is the link to $command:\n$link",
+  "blockCopied": "copied",
+  "blockNotCopied": "not copied",
   "wrongCaret": "Cursor $caretName not found",
   "changeCaret": "Cursor successfully changed to $caretName",
   "caretList": "Available cursors: $carets",

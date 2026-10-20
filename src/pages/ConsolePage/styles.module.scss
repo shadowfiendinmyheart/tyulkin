@@ -41,6 +41,8 @@ $gutter-bottom: 1ch;
   scroll-padding-bottom: $gutter-bottom;
   scrollbar-width: thin;
   scrollbar-color: var(--muted-color) transparent;
+  // a pinch sets the font size (TASK-94) instead of zooming the page; scrolling stays the browser's
+  touch-action: pan-x pan-y;
 
   &::-webkit-scrollbar {
     width: 6px;

@@ -2,6 +2,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { ConsoleContext } from "../../context/consoleContext";
 import { HandlerContext } from "../../context/handlerContext";
+import { LocalizationContext } from "../../context/localizationContext";
+import { createT } from "../../localization";
+import eng from "../../localization/dictionaries/eng.json";
 import { CaretMode } from "../../domain";
 import { Log, LogNode } from "../../store/console/interfaces";
 import Logs from ".";
@@ -9,6 +12,7 @@ import styles from "./styles.module.scss";
 import commandStyles from "../CommandButton/styles.module.scss";
 
 const executeCommand = vi.fn();
+const t = createT(eng);
 
 const renderLogs = (logs: Log[]) =>
   render(
@@ -43,7 +47,11 @@ const renderLogs = (logs: Log[]) =>
           paletteEntries: [],
         }}
       >
-        <Logs />
+        <LocalizationContext.Provider
+          value={{ language: "eng", t, changeLanguage: () => Promise.resolve(t) }}
+        >
+          <Logs />
+        </LocalizationContext.Provider>
       </HandlerContext.Provider>
     </ConsoleContext.Provider>,
   );

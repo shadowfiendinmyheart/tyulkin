@@ -33,27 +33,35 @@ export const useHistoryCommands = (
     handledHistoryAdded.current = historyAdded;
   }, [history, historyAdded]);
 
+  // ↑ or a swipe up over the prompt (TASK-94)
+  const showOlderCommand = () => {
+    if (historyPosition.current >= history.length - 1) return;
+    if (historyPosition.current === DRAFT_POSITION) draft.current = inputValue;
+    historyPosition.current += 1;
+    replaceInputValue(history[historyPosition.current]);
+  };
+
+  // ↓ or a swipe down: back to the draft after the newest entry
+  const showNewerCommand = () => {
+    if (historyPosition.current === DRAFT_POSITION) return;
+    historyPosition.current -= 1;
+    replaceInputValue(
+      historyPosition.current === DRAFT_POSITION ? draft.current : history[historyPosition.current],
+    );
+  };
+
   const historyCommandsHandleKeyDownInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
     switch (e.key) {
       case "ArrowUp": {
         // the native action moves the caret to the line start, out of sync with the drawn caret
         e.preventDefault();
-        if (historyPosition.current >= history.length - 1) return;
-        if (historyPosition.current === DRAFT_POSITION) draft.current = inputValue;
-        historyPosition.current += 1;
-        replaceInputValue(history[historyPosition.current]);
+        showOlderCommand();
         break;
       }
 
       case "ArrowDown": {
         e.preventDefault();
-        if (historyPosition.current === DRAFT_POSITION) return;
-        historyPosition.current -= 1;
-        replaceInputValue(
-          historyPosition.current === DRAFT_POSITION
-            ? draft.current
-            : history[historyPosition.current],
-        );
+        showNewerCommand();
         break;
       }
 
@@ -65,5 +73,10 @@ export const useHistoryCommands = (
     }
   };
 
-  return { historyCommandsHandleKeyDownInput, resetHistoryBrowsing };
+  return {
+    historyCommandsHandleKeyDownInput,
+    resetHistoryBrowsing,
+    showOlderCommand,
+    showNewerCommand,
+  };
 };

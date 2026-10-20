@@ -29,6 +29,8 @@ import { GUI_HINT_DELAY_MS } from "../../pages/ConsolePage";
 import { ACHIEVEMENT_TOAST_MS } from "../../router/ConsoleSessionLayout";
 import pageStyles from "../../pages/ConsolePage/styles.module.scss";
 import logsStyles from "../Logs/styles.module.scss";
+import { COPY_STATUS_MS } from "../Logs";
+import { LONG_PRESS_MS } from "../../hooks/useLongPress";
 
 const t = createT(eng);
 
@@ -2023,5 +2025,145 @@ describe("command blocks (TASK-82)", () => {
     await user.click(within(getEchoes()[0]).getByRole("button", { name: "about" }));
     expect(getLogs().slice(-2)).toEqual(["visitor@tyulkin ~ ❯ about", eng.about]);
     expect(getEchoes()).toHaveLength(3);
+  });
+});
+
+describe("gestures (TASK-94)", () => {
+  const touch = (x: number, y: number) => ({ clientX: x, clientY: y });
+  const getPrompt = (input: HTMLInputElement) => input.closest(`.${inputStyles.wrapper}`)!;
+
+  it("browses the history by a vertical swipe over the prompt", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("about{Enter}education{Enter}dra");
+    const swipe = (fromY: number, toY: number, toX = 100) => {
+      fireEvent.touchStart(getPrompt(input), { touches: [touch(100, fromY)] });
+      fireEvent.touchEnd(getPrompt(input), {
+        touches: [],
+        changedTouches: [touch(toX, toY)],
+      });
+    };
+
+    swipe(200, 150);
+    expect(input.value).toBe("education");
+    swipe(200, 150);
+    expect(input.value).toBe("about");
+    // too short, or more across than along: not a swipe
+    swipe(200, 190);
+    swipe(200, 150, 200);
+    expect(input.value).toBe("about");
+    swipe(150, 200);
+    swipe(150, 200);
+    expect(input.value).toBe("dra");
+  });
+
+  it("sets the font size by a pinch over the console and keeps it once the fingers are lifted", () => {
+    renderConsole("/settings");
+    const console = document.querySelector(`.${pageStyles.wrapper}`)!;
+    const fontSize = () => document.documentElement.style.getPropertyValue("--terminal-font-size");
+
+    fireEvent.touchStart(console, { touches: [touch(100, 100), touch(200, 100)] });
+    fireEvent.touchMove(console, { touches: [touch(100, 100), touch(225, 100)] });
+    expect(fontSize()).toBe("20px");
+    expect(localStorage.getItem("fontSize")).toBeNull();
+    // no further than the limits of `set fontsize`
+    fireEvent.touchMove(console, { touches: [touch(100, 100), touch(500, 100)] });
+    expect(fontSize()).toBe(`${FONT_SIZE_MAX}px`);
+    fireEvent.touchEnd(console, { touches: [touch(100, 100)] });
+    expect(localStorage.getItem("fontSize")).toBe(String(FONT_SIZE_MAX));
+
+    fireEvent.touchStart(console, { touches: [touch(100, 100), touch(200, 100)] });
+    fireEvent.touchMove(console, { touches: [touch(100, 100), touch(110, 100)] });
+    fireEvent.touchEnd(console, { touches: [] });
+    expect(fontSize()).toBe(`${FONT_SIZE_MIN}px`);
+    expect(localStorage.getItem("fontSize")).toBe(String(FONT_SIZE_MIN));
+  });
+
+  describe("long tap", () => {
+    beforeEach(() => vi.useFakeTimers({ shouldAdvanceTime: true }));
+    afterEach(() => vi.useRealTimers());
+
+    const press = (target: Element, ms: number) => {
+      const pointer = { pointerId: 1, pointerType: "touch", isPrimary: true, ...touch(10, 10) };
+      fireEvent.pointerDown(target, pointer);
+      act(() => vi.advanceTimersByTime(ms));
+      fireEvent.pointerUp(target, pointer);
+      fireEvent.click(target);
+    };
+
+    it("copies the block of a command and doesn't press what is under the finger", async () => {
+      const { user } = renderConsole("/settings");
+      await user.keyboard("show themes{Enter}show languages{Enter}");
+      const languages = getLogs().at(-1)!;
+      const writeText = vi.spyOn(navigator.clipboard, "writeText");
+      const themeButton = screen.getByRole("button", { name: "Nord" });
+
+      press(themeButton, LONG_PRESS_MS);
+      await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
+      const [text] = writeText.mock.calls[0];
+      expect(text.startsWith(`visitor@tyulkin ~/settings ❯ show themes\n${eng.themeList}\n`)).toBe(
+        true,
+      );
+      expect(text).toContain("Nord");
+      expect(text).not.toContain(languages);
+      // the theme was not set, the status is told over the block for a while
+      expect(getLogs().at(-1)).toBe(languages);
+      await screen.findByText(eng.blockCopied);
+      act(() => vi.advanceTimersByTime(COPY_STATUS_MS));
+      expect(screen.queryByText(eng.blockCopied)).toBeNull();
+    });
+
+    it("tells a failed copy, and a short tap stays a click", async () => {
+      const { user } = renderConsole("/settings");
+      await user.keyboard("show themes{Enter}");
+      vi.spyOn(navigator.clipboard, "writeText").mockRejectedValue(new Error("denied"));
+      press(screen.getAllByRole("listitem").at(-1)!, LONG_PRESS_MS);
+      await screen.findByText(eng.blockNotCopied);
+
+      press(screen.getByRole("button", { name: "Nord" }), LONG_PRESS_MS / 2);
+      expect(getLogs().at(-1)).toBe(t({ key: "changeTheme", args: { themeName: "Nord" } }));
+    });
+
+    it("gives the press up when the browser takes the touch or another finger comes", async () => {
+      const { user } = renderConsole("/settings");
+      await user.keyboard("show themes{Enter}");
+      const writeText = vi.spyOn(navigator.clipboard, "writeText");
+      const log = screen.getAllByRole("listitem").at(-1)!;
+      const pointer = { pointerId: 1, pointerType: "touch", isPrimary: true };
+
+      fireEvent.pointerDown(log, pointer);
+      act(() => vi.advanceTimersByTime(LONG_PRESS_MS));
+      expect(log.className).toContain(logsStyles.marked);
+      fireEvent.pointerCancel(log, pointer);
+      expect(log.className).not.toContain(logsStyles.marked);
+
+      fireEvent.pointerDown(log, pointer);
+      fireEvent.pointerDown(document.body, { ...pointer, pointerId: 2, isPrimary: false });
+      act(() => vi.advanceTimersByTime(LONG_PRESS_MS));
+      fireEvent.pointerUp(log, pointer);
+      expect(writeText).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("vibration on an error", () => {
+    const vibrate = vi.fn();
+    beforeEach(() => {
+      vibrate.mockClear();
+      Object.defineProperty(navigator, "vibrate", { value: vibrate, configurable: true });
+    });
+    afterEach(() => {
+      Reflect.deleteProperty(navigator, "vibrate");
+    });
+
+    it("buzzes on a failed command with set sound on only", async () => {
+      vi.stubGlobal("AudioContext", undefined);
+      const { user } = renderConsole("/settings");
+      await user.keyboard("nope{Enter}");
+      expect(vibrate).not.toHaveBeenCalled();
+
+      await user.keyboard("set sound on{Enter}show themes{Enter}");
+      expect(vibrate).not.toHaveBeenCalled();
+      await user.keyboard("nope{Enter}");
+      expect(vibrate).toHaveBeenCalledTimes(1);
+    });
   });
 });

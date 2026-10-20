@@ -1,5 +1,7 @@
 .list {
   height: 100%;
+  // a long tap copies the block (TASK-94): iOS shows no callout of its own over it
+  -webkit-touch-callout: none;
 }
 
 .log {
@@ -38,6 +40,23 @@
     content: " ✗";
     content: " ✗" / "";
   }
+}
+
+// the block under a long tap (TASK-94), and whether it was copied, over its first line
+.marked {
+  background-color: color-mix(in srgb, var(--accent-color) 15%, transparent);
+}
+
+.copyStatus {
+  float: right;
+  padding-left: 2ch;
+  color: var(--accent-color);
+  user-select: none;
+}
+
+// the time would float next to it
+.copyStatus ~ .time {
+  display: none;
 }
 
 // when the command was entered: on hover, or on focus of the command

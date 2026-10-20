@@ -109,3 +109,17 @@ export const sliceNodes = (nodes: LogNode[], length: number): LogNode[] => {
   }
   return sliced;
 };
+
+// the text of a node as it reads: what grep matches (TASK-61) and a long tap copies (TASK-94)
+export const getNodeText = (node: LogNode): string => {
+  if (typeof node === "string") return node;
+  switch (node.type) {
+    case "command":
+      return node.label ?? node.command;
+    case "table":
+      return node.rows.map((row) => row.map(getNodesText).join(" ")).join("\n");
+    default:
+      return node.text;
+  }
+};
+export const getNodesText = (nodes: LogNode[]): string => nodes.map(getNodeText).join("");
