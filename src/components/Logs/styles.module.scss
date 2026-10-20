@@ -31,6 +31,40 @@
   color: var(--error-color);
 }
 
+.success {
+  color: var(--success-color);
+}
+
+.warning {
+  color: var(--warning-color);
+}
+
+// the ANSI palette of the theme: class name -> --ansi-<name>
+$ansi-colors: (
+  "ansiBlack": "black",
+  "ansiRed": "red",
+  "ansiGreen": "green",
+  "ansiYellow": "yellow",
+  "ansiBlue": "blue",
+  "ansiMagenta": "magenta",
+  "ansiCyan": "cyan",
+  "ansiWhite": "white",
+  "ansiBrightBlack": "bright-black",
+  "ansiBrightRed": "bright-red",
+  "ansiBrightGreen": "bright-green",
+  "ansiBrightYellow": "bright-yellow",
+  "ansiBrightBlue": "bright-blue",
+  "ansiBrightMagenta": "bright-magenta",
+  "ansiBrightCyan": "bright-cyan",
+  "ansiBrightWhite": "bright-white",
+);
+
+@each $class, $color in $ansi-colors {
+  .#{$class} {
+    color: var(--ansi-#{$color});
+  }
+}
+
 .table {
   border-collapse: collapse;
 

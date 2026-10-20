@@ -133,7 +133,7 @@
 
 | ID | Pri | Est | Задача | Суть |
 |---|---|---|---|---|
-| TASK-80 | P1 | M | **Дизайн-токены и ANSI-палитра** | Каждой теме — 16 ANSI-цветов (`--ansi-red`…`--ansi-bright-white`), шкалы отступов и размеров шрифта; `LogColor` расширить (`success`, `warning`, ansi-цвета). Тест на контраст WCAG AA для всех тем. Фундамент для 81/84/86. [themes.scss](src/styles/themes.scss), [interfaces.ts](src/store/console/interfaces.ts) |
+| ✅ TASK-80 | P1 | M | **Дизайн-токены и ANSI-палитра** | Каждой теме — 16 ANSI-цветов (`--ansi-red`…`--ansi-bright-white`), шкалы отступов и размеров шрифта; `LogColor` расширить (`success`, `warning`, ansi-цвета). Тест на контраст WCAG AA для всех тем. Фундамент для 81/84/86. [themes.scss](src/styles/themes.scss), [interfaces.ts](src/store/console/interfaces.ts) |
 | ✅ TASK-81 | P1 | M | **Полноэкранная раскладка** | Убрать `80%`/`90vh`: консоль на весь экран (`dvh`), поля по краям, ширина строки ≤ ~100ch; тонкий скроллбар в цветах темы вместо скрытого; промпт из сегментов `visitor@tyulkin ~/projects ❯`; `ViewSwitch` сделать незаметнее. Сверить LCP (TASK-77). Лучше после TASK-80. [ConsolePage/styles.module.scss](src/pages/ConsolePage/styles.module.scss) |
 | TASK-82 | P2 | S | **Блоки вывода** | Команда и её вывод — один блок (как в Warp): отступ между блоками, маркер статуса ✓/✗, время выполнения при наведении, клик по команде блока повторяет её. [Logs](src/components/Logs) |
 | TASK-83 | P2 | S | **`set font`** | JetBrains Mono / Fira Code (лигатуры) / IBM Plex: self-host, подгрузка по требованию, значение валидируется через `src/storage`; `set fontsize`. |

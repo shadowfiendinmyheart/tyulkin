@@ -1,4 +1,30 @@
-// theme is applied via data-theme attribute on <html> (see App.tsx)
+// theme is applied via data-theme attribute on <html> (see App.tsx).
+// every theme defines the same tokens: the theme colors (--*-color) and the 16 ANSI colors
+// (--ansi-*, see ansiColors in src/domain); every color a text may have passes WCAG AA (4.5:1)
+// against --bg-color, except the ANSI color of the background itself (black on a dark theme,
+// white and bright white on a light one), see themes.test.ts
+
+// the 16 ANSI colors, as ansiColors in src/domain; quoted, or Sass takes them for colors
+$ansi-names:
+  "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white", "bright-black",
+  "bright-red", "bright-green", "bright-yellow", "bright-blue", "bright-magenta", "bright-cyan",
+  "bright-white";
+
+// theme-independent scales: spacing and font sizes
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+}
+
 :root,
 [data-theme="Black"] {
   --bg-color: #000;
@@ -7,6 +33,24 @@
   --caret-color: #fff;
   --accent-color: #5fafff;
   --error-color: #ff5f5f;
+  --success-color: #5fd75f;
+  --warning-color: #ffd75f;
+  --ansi-black: #000000;
+  --ansi-red: #d24444;
+  --ansi-green: #0dbc79;
+  --ansi-yellow: #e5e510;
+  --ansi-blue: #2d78ca;
+  --ansi-magenta: #bc3fbc;
+  --ansi-cyan: #11a8cd;
+  --ansi-white: #e5e5e5;
+  --ansi-bright-black: #757575;
+  --ansi-bright-red: #f14c4c;
+  --ansi-bright-green: #23d18b;
+  --ansi-bright-yellow: #f5f543;
+  --ansi-bright-blue: #3b8eea;
+  --ansi-bright-magenta: #d670d6;
+  --ansi-bright-cyan: #29b8db;
+  --ansi-bright-white: #ffffff;
 }
 
 @mixin white-theme {
@@ -16,6 +60,24 @@
   --caret-color: #000;
   --accent-color: #0057b8;
   --error-color: #c62828;
+  --success-color: #2e7d32;
+  --warning-color: #8a6100;
+  --ansi-black: #000000;
+  --ansi-red: #cd3131;
+  --ansi-green: #008900;
+  --ansi-yellow: #767a00;
+  --ansi-blue: #0451a5;
+  --ansi-magenta: #bc05bc;
+  --ansi-cyan: #04809e;
+  --ansi-white: #e5e5e5;
+  --ansi-bright-black: #666666;
+  --ansi-bright-red: #b42424;
+  --ansi-bright-green: #0d880d;
+  --ansi-bright-yellow: #767900;
+  --ansi-bright-blue: #1a5fb4;
+  --ansi-bright-magenta: #a020a0;
+  --ansi-bright-cyan: #066d87;
+  --ansi-bright-white: #ffffff;
 }
 
 // until the app sets data-theme, the default theme of the system color scheme
@@ -33,19 +95,55 @@
 [data-theme="Light"] {
   --bg-color: #fdf6e3;
   --text-color: #586e75;
-  --muted-color: #93a1a1;
+  --muted-color: #687272;
   --caret-color: #586e75;
-  --accent-color: #268bd2;
-  --error-color: #dc322f;
+  --accent-color: #2075b0;
+  --error-color: #d3302d;
+  --success-color: #687700;
+  --warning-color: #8d6b00;
+  --ansi-black: #073642;
+  --ansi-red: #d3302d;
+  --ansi-green: #687700;
+  --ansi-yellow: #8d6b00;
+  --ansi-blue: #2075b0;
+  --ansi-magenta: #c8337c;
+  --ansi-cyan: #207c75;
+  --ansi-white: #eee8d5;
+  --ansi-bright-black: #002b36;
+  --ansi-bright-red: #c34815;
+  --ansi-bright-green: #5c6a00;
+  --ansi-bright-yellow: #7a5c00;
+  --ansi-bright-blue: #1a68a0;
+  --ansi-bright-magenta: #6469b6;
+  --ansi-bright-cyan: #1d6f69;
+  --ansi-bright-white: #fdf6e3;
 }
 
 [data-theme="Dark"] {
   --bg-color: #1e1e1e;
   --text-color: #d4d4d4;
-  --muted-color: #808080;
+  --muted-color: #868686;
   --caret-color: #d4d4d4;
   --accent-color: #569cd6;
   --error-color: #f48771;
+  --success-color: #6a9955;
+  --warning-color: #dcdcaa;
+  --ansi-black: #000000;
+  --ansi-red: #d96060;
+  --ansi-green: #0dbc79;
+  --ansi-yellow: #e5e510;
+  --ansi-blue: #4789d1;
+  --ansi-magenta: #c65cc6;
+  --ansi-cyan: #11a8cd;
+  --ansi-white: #e5e5e5;
+  --ansi-bright-black: #868686;
+  --ansi-bright-red: #f14c4c;
+  --ansi-bright-green: #23d18b;
+  --ansi-bright-yellow: #f5f543;
+  --ansi-bright-blue: #3b8eea;
+  --ansi-bright-magenta: #d670d6;
+  --ansi-bright-cyan: #29b8db;
+  --ansi-bright-white: #ffffff;
 }
 
 [data-theme="Hacker"] {
@@ -55,52 +153,160 @@
   --caret-color: #33ff33;
   --accent-color: #b3ffb3;
   --error-color: #ff4d4d;
+  --success-color: #33ff33;
+  --warning-color: #ccff33;
+  --ansi-black: #000000;
+  --ansi-red: #ff4d4d;
+  --ansi-green: #33ff33;
+  --ansi-yellow: #ccff33;
+  --ansi-blue: #00cc66;
+  --ansi-magenta: #66ff99;
+  --ansi-cyan: #99ffcc;
+  --ansi-white: #b3ffb3;
+  --ansi-bright-black: #1a9e1a;
+  --ansi-bright-red: #ff8080;
+  --ansi-bright-green: #80ff80;
+  --ansi-bright-yellow: #e6ff80;
+  --ansi-bright-blue: #33ff99;
+  --ansi-bright-magenta: #99ffbb;
+  --ansi-bright-cyan: #ccffe6;
+  --ansi-bright-white: #e6ffe6;
 }
 
 // TASK-73: classic editor palettes, dark variants
 [data-theme="Dracula"] {
   --bg-color: #282a36;
   --text-color: #f8f8f2;
-  --muted-color: #6272a4;
+  --muted-color: #8591b8;
   --caret-color: #f8f8f2;
   --accent-color: #bd93f9;
   --error-color: #ff5555;
+  --success-color: #50fa7b;
+  --warning-color: #f1fa8c;
+  --ansi-black: #21222c;
+  --ansi-red: #ff5555;
+  --ansi-green: #50fa7b;
+  --ansi-yellow: #f1fa8c;
+  --ansi-blue: #bd93f9;
+  --ansi-magenta: #ff79c6;
+  --ansi-cyan: #8be9fd;
+  --ansi-white: #f8f8f2;
+  --ansi-bright-black: #8591b8;
+  --ansi-bright-red: #ff6e6e;
+  --ansi-bright-green: #69ff94;
+  --ansi-bright-yellow: #ffffa5;
+  --ansi-bright-blue: #d6acff;
+  --ansi-bright-magenta: #ff92df;
+  --ansi-bright-cyan: #a4ffff;
+  --ansi-bright-white: #ffffff;
 }
 
 [data-theme="Solarized"] {
   --bg-color: #002b36;
   --text-color: #839496;
-  --muted-color: #657b83;
+  --muted-color: #7f9198;
   --caret-color: #93a1a1;
-  --accent-color: #268bd2;
-  --error-color: #dc322f;
+  --accent-color: #3794d6;
+  --error-color: #e56563;
+  --success-color: #859900;
+  --warning-color: #b58900;
+  --ansi-black: #073642;
+  --ansi-red: #e56563;
+  --ansi-green: #859900;
+  --ansi-yellow: #b58900;
+  --ansi-blue: #3794d6;
+  --ansi-magenta: #dd649f;
+  --ansi-cyan: #2aa198;
+  --ansi-white: #eee8d5;
+  --ansi-bright-black: #809196;
+  --ansi-bright-red: #d67349;
+  --ansi-bright-green: #9eb500;
+  --ansi-bright-yellow: #d4a20a;
+  --ansi-bright-blue: #5aa7e0;
+  --ansi-bright-magenta: #8488cd;
+  --ansi-bright-cyan: #3cc2b7;
+  --ansi-bright-white: #fdf6e3;
 }
 
 [data-theme="Gruvbox"] {
   --bg-color: #282828;
   --text-color: #ebdbb2;
-  --muted-color: #928374;
+  --muted-color: #9b8d7f;
   --caret-color: #ebdbb2;
   --accent-color: #fabd2f;
-  --error-color: #fb4934;
+  --error-color: #fb5642;
+  --success-color: #b8bb26;
+  --warning-color: #fabd2f;
+  --ansi-black: #282828;
+  --ansi-red: #dd6e6a;
+  --ansi-green: #98971a;
+  --ansi-yellow: #d79921;
+  --ansi-blue: #63999b;
+  --ansi-magenta: #be7d9b;
+  --ansi-cyan: #689d6a;
+  --ansi-white: #a89984;
+  --ansi-bright-black: #9b8d7f;
+  --ansi-bright-red: #fb5642;
+  --ansi-bright-green: #b8bb26;
+  --ansi-bright-yellow: #fabd2f;
+  --ansi-bright-blue: #83a598;
+  --ansi-bright-magenta: #d3869b;
+  --ansi-bright-cyan: #8ec07c;
+  --ansi-bright-white: #ebdbb2;
 }
 
 [data-theme="Nord"] {
   --bg-color: #2e3440;
   --text-color: #d8dee9;
-  --muted-color: #7b88a1;
+  --muted-color: #939db2;
   --caret-color: #d8dee9;
   --accent-color: #88c0d0;
-  --error-color: #bf616a;
+  --error-color: #d08a91;
+  --success-color: #a3be8c;
+  --warning-color: #ebcb8b;
+  --ansi-black: #3b4252;
+  --ansi-red: #d08a91;
+  --ansi-green: #a3be8c;
+  --ansi-yellow: #ebcb8b;
+  --ansi-blue: #81a1c1;
+  --ansi-magenta: #b691af;
+  --ansi-cyan: #88c0d0;
+  --ansi-white: #e5e9f0;
+  --ansi-bright-black: #979da9;
+  --ansi-bright-red: #d08a91;
+  --ansi-bright-green: #a3be8c;
+  --ansi-bright-yellow: #ebcb8b;
+  --ansi-bright-blue: #81a1c1;
+  --ansi-bright-magenta: #b691af;
+  --ansi-bright-cyan: #8fbcbb;
+  --ansi-bright-white: #eceff4;
 }
 
 [data-theme="Monokai"] {
   --bg-color: #272822;
   --text-color: #f8f8f2;
-  --muted-color: #75715e;
+  --muted-color: #928f80;
   --caret-color: #f8f8f0;
   --accent-color: #a6e22e;
-  --error-color: #f92672;
+  --error-color: #fa4b8a;
+  --success-color: #a6e22e;
+  --warning-color: #e6db74;
+  --ansi-black: #272822;
+  --ansi-red: #fa4b8a;
+  --ansi-green: #a6e22e;
+  --ansi-yellow: #f4bf75;
+  --ansi-blue: #66d9ef;
+  --ansi-magenta: #ae81ff;
+  --ansi-cyan: #a1efe4;
+  --ansi-white: #f8f8f2;
+  --ansi-bright-black: #928f80;
+  --ansi-bright-red: #fa4b8a;
+  --ansi-bright-green: #a6e22e;
+  --ansi-bright-yellow: #f4bf75;
+  --ansi-bright-blue: #66d9ef;
+  --ansi-bright-magenta: #ae81ff;
+  --ansi-bright-cyan: #a1efe4;
+  --ansi-bright-white: #f9f8f5;
 }
 
 // the secret one: an amber phosphor monitor, unlocked by the Konami code
@@ -111,6 +317,24 @@
   --caret-color: #ffb000;
   --accent-color: #ffd27f;
   --error-color: #ff6a3d;
+  --success-color: #ffcc33;
+  --warning-color: #ffe0a3;
+  --ansi-black: #120a00;
+  --ansi-red: #ff6a3d;
+  --ansi-green: #e0a000;
+  --ansi-yellow: #ffd27f;
+  --ansi-blue: #cc8a00;
+  --ansi-magenta: #ff8c5a;
+  --ansi-cyan: #ffc04d;
+  --ansi-white: #ffb000;
+  --ansi-bright-black: #b37400;
+  --ansi-bright-red: #ff9470;
+  --ansi-bright-green: #ffc233;
+  --ansi-bright-yellow: #ffe0a3;
+  --ansi-bright-blue: #e6a200;
+  --ansi-bright-magenta: #ffad85;
+  --ansi-bright-cyan: #ffd480;
+  --ansi-bright-white: #ffe8c2;
 }
 
 // whatever the theme, paper is white: printing (the PDF version of the CV) is black on white
@@ -123,6 +347,12 @@
     --caret-color: #000;
     --accent-color: #000;
     --error-color: #000;
+    --success-color: #000;
+    --warning-color: #000;
+
+    @each $name in $ansi-names {
+      --ansi-#{$name}: #000;
+    }
   }
 }
 

@@ -29,6 +29,27 @@ export type ThemeMode = (typeof allThemeModes)[number];
 
 export const caretModes = Object.values(CaretMode);
 
+// the 16 ANSI colors every theme defines as --ansi-<name> (TASK-80, see styles/themes.scss)
+export const ansiColors = [
+  "black",
+  "red",
+  "green",
+  "yellow",
+  "blue",
+  "magenta",
+  "cyan",
+  "white",
+  "bright-black",
+  "bright-red",
+  "bright-green",
+  "bright-yellow",
+  "bright-blue",
+  "bright-magenta",
+  "bright-cyan",
+  "bright-white",
+] as const;
+export type AnsiColor = (typeof ansiColors)[number];
+
 // the CRT monitor effect over the console (TASK-64): scanlines, glow, vignette, flicker
 export const crtModes = ["on", "off"] as const;
 export type CrtMode = (typeof crtModes)[number];

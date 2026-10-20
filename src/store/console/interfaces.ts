@@ -1,8 +1,9 @@
-import { CaretMode, CrtMode, GameId, SoundMode } from "../../domain";
+import { AnsiColor, CaretMode, CrtMode, GameId, SoundMode } from "../../domain";
 import { ActionTypeGenerator } from "../interfaces";
 
-// theme colors of a text, see styles/themes.scss
-export type LogColor = "text" | "muted" | "accent" | "error";
+// theme colors of a text, see styles/themes.scss: the semantic ones and the ANSI palette
+export type LogColor =
+  "text" | "muted" | "accent" | "error" | "success" | "warning" | `ansi-${AnsiColor}`;
 
 // a piece of a log; a plain string is text
 export type LogNode =
