@@ -51,7 +51,12 @@ const SEARCH_ACCEPT_KEYS = [
   "End",
 ];
 
-const Input: React.FC = () => {
+interface InputProps {
+  // gets the native input, for the extra keys row (TASK-93)
+  onInputElement?: (input: HTMLInputElement | null) => void;
+}
+
+const Input: React.FC<InputProps> = ({ onInputElement }) => {
   const { executeCommand, allCommands } = useHandlerContext();
   const { consoleDispatch, consoleState } = useConsoleContext();
   const { logs, history, soundMode } = consoleState;
@@ -60,7 +65,14 @@ const Input: React.FC = () => {
   const [caretPosition, setCaretPosition] = React.useState<number>(-1);
   // bumped by replaceInputValue, so the caret moves to the end even if the value is unchanged
   const [caretToEndRequest, setCaretToEndRequest] = React.useState<number>(0);
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  const inputRef = React.useRef<HTMLInputElement | null>(null);
+  const setInputRef = React.useCallback(
+    (input: HTMLInputElement | null) => {
+      inputRef.current = input;
+      onInputElement?.(input);
+    },
+    [onInputElement],
+  );
   const consoleInputRef = React.useRef<HTMLDivElement>(null);
   const prompt = usePrompt();
   const promptSegments = usePromptSegments();
@@ -299,7 +311,7 @@ const Input: React.FC = () => {
         autoCorrect="off"
         spellCheck={false}
         enterKeyHint="send"
-        ref={inputRef}
+        ref={setInputRef}
       />
       <div className={cn(styles.chars, autosuggestionRest && styles.charsAutosuggesting)}>
         {caretPosition === -1 || inputValue.length === 0 ? (

@@ -3,6 +3,7 @@ import cn from "clsx";
 import { Navigate, useLocation } from "react-router";
 import Console from "../../components/Console";
 import DeepLinkCommand from "../../components/DeepLinkCommand";
+import ExtraKeys from "../../components/ExtraKeys";
 import Game from "../../components/Game";
 import MatrixRain from "../../components/MatrixRain";
 import ViewSwitch from "../../components/ViewSwitch";
@@ -167,6 +168,9 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
     }, []),
   );
 
+  // the command line, for the extra keys row under the console (TASK-93)
+  const [inputElement, setInputElement] = React.useState<HTMLInputElement | null>(null);
+
   const isCrt = state.crtMode === "on";
   const exitMatrix = React.useCallback(() => dispatch(setMatrixShown(false)), [dispatch]);
 
@@ -183,8 +187,9 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
           <ViewSwitch to="gui" quiet />
         </nav>
         <div className={cn(styles.wrapper, isCrt && styles.crtGlow)} ref={wrapperRef}>
-          <Console />
+          <Console onInputElement={setInputElement} />
         </div>
+        <ExtraKeys input={inputElement} />
       </div>
       <DeepLinkCommand />
       {state.isMatrixShown && <MatrixRain onExit={exitMatrix} />}

@@ -15,6 +15,7 @@ import { getParamsString } from "../../commandHandlers/utils";
 import inputStyles from "../Input/styles.module.scss";
 import hintStyles from "../CommandsHint/style.module.scss";
 import { QUICK_COMMANDS, QUICK_COMMANDS_TYPED_LIMIT } from "../QuickCommands";
+import { EXTRA_KEYS } from "../ExtraKeys";
 import { GUI_HINT_DELAY_MS } from "../../pages/ConsolePage";
 import pageStyles from "../../pages/ConsolePage/styles.module.scss";
 
@@ -654,6 +655,169 @@ describe("quick commands (TASK-58)", () => {
     expect(queryChips()).toBeNull();
     await user.keyboard("menu{Enter}");
     expect(queryChips()).toBeNull();
+  });
+});
+
+describe("extra keys (TASK-93)", () => {
+  const queryRow = () => screen.queryByRole("group", { name: eng.extraKeysLabel });
+  const getKey = (label: string) => within(queryRow()!).getByRole("button", { name: label });
+
+  it("is shown while the input is focused and keeps the focus on taps", async () => {
+    const { user, input } = renderConsole();
+    expect(
+      within(queryRow()!)
+        .getAllByRole("button")
+        .map((key) => key.textContent),
+    ).toEqual(EXTRA_KEYS.map(({ label }) => label));
+    await user.click(getKey("Esc"));
+    expect(document.activeElement).toBe(input);
+
+    act(() => input.blur());
+    expect(queryRow()).toBeNull();
+    act(() => input.focus());
+    expect(queryRow()).not.toBeNull();
+  });
+
+  it("presses Tab and arrows as the physical keys", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("help{Enter}about{Enter}");
+    await user.click(getKey("↑"));
+    expect(input.value).toBe("about");
+    await user.click(getKey("↑"));
+    expect(input.value).toBe("help");
+    await user.click(getKey("↓"));
+    expect(input.value).toBe("about");
+
+    await user.clear(input);
+    await user.keyboard("edu");
+    await user.click(getKey("Tab"));
+    expect(input.value).toBe("education");
+  });
+
+  it("moves the caret by ← and →, types | and / at the caret", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("ab");
+    await user.click(getKey("←"));
+    await user.click(getKey("←"));
+    await user.click(getKey("→"));
+    expect(input.selectionStart).toBe(1);
+    await user.click(getKey("|"));
+    expect(input.value).toBe("a|b");
+    expect(input.selectionStart).toBe(2);
+    // the drawn caret follows: the next char goes after the inserted one
+    await user.click(getKey("/"));
+    expect(input.value).toBe("a|/b");
+    expect(input.parentElement?.textContent).toContain("a|/b");
+  });
+
+  it("→ accepts the autosuggestion, Esc cancels Ctrl+R search", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("education{Enter}edu");
+    await user.click(getKey("→"));
+    expect(input.value).toBe("education");
+
+    await user.clear(input);
+    await user.keyboard("{Control>}r{/Control}edu");
+    expect(screen.getByText("': education")).toBeTruthy();
+    await user.click(getKey("Esc"));
+    expect(screen.queryByText("': education")).toBeNull();
+  });
+
+  it("Ctrl applies to the next key of the row, then turns off", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("help{Enter}");
+    await user.click(getKey("Ctrl"));
+    expect(getKey("Ctrl").getAttribute("aria-pressed")).toBe("true");
+    // Ctrl+/ does nothing, as on a physical keyboard
+    await user.click(getKey("/"));
+    expect(input.value).toBe("");
+    expect(getKey("Ctrl").getAttribute("aria-pressed")).toBe("false");
+    await user.click(getKey("↑"));
+    expect(input.value).toBe("help");
+  });
+
+  it("Ctrl with a char of the virtual keyboard is a shortcut, not a char", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("ls");
+    await user.click(getKey("Ctrl"));
+    // a preventable beforeinput: the char is not typed
+    act(() => {
+      input.dispatchEvent(
+        new InputEvent("beforeinput", {
+          bubbles: true,
+          cancelable: true,
+          inputType: "insertText",
+          data: "c",
+        }),
+      );
+    });
+    expect(getLogs().at(-1)).toBe("visitor@tyulkin ~ ❯ ls^C");
+    expect(input.value).toBe("");
+    expect(getKey("Ctrl").getAttribute("aria-pressed")).toBe("false");
+
+    // an IME composition can't be prevented: the typed char is taken back
+    await user.keyboard("ls");
+    await user.click(getKey("Ctrl"));
+    act(() => {
+      input.dispatchEvent(
+        new InputEvent("beforeinput", {
+          bubbles: true,
+          inputType: "insertCompositionText",
+          data: "l",
+        }),
+      );
+      input.setRangeText("l", 2, 2, "end");
+      input.dispatchEvent(
+        new InputEvent("input", { bubbles: true, inputType: "insertCompositionText", data: "l" }),
+      );
+    });
+    expect(input.value).toBe("ls");
+    // Ctrl+L cleared the screen, the line stays
+    expect(getLogs()).toEqual([]);
+  });
+
+  it("Ctrl takes a char of a Russian keyboard by its key, a paste or an IME deletion is not a shortcut", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("ls");
+    await user.click(getKey("Ctrl"));
+    const beforeInput = (inputType: string, data: string) =>
+      new InputEvent("beforeinput", { bubbles: true, cancelable: true, inputType, data });
+    // a pasted text is not a typed char: it is inserted and uses up Ctrl, as other keys do
+    const paste = beforeInput("insertFromPaste", "git");
+    act(() => {
+      input.dispatchEvent(paste);
+    });
+    expect(paste.defaultPrevented).toBe(false);
+    expect(getKey("Ctrl").getAttribute("aria-pressed")).toBe("false");
+
+    // a composed word shrinks by Backspace: not a typed char either
+    act(() => {
+      input.dispatchEvent(new CompositionEvent("compositionstart"));
+      input.dispatchEvent(beforeInput("insertCompositionText", "ab"));
+    });
+    await user.click(getKey("Ctrl"));
+    const deletion = beforeInput("insertCompositionText", "a");
+    act(() => {
+      input.dispatchEvent(deletion);
+    });
+    expect(deletion.defaultPrevented).toBe(false);
+    expect(getKey("Ctrl").getAttribute("aria-pressed")).toBe("false");
+
+    await user.click(getKey("Ctrl"));
+
+    // "с" is on the key of the Latin C
+    act(() => {
+      input.dispatchEvent(beforeInput("insertText", "с"));
+    });
+    expect(getLogs().at(-1)).toBe("visitor@tyulkin ~ ❯ ls^C");
+  });
+
+  it("Ctrl turns off when the input loses the focus", async () => {
+    const { user, input } = renderConsole();
+    await user.click(getKey("Ctrl"));
+    act(() => input.blur());
+    act(() => input.focus());
+    expect(getKey("Ctrl").getAttribute("aria-pressed")).toBe("false");
   });
 });
 

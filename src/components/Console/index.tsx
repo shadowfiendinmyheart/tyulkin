@@ -5,7 +5,12 @@ import CommandsHint from "../CommandsHint";
 import QuickCommands from "../QuickCommands";
 import styles from "./styles.module.scss";
 
-const Console: React.FC = () => {
+interface ConsoleProps {
+  // gets the native input of the command line
+  onInputElement?: (input: HTMLInputElement | null) => void;
+}
+
+const Console: React.FC<ConsoleProps> = ({ onInputElement }) => {
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   // the prompt stays in view while an output is typed out below the previous one
   const scrollToBottom = React.useCallback(() => {
@@ -16,7 +21,7 @@ const Console: React.FC = () => {
     <div className={styles.wrapper} ref={wrapperRef}>
       <Logs onTypingProgress={scrollToBottom} />
       <QuickCommands />
-      <Input />
+      <Input onInputElement={onInputElement} />
       <CommandsHint />
     </div>
   );

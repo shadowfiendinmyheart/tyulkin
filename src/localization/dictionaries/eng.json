@@ -49,6 +49,7 @@
   "loading": "loading",
   "inputLabel": "command line",
   "quickCommandsLabel": "quick commands",
+  "extraKeysLabel": "extra keys",
   "matrixExit": "press any key or tap to exit",
   "gameExit": "exit",
   "gameOver": "Game over: Enter or a tap to play again",

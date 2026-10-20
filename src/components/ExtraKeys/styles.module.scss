@@ -1,0 +1,44 @@
+// a row of equal keys at the bottom of the screen, i.e. right over the virtual keyboard;
+// a physical keyboard has all of them, so it is shown on touch screens only
+.extraKeys {
+  display: none;
+  flex: none;
+
+  @media (pointer: coarse) {
+    display: flex;
+  }
+
+  @media print {
+    display: none;
+  }
+}
+
+.key {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--text-color);
+  cursor: pointer;
+  // no double-tap zoom delay on a fast series of taps
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active {
+    background-color: color-mix(in srgb, var(--muted-color) 30%, transparent);
+  }
+}
+
+// a sticky Ctrl waiting for the next key
+.keyOn {
+  color: var(--bg-color);
+  background-color: var(--accent-color);
+
+  &:active {
+    background-color: var(--accent-color);
+  }
+}

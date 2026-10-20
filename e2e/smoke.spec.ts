@@ -261,6 +261,39 @@ test("keeps the prompt above the virtual keyboard (TASK-92) @mobile", async ({ p
   expect(pageScroll).toBe(0);
 });
 
+test("taps the extra keys over the virtual keyboard (TASK-93) @mobile", async ({ page }) => {
+  await open(page);
+  await page.getByRole("log").tap();
+  const row = page.getByRole("group", { name: eng.extraKeysLabel });
+  await page.keyboard.type("help");
+  await page.keyboard.press("Enter");
+  // the keyboard opens: the row is at the bottom of the visible part, right over it
+  const { width, height } = page.viewportSize()!;
+  const visibleHeight = height - Math.round(height * 0.4);
+  await page.setViewportSize({ width, height: visibleHeight });
+  await expect(async () => {
+    const box = (await row.boundingBox())!;
+    expect(Math.abs(box.y + box.height - visibleHeight)).toBeLessThan(2);
+  }).toPass();
+
+  // the taps keep the focus (the keyboard stays open) and act as the physical keys
+  await row.getByRole("button", { name: "↑" }).tap();
+  await expect(input(page)).toHaveValue("help");
+  await row.getByRole("button", { name: "|" }).tap();
+  await expect(input(page)).toHaveValue("help|");
+  await expect(input(page)).toBeFocused();
+  await row.getByRole("button", { name: "Ctrl" }).tap();
+  await page.keyboard.type("c");
+  await expect(lastLog(page)).toContainText("help|^C");
+  await expect(input(page)).toHaveValue("");
+});
+
+test("hides the extra keys with a physical keyboard (TASK-93)", async ({ page }) => {
+  await open(page);
+  await expect(input(page)).toBeFocused();
+  await expect(page.getByRole("group", { name: eng.extraKeysLabel })).toBeHidden();
+});
+
 test("fills the screen, the lines are not wider than ~100ch (TASK-81)", async ({ page }) => {
   await open(page);
   const viewport = page.viewportSize()!;

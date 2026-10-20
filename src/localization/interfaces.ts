@@ -26,6 +26,8 @@ export interface CommonDictionary {
   inputLabel: string;
   // accessible name of the quick command chips over the command line
   quickCommandsLabel: string;
+  // accessible name of the extra keys row over the virtual keyboard (TASK-93)
+  extraKeysLabel: string;
   // shown over the `matrix` digital rain
   matrixExit: string;
   // the mini-games (TASK-66): the exit button, the end of a game, a chunk that didn't load
