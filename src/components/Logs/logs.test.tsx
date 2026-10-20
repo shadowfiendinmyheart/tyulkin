@@ -38,6 +38,7 @@ const renderLogs = (logs: Log[]) =>
           allCommands: [],
           describeCompletion: () => undefined,
           highlight: () => [],
+          paletteEntries: [],
         }}
       >
         <Logs />

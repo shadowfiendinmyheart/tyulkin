@@ -51,6 +51,11 @@
   "completionsLabel": "completions",
   "quickCommandsLabel": "quick commands",
   "extraKeysLabel": "extra keys",
+  "paletteOpen": "search commands and files",
+  "paletteLabel": "command palette",
+  "palettePlaceholder": "command, file or what to find",
+  "paletteResultsLabel": "found",
+  "paletteEmpty": "nothing found",
   "matrixExit": "press any key or tap to exit",
   "gameExit": "exit",
   "gameOver": "Game over: Enter or a tap to play again",
@@ -161,5 +166,6 @@
   "qrSite": "Scan to open",
   "qrVcard": "Scan to save my contact",
   "qrLoadFailed": "The QR code generator could not be loaded, check the connection and try again",
-  "qrUsage": "Type qr for the site address or $vcard for my contacts"
+  "qrUsage": "Type qr for the site address or $vcard for my contacts",
+  "paletteOpenTitle": "search commands and files ($shortcut)"
 }

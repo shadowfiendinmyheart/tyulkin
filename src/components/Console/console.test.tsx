@@ -777,6 +777,104 @@ describe("quick commands (TASK-58)", () => {
   });
 });
 
+describe("command palette (TASK-90)", () => {
+  const queryPalette = () => screen.queryByRole("dialog", { name: eng.paletteLabel });
+  const getSearch = () => within(queryPalette()!).getByRole("combobox");
+  const getOptions = () =>
+    within(queryPalette()!)
+      .queryAllByRole("option")
+      .map((option) => option.textContent);
+  const getSelected = () =>
+    within(queryPalette()!)
+      .queryAllByRole("option")
+      .find((option) => option.getAttribute("aria-selected") === "true");
+
+  it("opens by Ctrl+K, runs the best match by Enter into the history, focus back in the line", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("{Control>}k{/Control}");
+    expect(document.activeElement).toBe(getSearch());
+    // nothing is selected until something is typed: Enter does nothing
+    expect(getSelected()).toBeUndefined();
+    await user.keyboard("{Enter}");
+    expect(queryPalette()).not.toBeNull();
+
+    await user.keyboard("cont");
+    expect(getSelected()?.textContent).toBe(`contacts${eng.helpContacts}`);
+    expect(getSearch().getAttribute("aria-activedescendant")).toBe(getSelected()?.id);
+    await user.keyboard("{Enter}");
+    expect(queryPalette()).toBeNull();
+    expect(getLogs().slice(-2)[0]).toBe("visitor@tyulkin ~ ❯ contacts");
+    expect(document.activeElement).toBe(input);
+    await user.keyboard("{ArrowUp}");
+    expect(input.value).toBe("contacts");
+  });
+
+  it("opens on a non-Latin layout by the physical key and closes by Ctrl+K, Esc or a click beside", async () => {
+    const { user, input } = renderConsole();
+    fireEvent.keyDown(input, { key: "л", code: "KeyK", ctrlKey: true });
+    expect(queryPalette()).not.toBeNull();
+    await user.keyboard("{Control>}k{/Control}");
+    expect(queryPalette()).toBeNull();
+
+    await user.keyboard("{Control>}k{/Control}");
+    await user.keyboard("{Escape}");
+    expect(queryPalette()).toBeNull();
+    expect(document.activeElement).toBe(input);
+
+    await user.keyboard("{Control>}k{/Control}");
+    await user.click(queryPalette()!.parentElement!);
+    expect(queryPalette()).toBeNull();
+  });
+
+  it("keeps the typed keys in the search field, the command line stays as it was", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("he");
+    await user.keyboard("{Control>}k{/Control}");
+    await user.keyboard("ab");
+    expect(getSearch()).toHaveProperty("value", "ab");
+    expect(document.activeElement).toBe(getSearch());
+    await user.keyboard("{Escape}");
+    expect(input.value).toBe("he");
+  });
+
+  it("moves the selection by arrows and Tab, runs a clicked option, finds files and descriptions", async () => {
+    const { user } = renderConsole();
+    await user.click(screen.getByRole("button", { name: eng.paletteOpen }));
+    await user.keyboard("about");
+    expect(getOptions()[0]).toBe(`about${eng.helpAbout}`);
+    expect(getOptions()).toContain(`cat ~/about.md${eng.helpCat}`);
+    await user.keyboard("{ArrowDown}");
+    expect(getSelected()?.textContent).toBe(getOptions()[1]);
+    await user.keyboard("{ArrowUp}{ArrowUp}");
+    expect(getSelected()?.textContent).toBe(getOptions().at(-1));
+    await user.keyboard("{Tab}");
+    expect(getSelected()?.textContent).toBe(getOptions()[0]);
+    expect(document.activeElement).toBe(getSearch());
+
+    await user.clear(getSearch());
+    await user.keyboard("zzzz");
+    expect(getOptions()).toEqual([]);
+    // a click anywhere in the palette keeps the keys in the search field, not in the line beneath
+    await user.click(within(queryPalette()!).getByText(eng.paletteEmpty));
+    expect(document.activeElement).toBe(getSearch());
+
+    await user.clear(getSearch());
+    // a word of the description, not of the command
+    await user.keyboard("words");
+    expect(getOptions()).toEqual([`about${eng.helpAbout}`]);
+    await user.click(within(queryPalette()!).getByRole("option"));
+    expect(queryPalette()).toBeNull();
+    expect(getLogs().slice(-2)[0]).toBe("visitor@tyulkin ~ ❯ about");
+  });
+
+  it("offers the commands of the page", async () => {
+    const { user } = renderConsole("/settings");
+    await user.keyboard("{Control>}k{/Control}");
+    await user.keyboard("stw");
+    expect(getOptions()[0]).toBe(`set theme White${eng.helpSetTheme}`);
+  });
+});
+
 describe("extra keys (TASK-93)", () => {
   const queryRow = () => screen.queryByRole("group", { name: eng.extraKeysLabel });
   const getKey = (label: string) => within(queryRow()!).getByRole("button", { name: label });

@@ -186,6 +186,14 @@ front matter `title`, `date` (`YYYY-MM-DD`), необязательными `des
 ([`Input/hooks/useReverseSearch.ts`](src/components/Input/hooks/useReverseSearch.ts)). `echo` помечен
 `linkable: false`: deep link его не выполняет.
 
+**Палитра команд** ([`components/CommandPalette`](src/components/CommandPalette/index.tsx)).
+`Ctrl+K` (`⌘K`) или лупа в верхней панели открывают нечёткий поиск по командам страницы (с их
+`params`: `set theme White`) и по файлам и каталогам ФС от `~` (`cat ~/about.md`, `cd ~/projects`) с
+описаниями из словаря ([`commandHandlers/palette.ts`](src/commandHandlers/palette.ts)): символы
+запроса ищутся по порядку, выше — подряд и с начала слова; не нашлось в командах — ищется по словам
+описания. ↑/↓ и Tab выбирают, Enter или клик выполняют выбранную команду как введённую (попадает в
+историю), Esc, `Ctrl+K` или клик мимо — закрывают, фокус возвращается туда, где был.
+
 **Виртуальная файловая система** ([`commandHandlers/fileSystem.ts`](src/commandHandlers/fileSystem.ts)).
 Домашний каталог `~` (`/home/visitor`) — главная страница; разделы резюме — файлы (`about.md`,
 `contacts.md`, `education.md`, `experience.md`, `skills.md`, `projects/README.md`), их содержимое —

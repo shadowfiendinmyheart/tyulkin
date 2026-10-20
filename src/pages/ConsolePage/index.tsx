@@ -2,6 +2,7 @@ import React from "react";
 import cn from "clsx";
 import { Navigate, useLocation } from "react-router";
 import AchievementToast from "../../components/AchievementToast";
+import CommandPalette, { PaletteButton, usePaletteShortcut } from "../../components/CommandPalette";
 import Console from "../../components/Console";
 import DeepLinkCommand from "../../components/DeepLinkCommand";
 import ExtraKeys from "../../components/ExtraKeys";
@@ -171,6 +172,14 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
   // the command line, for the extra keys row under the console (TASK-93)
   const [inputElement, setInputElement] = React.useState<HTMLInputElement | null>(null);
 
+  // the command palette (TASK-90): Ctrl+K or the magnifier in the toolbar
+  const [isPaletteOpen, setIsPaletteOpen] = React.useState(false);
+  const openPalette = React.useCallback(() => setIsPaletteOpen(true), []);
+  const closePalette = React.useCallback(() => setIsPaletteOpen(false), []);
+  usePaletteShortcut(React.useCallback(() => setIsPaletteOpen((isOpen) => !isOpen), []));
+  // the matrix rain and the games take every key: the palette would get none
+  const isOverlayShown = state.isMatrixShown || Boolean(state.game);
+
   const isCrt = state.crtMode === "on";
   const exitMatrix = React.useCallback(() => dispatch(setMatrixShown(false)), [dispatch]);
 
@@ -184,6 +193,7 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
     <WithCommandHandler route={route}>
       <div className={styles.page}>
         <nav className={cn(styles.toolbar, isCrt && styles.crtGlow)}>
+          <PaletteButton onClick={openPalette} disabled={isOverlayShown} />
           <ViewSwitch to="gui" quiet />
         </nav>
         <div className={cn(styles.wrapper, isCrt && styles.crtGlow)} ref={wrapperRef}>
@@ -192,6 +202,7 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
         <ExtraKeys input={inputElement} />
       </div>
       <DeepLinkCommand />
+      {isPaletteOpen && !isOverlayShown && <CommandPalette onClose={closePalette} />}
       {state.isMatrixShown && <MatrixRain onExit={exitMatrix} />}
       {state.game && <Game key={state.game} game={state.game} />}
       <AchievementToast />

@@ -1,0 +1,133 @@
+// the magnifier in the toolbar: quiet like the view switch next to it until hovered
+.button {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 1ch;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: none;
+  font: inherit;
+  color: var(--muted-color);
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+  }
+
+  @media print {
+    display: none;
+  }
+}
+
+.icon {
+  width: 1em;
+  height: 1em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+// a comfortable tap target on touch screens
+@media (pointer: coarse) {
+  .button {
+    min-width: 36px;
+    min-height: 36px;
+    justify-content: center;
+  }
+}
+
+// over the console like the matrix rain and the games, under the CRT glass
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 10vh var(--space-4) var(--space-4);
+  background-color: color-mix(in srgb, var(--bg-color) 70%, transparent);
+}
+
+.palette {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 70ch);
+  max-height: 100%;
+  border: 1px solid var(--accent-color);
+  border-radius: 4px;
+  background-color: var(--bg-color);
+  box-shadow: 0 2px var(--space-3) color-mix(in srgb, var(--accent-color) 30%, transparent);
+}
+
+.search {
+  flex: none;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  border-bottom: 1px solid var(--muted-color);
+  background: none;
+  font: inherit;
+  color: var(--text-color);
+  outline: none;
+
+  &::placeholder {
+    color: var(--muted-color);
+  }
+}
+
+.list {
+  min-height: 0;
+  margin: 0;
+  padding: var(--space-1) 0;
+  overflow-y: auto;
+  list-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted-color) transparent;
+}
+
+.option {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 2ch;
+  padding: 2px var(--space-3);
+  cursor: pointer;
+}
+
+.command {
+  white-space: nowrap;
+  color: var(--accent-color);
+}
+
+.description {
+  color: var(--muted-color);
+}
+
+.match {
+  background: none;
+  color: inherit;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+// inverted like the block caret and the completion menu
+.selected {
+  background-color: var(--text-color);
+  color: var(--bg-color);
+
+  .command,
+  .description {
+    color: inherit;
+  }
+}
+
+.empty {
+  margin: 0;
+  padding: 0 var(--space-3);
+  color: var(--muted-color);
+
+  &:not(:empty) {
+    padding-block: var(--space-2);
+  }
+}

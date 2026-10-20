@@ -1,4 +1,5 @@
 import { HighlightKind } from "../commandHandlers/highlight";
+import { PaletteEntry } from "../commandHandlers/palette";
 import { CommandDescriptionKeys } from "../localization/interfaces";
 
 export interface HandlerContextType {
@@ -11,4 +12,6 @@ export interface HandlerContextType {
   describeCompletion: (completion: string) => CommandDescriptionKeys | undefined;
   // the kind of each char of the typed line, for fish-like highlighting (TASK-86)
   highlight: (line: string) => HighlightKind[];
+  // what the command palette (Ctrl+K, TASK-90) offers on the page
+  paletteEntries: PaletteEntry[];
 }

@@ -30,6 +30,12 @@ export interface CommonDictionary {
   quickCommandsLabel: string;
   // accessible name of the extra keys row over the virtual keyboard (TASK-93)
   extraKeysLabel: string;
+  // the command palette (TASK-90): its button, the dialog, the search field, the list, no results
+  paletteOpen: string;
+  paletteLabel: string;
+  palettePlaceholder: string;
+  paletteResultsLabel: string;
+  paletteEmpty: string;
   // shown over the `matrix` digital rain
   matrixExit: string;
   // the mini-games (TASK-66): the exit button, the end of a game, a chunk that didn't load
@@ -225,6 +231,8 @@ export interface DictionaryWithArgs {
   manNotFound: string;
   // `qr` with an unknown argument, $vcard is a command placeholder
   qrUsage: string;
+  // the tooltip of the command palette button (TASK-90): $shortcut is Ctrl+K or ⌘K
+  paletteOpenTitle: string;
 }
 
 export type Dictionary = CommonDictionary & CommandDescriptionDictionary & DictionaryWithArgs;
@@ -292,6 +300,7 @@ type AskTooLongLocale = LocaleWithArgsGenerator<"askTooLong", "max">;
 type ManUsageLocale = LocaleWithArgsGenerator<"manUsage", "man">;
 type ManNotFoundLocale = LocaleWithArgsGenerator<"manNotFound", "command">;
 type QrUsageLocale = LocaleWithArgsGenerator<"qrUsage", "vcard">;
+type PaletteOpenTitleLocale = LocaleWithArgsGenerator<"paletteOpenTitle", "shortcut">;
 type NeofetchLocale = LocaleWithArgsGenerator<
   "neofetch",
   "uptime" | "theme" | "caret" | "language"
@@ -343,7 +352,8 @@ export type LocaleWithArgs =
   | AskTooLongLocale
   | ManUsageLocale
   | ManNotFoundLocale
-  | QrUsageLocale;
+  | QrUsageLocale
+  | PaletteOpenTitleLocale;
 export type LocaleParams = CommonLocale | LocaleWithArgs;
 
 export const languages = ["ru", "eng"] as const;

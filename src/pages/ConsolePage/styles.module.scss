@@ -15,11 +15,14 @@
 $gutter-x: 2ch;
 $gutter-bottom: 1ch;
 
-// the terminal ⇄ gui switch in the top corner, quiet until hovered (ViewSwitch `quiet`)
+// the terminal ⇄ gui switch in the top corner, quiet until hovered (ViewSwitch `quiet`), and the
+// command palette button (TASK-90)
 .toolbar {
   display: flex;
   flex: none;
   justify-content: flex-end;
+  align-items: center;
+  gap: 1ch;
   padding: 4px $gutter-x 0;
 }
 

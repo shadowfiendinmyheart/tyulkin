@@ -22,6 +22,7 @@ import { CommandContext } from "./interfaces";
 import { isExistingPath } from "./fileSystem";
 import { highlightLine } from "./highlight";
 import { findHelpTarget, getManPage } from "./man";
+import { getPaletteEntries } from "./palette";
 import { findSecret } from "./secrets";
 import { expandHistory, grep, parsePipeline } from "./shell";
 import { getAllCommandsWithParams, getSuggestion, separateCommand } from "./utils";
@@ -215,9 +216,14 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ route, children
     [availableCommands],
   );
 
+  const paletteEntries = React.useMemo(
+    () => getPaletteEntries(availableCommands),
+    [availableCommands],
+  );
+
   const handlerContextValue = React.useMemo(
-    () => ({ executeCommand, allCommands, describeCompletion, highlight }),
-    [executeCommand, allCommands, describeCompletion, highlight],
+    () => ({ executeCommand, allCommands, describeCompletion, highlight, paletteEntries }),
+    [executeCommand, allCommands, describeCompletion, highlight, paletteEntries],
   );
 
   return <HandlerContext.Provider value={handlerContextValue}>{children}</HandlerContext.Provider>;

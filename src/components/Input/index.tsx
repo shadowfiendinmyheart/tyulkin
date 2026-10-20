@@ -19,7 +19,7 @@ import { useThemePreview } from "./hooks/useThemePreview";
 import { useT } from "../../context/localizationContext";
 import { withNode } from "../../store/console/logNodes";
 import { isClickingKey, playKeyClick } from "../../utils/keySound";
-import { isPlainKey } from "../../utils";
+import { isCtrlLetter, isPlainKey } from "../../utils";
 import { getAutosuggestion } from "../../commandHandlers/utils";
 import { HighlightKind } from "../../commandHandlers/highlight";
 import { THEME_ORIGIN_ATTRIBUTE } from "../../utils/themeTransition";
@@ -31,16 +31,9 @@ import styles from "./styles.module.scss";
 const readCaretPosition = (input: HTMLInputElement) =>
   (input.selectionEnd ?? input.value.length) - 1;
 
-// terminal-style Ctrl+<letter>; Shift/Alt/Meta combos are left to the browser
-// (Ctrl+Shift+C is DevTools, Ctrl+Alt is AltGr on Windows).
-// On a non-Latin layout e.key is a local letter ("д"), so the physical key decides
-const isCtrlShortcut = (e: React.KeyboardEvent, letter: string) => {
-  if (!e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return false;
-  if (e.nativeEvent.isComposing) return false; // IME composition owns the keys
-  const key = e.key.toLowerCase();
-  if (/^[a-z]$/.test(key)) return key === letter;
-  return e.code === `Key${letter.toUpperCase()}`;
-};
+// terminal-style Ctrl+<letter>, Meta combos are left to the browser too
+const isCtrlShortcut = (e: React.KeyboardEvent, letter: string) =>
+  isCtrlLetter(e.nativeEvent, letter);
 
 // text selected on the page (in logs); the input's own selection is always collapsed
 const isTextSelected = () => Boolean(window.getSelection()?.toString());
@@ -278,12 +271,14 @@ const Input: React.FC<InputProps> = ({ onInputElement }) => {
       if (isTextSelected()) return; // don't break copying text from logs
       // a link in logs opens a new tab, a command button prints its output: don't pop up
       // the virtual keyboard and scroll to the prompt
-      if (e.target instanceof Element && e.target.closest("a, button")) return;
+      // a dialog (the command palette, TASK-90) keeps the focus
+      if (e.target instanceof Element && e.target.closest("a, button, [role='dialog']")) return;
       autoFocusEventHandler();
     };
 
     // focusing the input drops the page selection: keep it for Ctrl/Cmd+C on selected logs
     const keyDownFocusEventHandler = (e: KeyboardEvent) => {
+      if (e.target instanceof Element && e.target.closest("[role='dialog']")) return;
       if ((e.ctrlKey || e.metaKey) && isTextSelected()) return;
       // Enter/Space on a focused command button press it, Enter on a link follows it
       if (e.target instanceof HTMLButtonElement && (e.key === "Enter" || e.key === " ")) return;

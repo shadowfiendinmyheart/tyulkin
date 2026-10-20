@@ -175,6 +175,26 @@ test("walks the virtual file system, the directory is in the URL (TASK-60)", asy
   await expect(page.getByRole("log")).toContainText(eng.projectsWelcome);
 });
 
+test("runs a command found in the palette by Ctrl+K or the magnifier (TASK-90)", async ({
+  page,
+}) => {
+  await open(page);
+  // the browser's own Ctrl+K (its search field) is not taken
+  await page.keyboard.press("Control+k");
+  const palette = page.getByRole("dialog", { name: eng.paletteLabel });
+  await expect(palette.getByRole("combobox")).toBeFocused();
+  await page.keyboard.type("cd proj");
+  await page.keyboard.press("Enter");
+  await expect(palette).toBeHidden();
+  await expect(page).toHaveURL(`${BASE_PATH}projects`);
+  await expect(lastLog(page)).toHaveText(eng.projectsWelcome);
+
+  await page.getByRole("button", { name: eng.paletteOpen }).click();
+  await page.keyboard.type("about");
+  await palette.getByRole("option", { name: "cat ~/about.md" }).click();
+  await expect(lastLog(page)).toContainText("Ivan Tyulkin");
+});
+
 test("opens a page by a direct link (SPA fallback)", async ({ page }) => {
   // the static host has no /settings file and answers with 404.html, which is the same app
   const response = await open(page, "settings");
