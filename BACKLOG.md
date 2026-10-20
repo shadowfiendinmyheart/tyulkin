@@ -146,7 +146,7 @@
 |---|---|---|---|---|
 | ✅ TASK-86 | P1 | M | **Подсветка ввода как в fish** | Известная команда — зелёным, неизвестная — красным, аргументы приглушённые, существующие пути подчёркнуты. Цвет ставится на каждый `Char`. Цвета — из TASK-80. [Input](src/components/Input/index.tsx) |
 | ✅ TASK-87 | P1 | S | **Автоподсказки как в fish** | После каретки серым дописывается вариант из истории или реестра; `→`/`End` принимают его. Не путать с подсказкой «введите help» (`.hint`). [Input](src/components/Input) |
-| TASK-88 | P2 | M | **Меню дополнения как в zsh** | Tab открывает сетку вариантов с описаниями (`descriptionKey`), выбор стрелками, Enter подставляет вариант; `aria-activedescendant`. Заменяет плоский [CommandsHint](src/components/CommandsHint/index.tsx). |
+| ✅ TASK-88 | P2 | M | **Меню дополнения как в zsh** | Tab открывает сетку вариантов с описаниями (`descriptionKey`), выбор стрелками, Enter подставляет вариант; `aria-activedescendant`. Заменяет плоский [CommandsHint](src/components/CommandsHint/index.tsx). |
 | ✅ TASK-89 | P2 | S | **`man <cmd>` и `--help`** | Страница в формате man (NAME / SYNOPSIS / DESCRIPTION / ALIASES / PARAMS), собирается из реестра команд; заголовки берутся из словарей. [commandHandlers/interfaces.ts](src/commandHandlers/interfaces.ts) |
 | TASK-90 | P2 | M | **Палитра команд (Ctrl+K)** | Нечёткий поиск по командам и файлам ФС с описаниями; кнопка-лупа для мобильных и не-технарей. Выбранная команда выполняется как введённая (попадает в историю). |
 | TASK-91 | P3 | S | **Сочетания readline** | Ctrl+A/E/U/K/W, Alt+B/F; Ctrl+D на пустой строке = `exit` (TASK-98). [Input/index.tsx](src/components/Input/index.tsx) |

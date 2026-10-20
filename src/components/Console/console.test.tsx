@@ -168,6 +168,88 @@ describe("console", () => {
     expect(input.value).toBe("education");
     expect(getHint()).toEqual([]);
   });
+
+  describe("completion menu (TASK-88)", () => {
+    const getMenu = () => screen.queryByRole("listbox", { name: eng.completionsLabel });
+    const getSelected = () =>
+      screen.queryAllByRole("option", { selected: true }).map((option) => option.id);
+
+    it("lists the options with the descriptions of their commands", async () => {
+      const { user, input } = renderConsole();
+      await user.keyboard("ex{Tab}");
+      const options = within(getMenu()!).getAllByRole("option");
+      expect(options.map((option) => option.textContent)).toEqual([
+        `experience-- ${eng.helpExperience}`,
+        `exit-- ${eng.helpMenu}`,
+      ]);
+      expect(input.getAttribute("aria-controls")).toBe(getMenu()!.id);
+      // nothing is selected until the next Tab or arrow
+      expect(getSelected()).toEqual([]);
+      expect(input.hasAttribute("aria-activedescendant")).toBe(false);
+    });
+
+    it("selects by arrows and Tab, Enter accepts without running", async () => {
+      const { user, input } = renderConsole();
+      await user.keyboard("ex{Tab}{ArrowDown}");
+      expect(input.value).toBe("experience");
+      const [experience, exit] = within(getMenu()!).getAllByRole("option");
+      expect(getSelected()).toEqual([experience.id]);
+      expect(input.getAttribute("aria-activedescendant")).toBe(experience.id);
+
+      await user.keyboard("{ArrowDown}");
+      expect(input.value).toBe("exit");
+      expect(input.getAttribute("aria-activedescendant")).toBe(exit.id);
+      // the selection wraps around both ways
+      await user.keyboard("{Tab}");
+      expect(input.value).toBe("experience");
+      await user.keyboard("{ArrowUp}");
+      expect(input.value).toBe("exit");
+      await user.keyboard("{Shift>}{Tab}{/Shift}");
+      expect(input.value).toBe("experience");
+
+      const logsCount = getLogs().length;
+      await user.keyboard("{Enter}");
+      expect(input.value).toBe("experience");
+      expect(getMenu()).toBeNull();
+      expect(input.hasAttribute("aria-activedescendant")).toBe(false);
+      expect(getLogs()).toHaveLength(logsCount);
+
+      // the menu is closed: the next Enter runs the line
+      await user.keyboard("{Enter}");
+      expect(getLogs().length).toBeGreaterThan(logsCount);
+    });
+
+    it("Esc puts the typed line back, typing closes the menu", async () => {
+      const { user, input } = renderConsole();
+      await user.keyboard("ex{Tab}{Tab}{Escape}");
+      expect(input.value).toBe("ex");
+      expect(getMenu()).toBeNull();
+
+      await user.keyboard("{Tab}{Tab}p");
+      expect(input.value).toBe("experiencep");
+      expect(getMenu()).toBeNull();
+    });
+
+    it("closes when the line is replaced from elsewhere", async () => {
+      const { user, input } = renderConsole();
+      await user.keyboard("help{Enter}ex{Tab}{ArrowDown}");
+      expect(getMenu()).not.toBeNull();
+      // history by Ctrl+↑ swaps the line: the options no longer match it
+      await user.keyboard("{Control>}{ArrowUp}{/Control}");
+      expect(input.value).toBe("help");
+      expect(getMenu()).toBeNull();
+      expect(input.hasAttribute("aria-activedescendant")).toBe(false);
+    });
+
+    it("a click on an option puts it in the line", async () => {
+      const { user, input } = renderConsole();
+      await user.keyboard("ex{Tab}");
+      await user.click(within(getMenu()!).getByRole("option", { name: /^exit/ }));
+      expect(input.value).toBe("exit");
+      expect(getMenu()).toBeNull();
+      expect(document.activeElement).toBe(input);
+    });
+  });
 });
 
 describe("neofetch (TASK-54)", () => {

@@ -209,9 +209,15 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ route, children
     [availableCommands, hasHistory, route],
   );
 
+  // completions come from allCommands; one that separateCommand doesn't match gets no description
+  const describeCompletion = React.useCallback<HandlerContextType["describeCompletion"]>(
+    (completion) => separateCommand(availableCommands, completion)?.command.descriptionKey,
+    [availableCommands],
+  );
+
   const handlerContextValue = React.useMemo(
-    () => ({ executeCommand, allCommands, highlight }),
-    [executeCommand, allCommands, highlight],
+    () => ({ executeCommand, allCommands, describeCompletion, highlight }),
+    [executeCommand, allCommands, describeCompletion, highlight],
   );
 
   return <HandlerContext.Provider value={handlerContextValue}>{children}</HandlerContext.Provider>;

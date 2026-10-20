@@ -1,7 +1,6 @@
 import React from "react";
 import Logs from "../Logs";
 import Input from "../Input";
-import CommandsHint from "../CommandsHint";
 import QuickCommands from "../QuickCommands";
 import styles from "./styles.module.scss";
 
@@ -22,7 +21,6 @@ const Console: React.FC<ConsoleProps> = ({ onInputElement }) => {
       <Logs onTypingProgress={scrollToBottom} />
       <QuickCommands />
       <Input onInputElement={onInputElement} />
-      <CommandsHint />
     </div>
   );
 };

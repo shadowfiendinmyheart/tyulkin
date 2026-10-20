@@ -1,14 +1,65 @@
 .commandsHint {
   margin-top: 5px;
+}
+
+// zsh-like completion menu (TASK-88): a row per option, the descriptions aligned in a column
+.menu {
   display: grid;
-  grid-auto-columns: max-content;
-  column-gap: 30px;
-  grid-template-columns: repeat(auto-fit, minmax(200px, auto));
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: 2ch;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.option {
+  display: grid;
+  grid-column: 1 / -1;
+  // without subgrid the descriptions are not aligned, but still next to the options
+  grid-template-columns: max-content minmax(0, 1fr);
+  grid-template-columns: subgrid;
+  column-gap: inherit;
+  cursor: pointer;
 }
 
 .command {
   white-space: nowrap;
-  flex-grow: 1;
+}
+
+.description {
+  color: var(--muted-color);
+}
+
+// on a phone a long option would squeeze its description into a narrow column:
+// the description goes under the option, indented
+@media (max-width: 520px) {
+  .menu {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .description {
+    padding-left: 2ch;
+  }
+}
+
+// inverted like the block caret
+.selected {
+  background-color: var(--text-color);
+  color: var(--bg-color);
+
+  .description {
+    color: inherit;
+  }
+}
+
+// read by screen readers only: the menu itself is shown
+.announcement {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 // empty, but not display: none — a live region must stay in the accessibility tree

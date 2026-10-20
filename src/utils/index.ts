@@ -13,6 +13,10 @@ export const prefersReducedMotion = () =>
 export const normalizeInput = (userCommand: string) =>
   userCommand.trim().replace(/\s+/g, " ").toLowerCase();
 
+// a key pressed alone: no modifier, not inside an IME composition
+export const isPlainKey = (e: React.KeyboardEvent) =>
+  !e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey && !e.nativeEvent.isComposing;
+
 // the browser's own keys (reload, DevTools, back, fullscreen): kept working under a full-page overlay
 export const isBrowserShortcut = (e: KeyboardEvent) =>
   e.ctrlKey || e.metaKey || e.altKey || /^F\d{1,2}$/.test(e.key);

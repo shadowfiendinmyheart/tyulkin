@@ -24,6 +24,8 @@ export interface CommonDictionary {
   loading: string;
   // accessible name of the command line input
   inputLabel: string;
+  // accessible name of the Tab completion menu (TASK-88)
+  completionsLabel: string;
   // accessible name of the quick command chips over the command line
   quickCommandsLabel: string;
   // accessible name of the extra keys row over the virtual keyboard (TASK-93)

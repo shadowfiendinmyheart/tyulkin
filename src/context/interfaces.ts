@@ -1,4 +1,5 @@
 import { HighlightKind } from "../commandHandlers/highlight";
+import { CommandDescriptionKeys } from "../localization/interfaces";
 
 export interface HandlerContextType {
   // runs a command as if it was typed and entered: history, echo, output
@@ -6,6 +7,8 @@ export interface HandlerContextType {
   // showing their own text (`cowsay …`), and secrets are found by the visitor only
   executeCommand: (command: string, options?: { fromLink?: boolean }) => void;
   allCommands: string[];
+  // the description of the command a Tab completion runs, for the completion menu (TASK-88)
+  describeCompletion: (completion: string) => CommandDescriptionKeys | undefined;
   // the kind of each char of the typed line, for fish-like highlighting (TASK-86)
   highlight: (line: string) => HighlightKind[];
 }

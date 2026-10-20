@@ -2,6 +2,7 @@ import React from "react";
 import cn from "clsx";
 import Char from "../Char";
 import CommandButton from "../CommandButton";
+import CommandsHint, { getCommandsHintOptionId } from "../CommandsHint";
 import { useConsoleContext } from "../../context/consoleContext";
 import { useHandlerContext } from "../../context/handlerContext";
 import {
@@ -17,6 +18,7 @@ import { useReverseSearch } from "./hooks/useReverseSearch";
 import { useT } from "../../context/localizationContext";
 import { withNode } from "../../store/console/logNodes";
 import { isClickingKey, playKeyClick } from "../../utils/keySound";
+import { isPlainKey } from "../../utils";
 import { getAutosuggestion } from "../../commandHandlers/utils";
 import { HighlightKind } from "../../commandHandlers/highlight";
 
@@ -89,6 +91,7 @@ const Input: React.FC<InputProps> = ({ onInputElement }) => {
   const t = useT();
   const hintId = React.useId();
   const searchMatchId = React.useId();
+  const commandsHintId = React.useId();
 
   // programmatic line replacement (Tab autocomplete, history): the caret goes to the end
   const replaceInputValue = (value: string) => {
@@ -96,7 +99,13 @@ const Input: React.FC<InputProps> = ({ onInputElement }) => {
     setCaretToEndRequest((request) => request + 1);
   };
 
-  const { commandsHintHandleKeyDownInput } = useCommandsHint(inputValue, replaceInputValue);
+  const {
+    commandsHintHandleKeyDownInput,
+    commandsHintOptions,
+    commandsHintSelected,
+    pickCommandsHintOption,
+    closeCommandsHint,
+  } = useCommandsHint(inputValue, replaceInputValue);
   const { historyCommandsHandleKeyDownInput, resetHistoryBrowsing } = useHistoryCommands(
     inputValue,
     replaceInputValue,
@@ -129,6 +138,13 @@ const Input: React.FC<InputProps> = ({ onInputElement }) => {
     // batched with the value (virtual keyboards send key "Unidentified", so keys can't be relied on)
     syncCaretPosition();
     resetHistoryBrowsing();
+    closeCommandsHint();
+  };
+
+  // a click on a completion is an edit of the line, as a key handled by the menu is
+  const pickCompletion = (index: number) => {
+    resetHistoryBrowsing();
+    pickCommandsHintOption(index);
   };
 
   // programmatic value changes (Enter, Tab autocomplete, history) and caret-to-end requests
@@ -198,17 +214,14 @@ const Input: React.FC<InputProps> = ({ onInputElement }) => {
 
     const isContinue = commandsHintHandleKeyDownInput(e);
     if (!isContinue) {
-      // Tab autocomplete replaced the line
+      // the completion menu handled the key: the line may be replaced
       resetHistoryBrowsing();
       return;
     }
 
     // → and End accept the autosuggestion: an edit, so the line becomes the new draft
-    const isPlainKey =
-      !e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey && !e.nativeEvent.isComposing;
-    if (autosuggestion && isPlainKey && (e.key === "ArrowRight" || e.key === "End")) {
+    if (autosuggestion && isPlainKey(e) && (e.key === "ArrowRight" || e.key === "End")) {
       e.preventDefault();
-      consoleDispatch(setCommandsHint([])); // the listed Tab options no longer match the line
       resetHistoryBrowsing();
       replaceInputValue(autosuggestion);
       return;
@@ -289,99 +302,122 @@ const Input: React.FC<InputProps> = ({ onInputElement }) => {
     };
   }, [syncCaretPosition]);
 
+  // the command line stays in view, and an open completion menu under it with its selected option
   React.useEffect(() => {
     if (consoleInputRef.current) {
       consoleInputRef.current.scrollIntoView({ block: "end" });
     }
-  }, [inputValue, logs]);
+    if (commandsHintOptions.length === 0) return;
+    document.getElementById(commandsHintId)?.scrollIntoView({ block: "end" });
+    if (commandsHintSelected !== -1) {
+      document
+        .getElementById(getCommandsHintOptionId(commandsHintId, commandsHintSelected))
+        ?.scrollIntoView({ block: "nearest" });
+    }
+  }, [inputValue, logs, commandsHintOptions, commandsHintSelected, commandsHintId]);
 
   return (
-    <div className={styles.wrapper} ref={consoleInputRef}>
-      <span className={styles.locator}>
-        {reverseSearch.isSearching ? (
-          t({ key: reverseSearch.isFailing ? "reverseSearchFailing" : "reverseSearch" })
-        ) : (
-          <>
-            <span className={styles.promptUser}>{promptSegments.user}</span>{" "}
-            <span className={styles.promptDirectory}>{promptSegments.directory}</span>{" "}
-            <span className={styles.promptSymbol}>{promptSegments.symbol}</span>
-          </>
-        )}
-      </span>
-      <input
-        className={styles.nativeInput}
-        type="text"
-        aria-label={t({ key: reverseSearch.isSearching ? "reverseSearchLabel" : "inputLabel" })}
-        aria-describedby={
-          isHintShown ? hintId : reverseSearch.isSearching ? searchMatchId : undefined
-        }
-        value={inputValue}
-        onChange={handleChangeInput}
-        onKeyDown={handleKeyDownInput}
-        // React fires onSelect on any selection change: arrows, Home/End, Delete, click, paste
-        onSelect={syncCaretPosition}
-        autoFocus
-        autoComplete="off"
-        autoCapitalize="off"
-        autoCorrect="off"
-        spellCheck={false}
-        enterKeyHint="send"
-        ref={setInputRef}
-      />
-      <div className={cn(styles.chars, autosuggestionRest && styles.charsAutosuggesting)}>
-        {caretPosition === -1 || inputValue.length === 0 ? (
-          <Char isCaret={true} className={styles.zeroChar} />
-        ) : undefined}
-        {inputValue.split("").map((char, index) => (
-          <Char
-            // characters repeat and have no identity of their own: the position is the key
-            // eslint-disable-next-line @eslint-react/no-array-index-key
-            key={index}
-            isCaret={caretPosition === index}
-            className={highlightClassName[highlightKinds[index] ?? "text"]}
-          >
-            {char}
-          </Char>
-        ))}
-        {autosuggestionRest && (
-          // the native input holds the line for screen readers, the suggestion is visual only;
-          // its first char is a Char: the block caret over it inverts it like a typed one
-          <>
-            <Char isCaret={false} className={styles.autosuggestion} aria-hidden="true">
-              {autosuggestionRest[0]}
+    <>
+      <div className={styles.wrapper} ref={consoleInputRef}>
+        <span className={styles.locator}>
+          {reverseSearch.isSearching ? (
+            t({ key: reverseSearch.isFailing ? "reverseSearchFailing" : "reverseSearch" })
+          ) : (
+            <>
+              <span className={styles.promptUser}>{promptSegments.user}</span>{" "}
+              <span className={styles.promptDirectory}>{promptSegments.directory}</span>{" "}
+              <span className={styles.promptSymbol}>{promptSegments.symbol}</span>
+            </>
+          )}
+        </span>
+        <input
+          className={styles.nativeInput}
+          type="text"
+          aria-label={t({ key: reverseSearch.isSearching ? "reverseSearchLabel" : "inputLabel" })}
+          aria-describedby={
+            isHintShown ? hintId : reverseSearch.isSearching ? searchMatchId : undefined
+          }
+          // the completion menu (TASK-88): the keys stay here, the selected option is pointed at
+          aria-controls={commandsHintOptions.length > 0 ? commandsHintId : undefined}
+          aria-activedescendant={
+            commandsHintSelected === -1
+              ? undefined
+              : getCommandsHintOptionId(commandsHintId, commandsHintSelected)
+          }
+          value={inputValue}
+          onChange={handleChangeInput}
+          onKeyDown={handleKeyDownInput}
+          // React fires onSelect on any selection change: arrows, Home/End, Delete, click, paste
+          onSelect={syncCaretPosition}
+          autoFocus
+          autoComplete="off"
+          autoCapitalize="off"
+          autoCorrect="off"
+          spellCheck={false}
+          enterKeyHint="send"
+          ref={setInputRef}
+        />
+        <div className={cn(styles.chars, autosuggestionRest && styles.charsAutosuggesting)}>
+          {caretPosition === -1 || inputValue.length === 0 ? (
+            <Char isCaret={true} className={styles.zeroChar} />
+          ) : undefined}
+          {inputValue.split("").map((char, index) => (
+            <Char
+              // characters repeat and have no identity of their own: the position is the key
+              // eslint-disable-next-line @eslint-react/no-array-index-key
+              key={index}
+              isCaret={caretPosition === index}
+              className={highlightClassName[highlightKinds[index] ?? "text"]}
+            >
+              {char}
             </Char>
-            {autosuggestionRest.length > 1 && (
-              <span
-                className={cn(styles.autosuggestion, styles.autosuggestionRest)}
-                aria-hidden="true"
-              >
-                {autosuggestionRest.slice(1)}
-              </span>
-            )}
-          </>
+          ))}
+          {autosuggestionRest && (
+            // the native input holds the line for screen readers, the suggestion is visual only;
+            // its first char is a Char: the block caret over it inverts it like a typed one
+            <>
+              <Char isCaret={false} className={styles.autosuggestion} aria-hidden="true">
+                {autosuggestionRest[0]}
+              </Char>
+              {autosuggestionRest.length > 1 && (
+                <span
+                  className={cn(styles.autosuggestion, styles.autosuggestionRest)}
+                  aria-hidden="true"
+                >
+                  {autosuggestionRest.slice(1)}
+                </span>
+              )}
+            </>
+          )}
+        </div>
+        {reverseSearch.isSearching && (
+          <span id={searchMatchId} className={styles.searchMatch}>
+            {`': ${reverseSearch.match ?? ""}`}
+          </span>
+        )}
+        {isHintShown && (
+          <span id={hintId} className={styles.hint}>
+            {withNode((help) => t({ key: "inputHint", args: { help } }), {
+              type: "command",
+              command: "help",
+            }).map((node, index) => (
+              // eslint-disable-next-line @eslint-react/no-array-index-key -- the hint never reorders
+              <React.Fragment key={index}>
+                {typeof node === "string"
+                  ? node
+                  : node.type === "command" && <CommandButton command={node.command} />}
+              </React.Fragment>
+            ))}
+          </span>
         )}
       </div>
-      {reverseSearch.isSearching && (
-        <span id={searchMatchId} className={styles.searchMatch}>
-          {`': ${reverseSearch.match ?? ""}`}
-        </span>
-      )}
-      {isHintShown && (
-        <span id={hintId} className={styles.hint}>
-          {withNode((help) => t({ key: "inputHint", args: { help } }), {
-            type: "command",
-            command: "help",
-          }).map((node, index) => (
-            // eslint-disable-next-line @eslint-react/no-array-index-key -- the hint never reorders
-            <React.Fragment key={index}>
-              {typeof node === "string"
-                ? node
-                : node.type === "command" && <CommandButton command={node.command} />}
-            </React.Fragment>
-          ))}
-        </span>
-      )}
-    </div>
+      <CommandsHint
+        id={commandsHintId}
+        options={commandsHintOptions}
+        selected={commandsHintSelected}
+        onPick={pickCompletion}
+      />
+    </>
   );
 };
 

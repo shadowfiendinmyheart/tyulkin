@@ -48,6 +48,7 @@
   "404command": "Command $unknownCommand not found\nType $help to see the available commands or $ls to see the files",
   "loading": "loading",
   "inputLabel": "command line",
+  "completionsLabel": "completions",
   "quickCommandsLabel": "quick commands",
   "extraKeysLabel": "extra keys",
   "matrixExit": "press any key or tap to exit",
