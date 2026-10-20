@@ -63,3 +63,25 @@
   margin-left: 1ch;
   white-space: pre-wrap;
 }
+
+// fish-like autosuggestion (TASK-87): the rest of a history entry or a command after the caret;
+// with the block caret its first char sits under the caret
+.autosuggestion {
+  color: var(--muted-color);
+}
+
+// the line takes the rest of the prompt row, the suggestion only what is left of it;
+// a typed line too long for the row still moves to its own row, as without a suggestion
+.charsAutosuggesting {
+  flex-grow: 1;
+}
+
+// zero width (not just basis: Chrome sizes the line by the content otherwise): a long entry
+// neither pushes the typed chars off the prompt row nor widens the page, it is cut at the edge
+.autosuggestionRest {
+  flex-grow: 1;
+  width: 0;
+  overflow: hidden;
+  white-space: pre;
+  text-overflow: ellipsis;
+}

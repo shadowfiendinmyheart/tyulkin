@@ -1,4 +1,5 @@
 import React from "react";
+import cn from "clsx";
 import Char from "../Char";
 import CommandButton from "../CommandButton";
 import { useConsoleContext } from "../../context/consoleContext";
@@ -16,6 +17,7 @@ import { useReverseSearch } from "./hooks/useReverseSearch";
 import { useT } from "../../context/localizationContext";
 import { withNode } from "../../store/console/logNodes";
 import { isClickingKey, playKeyClick } from "../../utils/keySound";
+import { getAutosuggestion } from "../../commandHandlers/utils";
 
 import styles from "./styles.module.scss";
 
@@ -50,7 +52,7 @@ const SEARCH_ACCEPT_KEYS = [
 ];
 
 const Input: React.FC = () => {
-  const { executeCommand } = useHandlerContext();
+  const { executeCommand, allCommands } = useHandlerContext();
   const { consoleDispatch, consoleState } = useConsoleContext();
   const { logs, history, soundMode } = consoleState;
   const [inputValue, setInputValue] = React.useState<string>("");
@@ -80,6 +82,15 @@ const Input: React.FC = () => {
   const reverseSearch = useReverseSearch(inputValue, replaceInputValue);
   // a newcomer sees how to start until the first command is executed
   const isHintShown = history.length === 0 && inputValue.length === 0 && !reverseSearch.isSearching;
+  // fish-like autosuggestion (TASK-87): shown in grey after the caret at the line end only
+  const isCaretAtEnd = caretPosition === inputValue.length - 1;
+  const isAutosuggesting = isCaretAtEnd && !reverseSearch.isSearching;
+  const autosuggestion = React.useMemo(
+    () => (isAutosuggesting ? getAutosuggestion(history, allCommands, inputValue) : undefined),
+    [isAutosuggesting, history, allCommands, inputValue],
+  );
+  // the typed part is drawn as typed; accepting takes the whole entry, case included
+  const autosuggestionRest = autosuggestion?.slice(inputValue.length);
 
   // the native input is the single source of truth for the caret
   const syncCaretPosition = React.useCallback(() => {
@@ -162,6 +173,17 @@ const Input: React.FC = () => {
     if (!isContinue) {
       // Tab autocomplete replaced the line
       resetHistoryBrowsing();
+      return;
+    }
+
+    // → and End accept the autosuggestion: an edit, so the line becomes the new draft
+    const isPlainKey =
+      !e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey && !e.nativeEvent.isComposing;
+    if (autosuggestion && isPlainKey && (e.key === "ArrowRight" || e.key === "End")) {
+      e.preventDefault();
+      consoleDispatch(setCommandsHint([])); // the listed Tab options no longer match the line
+      resetHistoryBrowsing();
+      replaceInputValue(autosuggestion);
       return;
     }
 
@@ -279,7 +301,7 @@ const Input: React.FC = () => {
         enterKeyHint="send"
         ref={inputRef}
       />
-      <div className={styles.chars}>
+      <div className={cn(styles.chars, autosuggestionRest && styles.charsAutosuggesting)}>
         {caretPosition === -1 || inputValue.length === 0 ? (
           <Char isCaret={true} className={styles.zeroChar} />
         ) : undefined}
@@ -290,6 +312,23 @@ const Input: React.FC = () => {
             {char}
           </Char>
         ))}
+        {autosuggestionRest && (
+          // the native input holds the line for screen readers, the suggestion is visual only;
+          // its first char is a Char: the block caret over it inverts it like a typed one
+          <>
+            <Char isCaret={false} className={styles.autosuggestion} aria-hidden="true">
+              {autosuggestionRest[0]}
+            </Char>
+            {autosuggestionRest.length > 1 && (
+              <span
+                className={cn(styles.autosuggestion, styles.autosuggestionRest)}
+                aria-hidden="true"
+              >
+                {autosuggestionRest.slice(1)}
+              </span>
+            )}
+          </>
+        )}
       </div>
       {reverseSearch.isSearching && (
         <span id={searchMatchId} className={styles.searchMatch}>

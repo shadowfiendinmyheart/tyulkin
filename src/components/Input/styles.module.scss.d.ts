@@ -1,5 +1,8 @@
 export type Styles = {
+  autosuggestion: string;
+  autosuggestionRest: string;
   chars: string;
+  charsAutosuggesting: string;
   hint: string;
   locator: string;
   nativeInput: string;

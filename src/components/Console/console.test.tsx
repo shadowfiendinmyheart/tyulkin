@@ -375,6 +375,56 @@ describe("history (TASK-23)", () => {
   });
 });
 
+describe("autosuggestion (TASK-87)", () => {
+  // undefined when nothing is suggested
+  const getAutosuggestion = (input: HTMLInputElement) => {
+    const parts = input.parentElement?.querySelectorAll(`.${inputStyles.autosuggestion}`) ?? [];
+    return parts.length ? Array.from(parts, (part) => part.textContent).join("") : undefined;
+  };
+
+  it("shows the latest history entry, then a command, and accepts it with → or End", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("set theme White{Enter}set theme Black{Enter}set");
+    expect(getAutosuggestion(input)).toBe(" theme Black");
+
+    await user.keyboard("{ArrowRight}");
+    expect(input.value).toBe("set theme Black");
+    expect(input.selectionStart).toBe(15);
+    expect(getAutosuggestion(input)).toBeUndefined();
+
+    await user.clear(input);
+    await user.keyboard("edu");
+    expect(getAutosuggestion(input)).toBe("cation");
+    await user.keyboard("{End}");
+    expect(input.value).toBe("education");
+  });
+
+  it("accepts the entry as it was recorded, case included", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("About{Enter}ab");
+    expect(getAutosuggestion(input)).toBe("out");
+    await user.keyboard("{ArrowRight}");
+    expect(input.value).toBe("About");
+  });
+
+  it("is hidden when the caret is not at the line end, and arrows move it as usual", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard("edu{ArrowLeft}");
+    expect(getAutosuggestion(input)).toBeUndefined();
+
+    await user.keyboard("{ArrowRight}");
+    expect(input.value).toBe("edu");
+    expect(getAutosuggestion(input)).toBe("cation");
+  });
+
+  it("does not suggest for an empty line or an unknown prefix", async () => {
+    const { user, input } = renderConsole();
+    expect(getAutosuggestion(input)).toBeUndefined();
+    await user.keyboard("qqq");
+    expect(getAutosuggestion(input)).toBeUndefined();
+  });
+});
+
 describe("caret (TASK-26)", () => {
   // localStorage is cleared before each test, so the caret mode is the default one
   const caretClass = new RegExp(`_${CaretMode.Block}_`);

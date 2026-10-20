@@ -272,6 +272,23 @@ test("fills the screen, the lines are not wider than ~100ch (TASK-81)", async ({
   expect(Math.abs(log.x - (viewport.width - log.x - log.width))).toBeLessThan(2);
 });
 
+test("keeps a long autosuggestion within a phone screen (TASK-87) @mobile", async ({ page }) => {
+  await open(page);
+  await input(page).focus();
+  await page.keyboard.type(`zz ${"long ".repeat(40)}`);
+  await page.keyboard.press("Enter");
+  await page.keyboard.type("zz");
+  const prompt = (await page.getByText("visitor@tyulkin", { exact: true }).boundingBox())!;
+  // the drawn line (typed chars and the suggestion) follows the native input
+  const typed = (await input(page).locator("xpath=following-sibling::div[1]").boundingBox())!;
+  // the suggestion is cut at the screen edge instead of pushing the line off the prompt row
+  expect(Math.abs(typed.y - prompt.y)).toBeLessThan(prompt.height);
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBe(0);
+});
+
 test("fits the neofetch welcome into a phone screen @mobile", async ({ page }) => {
   await open(page);
   await expect(page.getByRole("log")).toContainText("Uptime: ");

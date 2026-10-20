@@ -3,6 +3,7 @@ import { Command } from "./interfaces";
 import {
   getAllCommandsWithParams,
   getAutocompleteCommands,
+  getAutosuggestion,
   getCommandLink,
   getHelpRow,
   getParentPath,
@@ -111,6 +112,28 @@ describe("getAutocompleteCommands", () => {
   it("returns everything for an empty input and nothing for no match", () => {
     expect(getAutocompleteCommands(all, "")).toEqual(all);
     expect(getAutocompleteCommands(all, "x")).toEqual([]);
+  });
+});
+
+describe("getAutosuggestion (TASK-87)", () => {
+  const all = ["about", "set theme Black", "set theme White"];
+
+  it("prefers the latest history entry, then a command", () => {
+    expect(getAutosuggestion(["set theme White x", "set theme"], all, "set")).toBe(
+      "set theme White x",
+    );
+    expect(getAutosuggestion(["help"], all, "set theme")).toBe("set theme Black");
+  });
+
+  it("ignores case and skips candidates not longer than the line", () => {
+    expect(getAutosuggestion(["about"], all, "AB")).toBe("about");
+    expect(getAutosuggestion(["about"], all, "about")).toBeUndefined();
+  });
+
+  it("suggests nothing for a blank line or no match", () => {
+    expect(getAutosuggestion(["about"], all, "")).toBeUndefined();
+    expect(getAutosuggestion(["about"], all, "  ")).toBeUndefined();
+    expect(getAutosuggestion(["about"], all, "x")).toBeUndefined();
   });
 });
 

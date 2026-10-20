@@ -111,6 +111,18 @@ export const getAutocompleteCommands = (commands: string[], userCommand: string)
   return commands.filter((x) => x.toLowerCase().startsWith(prefix));
 };
 
+// fish-like autosuggestion (TASK-87): the latest history entry that continues the line, else the
+// first such command; case-insensitive like getAutocompleteCommands, nothing for a blank line
+export const getAutosuggestion = (history: string[], commands: string[], line: string) => {
+  if (!line.trim()) return;
+  const prefix = line.toLowerCase();
+  // the typed part is compared as is: the rest is cut by the line length, whatever lowercasing does
+  return [...history, ...commands].find(
+    (candidate) =>
+      candidate.length > line.length && candidate.slice(0, line.length).toLowerCase() === prefix,
+  );
+};
+
 // "/settings" and "/settings/" -> "/"; the root is its own parent
 export const getParentPath = (pathname: string) => {
   const segments = pathname.split("/").filter(Boolean);

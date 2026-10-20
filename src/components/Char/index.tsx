@@ -8,12 +8,13 @@ interface CharProps extends React.HTMLAttributes<HTMLSpanElement> {
   children?: string;
 }
 
-const Char: React.FC<CharProps> = ({ isCaret, children = " ", className }) => {
+const Char: React.FC<CharProps> = ({ isCaret, children = " ", className, ...props }) => {
   const { consoleState } = useConsoleContext();
   const { caretMode } = consoleState;
 
   return (
     <span
+      {...props}
       className={cn(
         children === " " && styles.spaceChar,
         isCaret && styles[caretMode],
