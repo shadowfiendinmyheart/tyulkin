@@ -130,6 +130,8 @@ export interface CommandDescriptionDictionary {
   helpShowCarets: string;
   helpSetCrt: string;
   helpSetSound: string;
+  helpSetFont: string;
+  helpSetFontSize: string;
   helpSetLanguage: string;
   helpShowLanguages: string;
   helpNeofetch: string;
@@ -185,6 +187,15 @@ export interface DictionaryWithArgs {
   soundStatus: string;
   wrongSound: string;
   changeSound: string;
+  // `set font` (TASK-83): $font is the family of the font, $fonts lists the names to type
+  fontStatus: string;
+  wrongFont: string;
+  changeFont: string;
+  changeFontError: string;
+  // `set fontsize` (TASK-83): $size in px, $min and $max are the limits
+  fontSizeStatus: string;
+  wrongFontSize: string;
+  changeFontSize: string;
   wrongLanguage: string;
   changeLanguage: string;
   changeLanguageError: string;
@@ -267,6 +278,13 @@ type ChangeCrtLocale = LocaleWithArgsGenerator<"changeCrt", "state">;
 type SoundStatusLocale = LocaleWithArgsGenerator<"soundStatus", "state" | "modes">;
 type WrongSoundLocale = LocaleWithArgsGenerator<"wrongSound", "soundName" | "modes">;
 type ChangeSoundLocale = LocaleWithArgsGenerator<"changeSound", "state">;
+type FontStatusLocale = LocaleWithArgsGenerator<"fontStatus", "font" | "fonts">;
+type WrongFontLocale = LocaleWithArgsGenerator<"wrongFont", "fontName" | "fonts">;
+type ChangeFontLocale = LocaleWithArgsGenerator<"changeFont", "font">;
+type ChangeFontErrorLocale = LocaleWithArgsGenerator<"changeFontError", "font">;
+type FontSizeStatusLocale = LocaleWithArgsGenerator<"fontSizeStatus", "size" | "min" | "max">;
+type WrongFontSizeLocale = LocaleWithArgsGenerator<"wrongFontSize", "size" | "min" | "max">;
+type ChangeFontSizeLocale = LocaleWithArgsGenerator<"changeFontSize", "size">;
 type WrongLanguageLocale = LocaleWithArgsGenerator<"wrongLanguage", "languageName">;
 type ChangeLanguageLocale = LocaleWithArgsGenerator<"changeLanguage", "languageName">;
 type ChangeLanguageErrorLocale = LocaleWithArgsGenerator<"changeLanguageError", "languageName">;
@@ -325,6 +343,13 @@ export type LocaleWithArgs =
   | SoundStatusLocale
   | WrongSoundLocale
   | ChangeSoundLocale
+  | FontStatusLocale
+  | WrongFontLocale
+  | ChangeFontLocale
+  | ChangeFontErrorLocale
+  | FontSizeStatusLocale
+  | WrongFontSizeLocale
+  | ChangeFontSizeLocale
   | WrongLanguageLocale
   | ChangeLanguageLocale
   | ChangeLanguageErrorLocale

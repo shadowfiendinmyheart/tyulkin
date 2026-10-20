@@ -62,12 +62,17 @@ const getManifest = (basePath) => ({
   })),
 });
 
+// the font that comes with the page (main.tsx); the other fonts of `set font` (TASK-83, src/utils/font.ts)
+// are loaded on demand, so their files are not precached: the worker keeps them once fetched
+const PAGE_FONT_PREFIX = "fonts/ibm-plex-mono-";
+
 // what the app needs offline: the page, scripts, styles (with the lazy dictionary chunks), all woff2
-// subsets (Russian text offline needs the Cyrillic ones) and the PWA files with the icons. Not 404.html (the same page), the og:image card, licenses and the .woff
+// subsets of the page font (Russian text offline needs the Cyrillic ones) and the PWA files with the icons. Not 404.html (the same page), the og:image card, licenses and the .woff
 // fallbacks (every browser with service workers reads woff2). The static pages of blog posts are in:
 // offline, the worker serves a precached page before the app shell
 const isPrecached = (name) =>
   /\.(html|js|css|woff2|png|webmanifest)$/.test(name) &&
+  (!name.startsWith("fonts/") || name.startsWith(PAGE_FONT_PREFIX)) &&
   name !== "404.html" &&
   name !== SERVICE_WORKER_FILE &&
   !name.startsWith("og-image");

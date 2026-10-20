@@ -58,6 +58,24 @@ export type CrtMode = (typeof crtModes)[number];
 export const soundModes = ["on", "off"] as const;
 export type SoundMode = (typeof soundModes)[number];
 
+// the font of the terminal (TASK-83), self-hosted: IBM Plex Mono comes with the page, the others
+// are loaded on demand (utils/font.ts)
+export const fontModes = ["ibm-plex-mono", "jetbrains-mono", "fira-code"] as const;
+export type FontMode = (typeof fontModes)[number];
+export const DEFAULT_FONT_MODE: FontMode = "ibm-plex-mono";
+
+// the font size of the terminal (`set fontsize`), whole px
+export const FONT_SIZE_MIN = 12;
+export const FONT_SIZE_MAX = 24;
+export const DEFAULT_FONT_SIZE = 16;
+
+// a font size as typed or stored: "18" or "18px", whole and within the limits; else undefined
+export const parseFontSize = (value: unknown): number | undefined => {
+  const match = typeof value === "string" ? /^([1-9]\d?)(px)?$/i.exec(value.trim()) : null;
+  const size = match ? Number(match[1]) : NaN;
+  return size >= FONT_SIZE_MIN && size <= FONT_SIZE_MAX ? size : undefined;
+};
+
 // the mini-games in the terminal (TASK-66), each with its own record in storage
 export const gameIds = ["snake", "2048", "tetris"] as const;
 export type GameId = (typeof gameIds)[number];

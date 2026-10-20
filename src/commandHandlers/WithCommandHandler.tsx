@@ -37,7 +37,7 @@ interface WithCommandHandlerProps {
 const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ route, children }) => {
   const commands = commandsByRoute[route];
   const { consoleState, consoleDispatch } = useConsoleContext();
-  const { caretMode, crtMode, soundMode, history } = consoleState;
+  const { caretMode, crtMode, soundMode, fontMode, fontSize, history } = consoleState;
   // read by `share`, `history` and `!!`: kept out of the deps, so the handlers don't change
   // after every command
   const historyRef = React.useRef(history);
@@ -133,6 +133,8 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ route, children
         caretMode,
         crtMode,
         soundMode,
+        fontMode,
+        fontSize,
         changeLanguage,
         consoleDispatch,
         appDispatch,
@@ -157,6 +159,8 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ route, children
       caretMode,
       crtMode,
       soundMode,
+      fontMode,
+      fontSize,
       changeLanguage,
       consoleDispatch,
       appDispatch,

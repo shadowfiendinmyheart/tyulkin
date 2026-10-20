@@ -3,6 +3,7 @@ import {
   CaretMode,
   ThemeMode,
   CrtMode,
+  FontMode,
   GameId,
   SecretId,
   SoundMode,
@@ -95,6 +96,9 @@ export interface ConsoleState {
   crtMode: CrtMode;
   // keyboard clicks while typing (`set sound on|off`)
   soundMode: SoundMode;
+  // the font of the terminal and its size in px (`set font`, `set fontsize`, TASK-83)
+  fontMode: FontMode;
+  fontSize: number;
   commandsHint: string[];
   // the `matrix` digital rain covers the console until any key or tap
   isMatrixShown: boolean;
@@ -113,6 +117,8 @@ export type ConsoleActionType =
   | ActionSetCaretMode
   | ActionSetCrtMode
   | ActionSetSoundMode
+  | ActionSetFontMode
+  | ActionSetFontSize
   | ActionSetCommandsHint
   | ActionFinishTyping
   | ActionSkipTyping
@@ -146,6 +152,8 @@ export type ActionCountTypedCommand = ActionTypeGenerator<ConsoleActionKind.Coun
 export type ActionSetCaretMode = ActionTypeGenerator<ConsoleActionKind.SetCaretMode, CaretMode>;
 export type ActionSetCrtMode = ActionTypeGenerator<ConsoleActionKind.SetCrtMode, CrtMode>;
 export type ActionSetSoundMode = ActionTypeGenerator<ConsoleActionKind.SetSoundMode, SoundMode>;
+export type ActionSetFontMode = ActionTypeGenerator<ConsoleActionKind.SetFontMode, FontMode>;
+export type ActionSetFontSize = ActionTypeGenerator<ConsoleActionKind.SetFontSize, number>;
 export type ActionSetCommandsHint = ActionTypeGenerator<
   ConsoleActionKind.SetCommandsHint,
   string[]
@@ -161,6 +169,8 @@ export enum ConsoleActionKind {
   SetCaretMode = "setCaretMode",
   SetCrtMode = "setCrtMode",
   SetSoundMode = "setSoundMode",
+  SetFontMode = "setFontMode",
+  SetFontSize = "setFontSize",
   SetCommandsHint = "setCommandsHint",
   FinishTyping = "finishTyping",
   SkipTyping = "skipTyping",

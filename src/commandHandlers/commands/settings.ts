@@ -3,7 +3,11 @@ import {
   caretModes,
   CrtMode,
   crtModes,
+  FONT_SIZE_MAX,
+  FONT_SIZE_MIN,
+  fontModes,
   oneOf,
+  parseFontSize,
   SoundMode,
   RANDOM_THEME,
   soundModes,
@@ -15,8 +19,15 @@ import { checkLanguage } from "../../localization/utils";
 import storage from "../../storage";
 import { setTheme } from "../../store/app/actions";
 import { LogNode } from "../../store/console/interfaces";
-import { setCaretMode, setCrtMode, setSoundMode } from "../../store/console/actions";
+import {
+  setCaretMode,
+  setCrtMode,
+  setFontMode,
+  setFontSize,
+  setSoundMode,
+} from "../../store/console/actions";
 import { makeCapitalize } from "../../utils";
+import { fontFamilies, loadFont } from "../../utils/font";
 import { suspendKeySound } from "../../utils/keySound";
 import { Command } from "../interfaces";
 import { getParamsString } from "../utils";
@@ -61,6 +72,15 @@ const getStateLocale = (t: TFunction, mode: CrtMode | SoundMode) =>
   t({ key: mode === "on" ? "stateOn" : "stateOff" });
 
 const SOUND_MODES = getParamsString(soundModes);
+
+const FONT_MODES = getParamsString(fontModes);
+
+// `set fontsize` completes the even sizes; any whole size within the limits is taken
+const FONT_SIZE_PARAMS = Array.from(
+  { length: Math.floor((FONT_SIZE_MAX - FONT_SIZE_MIN) / 2) + 1 },
+  (_, index) => String(FONT_SIZE_MIN + index * 2),
+);
+const FONT_SIZE_LIMITS = { min: String(FONT_SIZE_MIN), max: String(FONT_SIZE_MAX) };
 
 export const settingsCommands: Command[] = [
   {
@@ -168,6 +188,59 @@ export const settingsCommands: Command[] = [
       consoleDispatch(setSoundMode(mode));
       if (mode === "off") suspendKeySound();
       log(t({ key: "changeSound", args: { state: getStateLocale(t, mode) } }));
+    },
+  },
+  {
+    name: "set font",
+    params: fontModes,
+    descriptionKey: "helpSetFont",
+    run: ({ log, fail, t, fontMode, consoleDispatch }, [param]) => {
+      if (!param) {
+        log(t({ key: "fontStatus", args: { font: fontFamilies[fontMode], fonts: FONT_MODES } }));
+        return;
+      }
+
+      const font = oneOf(fontModes, param.toLowerCase());
+
+      if (!font) {
+        log(t({ key: "wrongFont", args: { fontName: param, fonts: FONT_MODES } }));
+        fail();
+        return;
+      }
+
+      // switched at once, so the answer is right under the command: until the font is loaded, the
+      // text is drawn in IBM Plex Mono (utils/font.ts), not in the fallback of the browser. Only a
+      // failed load (offline) is told later; the font is kept and loaded on the next visit
+      storage.setFontMode(font);
+      consoleDispatch(setFontMode(font));
+      log(t({ key: "changeFont", args: { font: fontFamilies[font] } }));
+      loadFont(font).catch(() => {
+        log(t({ key: "changeFontError", args: { font: fontFamilies[font] } }));
+        fail();
+      });
+    },
+  },
+  {
+    name: "set fontsize",
+    params: FONT_SIZE_PARAMS,
+    descriptionKey: "helpSetFontSize",
+    run: ({ log, fail, t, fontSize, consoleDispatch }, [param]) => {
+      if (!param) {
+        log(t({ key: "fontSizeStatus", args: { size: String(fontSize), ...FONT_SIZE_LIMITS } }));
+        return;
+      }
+
+      const size = parseFontSize(param);
+
+      if (size === undefined) {
+        log(t({ key: "wrongFontSize", args: { size: param, ...FONT_SIZE_LIMITS } }));
+        fail();
+        return;
+      }
+
+      storage.setFontSize(size);
+      consoleDispatch(setFontSize(size));
+      log(t({ key: "changeFontSize", args: { size: String(size) } }));
     },
   },
   {

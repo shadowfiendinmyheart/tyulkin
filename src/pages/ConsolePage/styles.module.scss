@@ -9,6 +9,8 @@
   display: flex;
   flex-direction: column;
   height: var(--viewport-height, 100dvh);
+  // `set fontsize` (TASK-83), see utils/font.ts
+  font-size: var(--terminal-font-size, 1rem);
 }
 
 // fields at the edges of the screen

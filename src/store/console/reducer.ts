@@ -89,6 +89,20 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
       };
     }
 
+    case ConsoleActionKind.SetFontMode: {
+      return {
+        ...state,
+        fontMode: action.payload,
+      };
+    }
+
+    case ConsoleActionKind.SetFontSize: {
+      return {
+        ...state,
+        fontSize: action.payload,
+      };
+    }
+
     case ConsoleActionKind.FinishTyping: {
       // a late timer of an already skipped log changes nothing
       if (action.payload < state.typedLogId) return state;

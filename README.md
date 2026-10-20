@@ -268,6 +268,13 @@ CRT-эффект терминала: свечение текста и слой �
 Web Audio без звуковых файлов ([`utils/keySound.ts`](src/utils/keySound.ts)); модификаторы и
 автоповтор зажатой клавиши не щёлкают, Enter/пробел/Backspace звучат ниже.
 
+`set font ibm-plex-mono|jetbrains-mono|fira-code` и `set fontsize <12–24>` (`fontModes`,
+`FONT_SIZE_MIN`/`MAX` в `src/domain`, хранятся в storage) меняют шрифт и размер шрифта терминала.
+IBM Plex Mono приходит со страницей, JetBrains Mono и Fira Code (с лигатурами) — свои чанки
+`@fontsource/*`, загружаются по требованию ([`utils/font.ts`](src/utils/font.ts)) и не входят в
+precache service worker’а; пока файлы шрифта грузятся, текст рисуется IBM Plex Mono. Страница
+терминала ставит `--terminal-font-family`/`--terminal-font-size` на `<html>`; обычный вид — свой шрифт.
+
 ### Хранилище
 
 [`src/storage`](src/storage/index.ts) сохраняет тему, каретку, язык, время прошлого визита, найденные

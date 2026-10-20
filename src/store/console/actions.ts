@@ -1,4 +1,4 @@
-import { CaretMode, CrtMode, GameId, SecretId, SoundMode } from "../../domain";
+import { CaretMode, CrtMode, FontMode, GameId, SecretId, SoundMode } from "../../domain";
 import {
   ActionAddHistoryCommand,
   ActionAddLogs,
@@ -10,6 +10,8 @@ import {
   ActionSetCaretMode,
   ActionSetCrtMode,
   ActionSetSoundMode,
+  ActionSetFontMode,
+  ActionSetFontSize,
   ActionSetCommandsHint,
   ActionSetMatrixShown,
   ActionSetGame,
@@ -100,6 +102,14 @@ export const setCrtMode = (crtMode: CrtMode): ActionSetCrtMode => ({
 export const setSoundMode = (soundMode: SoundMode): ActionSetSoundMode => ({
   type: ConsoleActionKind.SetSoundMode,
   payload: soundMode,
+});
+export const setFontMode = (fontMode: FontMode): ActionSetFontMode => ({
+  type: ConsoleActionKind.SetFontMode,
+  payload: fontMode,
+});
+export const setFontSize = (fontSize: number): ActionSetFontSize => ({
+  type: ConsoleActionKind.SetFontSize,
+  payload: fontSize,
 });
 export const setCommandsHint = (commandsHint: string[]): ActionSetCommandsHint => ({
   type: ConsoleActionKind.SetCommandsHint,

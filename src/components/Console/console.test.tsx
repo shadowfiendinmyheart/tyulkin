@@ -10,7 +10,16 @@ import { KONAMI_CODE } from "../../hooks/useKonamiCode";
 import { LocalizationContext } from "../../context/localizationContext";
 import { createT } from "../../localization";
 import eng from "../../localization/dictionaries/eng.json";
-import { CaretMode, crtModes, secretIds, soundModes, themeModes } from "../../domain";
+import {
+  CaretMode,
+  crtModes,
+  FONT_SIZE_MAX,
+  FONT_SIZE_MIN,
+  fontModes,
+  secretIds,
+  soundModes,
+  themeModes,
+} from "../../domain";
 import { getParamsString } from "../../commandHandlers/utils";
 import inputStyles from "../Input/styles.module.scss";
 import hintStyles from "../CommandsHint/style.module.scss";
@@ -359,6 +368,66 @@ describe("keyboard sound (TASK-67)", () => {
       t({ key: "wrongSound", args: { soundName: "loud", modes: getParamsString(soundModes) } }),
     );
     expect(localStorage.getItem("soundMode")).toBeNull();
+  });
+});
+
+describe("font (TASK-83)", () => {
+  const rootStyle = () => document.documentElement.style;
+  const fonts = getParamsString(fontModes);
+  const limits = { min: String(FONT_SIZE_MIN), max: String(FONT_SIZE_MAX) };
+
+  it("shows, sets and keeps the font, IBM Plex Mono standing in while it loads", async () => {
+    const { user } = renderConsole("/settings");
+    expect(rootStyle().getPropertyValue("--terminal-font-family")).toBe(
+      '"IBM Plex Mono", monospace',
+    );
+    await user.keyboard("set font{Enter}");
+    expect(getLogs().at(-1)).toBe(t({ key: "fontStatus", args: { font: "IBM Plex Mono", fonts } }));
+
+    await user.keyboard("set font Fira-Code{Enter}");
+    await waitFor(() =>
+      expect(getLogs().at(-1)).toBe(t({ key: "changeFont", args: { font: "Fira Code" } })),
+    );
+    expect(localStorage.getItem("fontMode")).toBe("fira-code");
+    expect(rootStyle().getPropertyValue("--terminal-font-family")).toBe(
+      '"Fira Code", "IBM Plex Mono", monospace',
+    );
+  });
+
+  it("rejects an unknown font", async () => {
+    const { user } = renderConsole("/settings");
+    await user.keyboard("set font comic{Enter}");
+    expect(getLogs().at(-1)).toBe(t({ key: "wrongFont", args: { fontName: "comic", fonts } }));
+    expect(localStorage.getItem("fontMode")).toBeNull();
+  });
+
+  it("sets the font size within the limits and keeps it", async () => {
+    const { user } = renderConsole("/settings");
+    expect(rootStyle().getPropertyValue("--terminal-font-size")).toBe("16px");
+    await user.keyboard("set fontsize{Enter}");
+    expect(getLogs().at(-1)).toBe(t({ key: "fontSizeStatus", args: { size: "16", ...limits } }));
+
+    await user.keyboard("set fontsize 20px{Enter}");
+    expect(getLogs().at(-1)).toBe(t({ key: "changeFontSize", args: { size: "20" } }));
+    expect(localStorage.getItem("fontSize")).toBe("20");
+    expect(rootStyle().getPropertyValue("--terminal-font-size")).toBe("20px");
+
+    await user.keyboard("set fontsize 99{Enter}");
+    expect(getLogs().at(-1)).toBe(t({ key: "wrongFontSize", args: { size: "99", ...limits } }));
+    expect(localStorage.getItem("fontSize")).toBe("20");
+  });
+
+  it("takes the stored font and size, and leaves them to the regular view", async () => {
+    localStorage.setItem("fontMode", "jetbrains-mono");
+    localStorage.setItem("fontSize", "14");
+    const { router } = renderConsole("/settings");
+    expect(rootStyle().getPropertyValue("--terminal-font-family")).toBe(
+      '"JetBrains Mono", "IBM Plex Mono", monospace',
+    );
+    expect(rootStyle().getPropertyValue("--terminal-font-size")).toBe("14px");
+    await act(() => router.navigate("/gui"));
+    expect(rootStyle().getPropertyValue("--terminal-font-family")).toBe("");
+    expect(rootStyle().getPropertyValue("--terminal-font-size")).toBe("");
   });
 });
 

@@ -24,6 +24,8 @@ const renderLogs = (logs: Log[]) =>
           caretMode: CaretMode.Block,
           crtMode: "off",
           soundMode: "off",
+          fontMode: "ibm-plex-mono",
+          fontSize: 16,
           commandsHint: [],
           isMatrixShown: false,
           game: null,

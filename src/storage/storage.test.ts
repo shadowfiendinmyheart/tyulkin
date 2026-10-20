@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { CaretMode, HISTORY_LIMIT } from "../domain";
+import {
+  CaretMode,
+  DEFAULT_FONT_SIZE,
+  FONT_SIZE_MAX,
+  FONT_SIZE_MIN,
+  HISTORY_LIMIT,
+} from "../domain";
 import storage from ".";
 
 afterEach(() => {
@@ -226,5 +232,33 @@ describe("game records (TASK-66)", () => {
     expect(storage.setGameRecord("tetris", 100)).toBe(true);
     expect(storage.getGameRecord("tetris")).toBe(100);
     vi.restoreAllMocks();
+  });
+});
+
+describe("font (TASK-83)", () => {
+  it("keeps the font and its size", () => {
+    expect(storage.getFontMode()).toBe("ibm-plex-mono");
+    expect(storage.getFontSize()).toBe(DEFAULT_FONT_SIZE);
+    storage.setFontMode("fira-code");
+    storage.setFontSize(20);
+    expect(storage.getFontMode()).toBe("fira-code");
+    expect(storage.getFontSize()).toBe(20);
+  });
+
+  it("drops an unknown font and a size out of the limits or not whole", () => {
+    localStorage.setItem("fontMode", "Comic Sans");
+    expect(storage.getFontMode()).toBe("ibm-plex-mono");
+    for (const size of [
+      "",
+      "abc",
+      "16.5",
+      "-16",
+      "016",
+      String(FONT_SIZE_MIN - 1),
+      String(FONT_SIZE_MAX + 1),
+    ]) {
+      localStorage.setItem("fontSize", size);
+      expect(storage.getFontSize()).toBe(DEFAULT_FONT_SIZE);
+    }
   });
 });

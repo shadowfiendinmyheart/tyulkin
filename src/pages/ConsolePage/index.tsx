@@ -26,6 +26,7 @@ import { findSecret } from "../../commandHandlers/secrets";
 import { CommonDictionaryKeys, Languages, TFunction } from "../../localization/interfaces";
 import { htmlLangByLanguage } from "../../localization/utils";
 import { prefersReducedMotion } from "../../utils";
+import { FONT_FAMILY_PROPERTY, FONT_SIZE_PROPERTY, getFontStack, loadFont } from "../../utils/font";
 
 import styles from "./styles.module.scss";
 import { ConsoleRouteValues } from "../../router/interfaces";
@@ -179,6 +180,25 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
   usePaletteShortcut(React.useCallback(() => setIsPaletteOpen((isOpen) => !isOpen), []));
   // the matrix rain and the games take every key: the palette would get none
   const isOverlayShown = state.isMatrixShown || Boolean(state.game);
+
+  // `set font` and `set fontsize` (TASK-83): on <html>, so the palette, the games and the rain over
+  // the console take the font family too (the size is the console's: the overlays keep their rem
+  // sizes); the regular view keeps its own font. A stored font is loaded here
+  const { fontMode, fontSize } = state;
+  React.useEffect(() => {
+    // a stored font that fails (offline) is not an error of any command: IBM Plex Mono stands in
+    // (getFontStack) until the next visit; `set font` tells its own failure
+    loadFont(fontMode).catch(() => undefined);
+  }, [fontMode]);
+  React.useLayoutEffect(() => {
+    const { style } = document.documentElement;
+    style.setProperty(FONT_FAMILY_PROPERTY, getFontStack(fontMode));
+    style.setProperty(FONT_SIZE_PROPERTY, `${fontSize}px`);
+    return () => {
+      style.removeProperty(FONT_FAMILY_PROPERTY);
+      style.removeProperty(FONT_SIZE_PROPERTY);
+    };
+  }, [fontMode, fontSize]);
 
   const isCrt = state.crtMode === "on";
   const exitMatrix = React.useCallback(() => dispatch(setMatrixShown(false)), [dispatch]);

@@ -21,6 +21,8 @@ const createInitialState = (): ConsoleState => ({
   caretMode: storage.getCaretMode(),
   crtMode: storage.getCrtMode(),
   soundMode: storage.getSoundMode(),
+  fontMode: storage.getFontMode(),
+  fontSize: storage.getFontSize(),
   commandsHint: [],
   isMatrixShown: false,
   game: null,

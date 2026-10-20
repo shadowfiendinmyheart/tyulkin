@@ -4,10 +4,15 @@ import {
   caretModes,
   CrtMode,
   crtModes,
+  DEFAULT_FONT_MODE,
+  DEFAULT_FONT_SIZE,
+  FontMode,
+  fontModes,
   GameId,
   gameIds,
   HISTORY_LIMIT,
   oneOf,
+  parseFontSize,
   SecretId,
   secretIds,
   SoundMode,
@@ -22,6 +27,9 @@ enum StorageKeys {
   ThemeMode = "themeMode",
   CrtMode = "crtMode",
   SoundMode = "soundMode",
+  // the font of the terminal and its size in px (TASK-83)
+  FontMode = "fontMode",
+  FontSize = "fontSize",
   language = "language",
   // time of the previous visit, ms since epoch
   LastLogin = "lastLogin",
@@ -174,6 +182,19 @@ class Storage {
 
   // off by default: a page must not make sounds unasked
   getSoundMode = (): SoundMode => readOneOf(StorageKeys.SoundMode, soundModes, "off");
+
+  setFontMode = (font: FontMode) => {
+    writeItem(StorageKeys.FontMode, font);
+  };
+
+  getFontMode = (): FontMode => readOneOf(StorageKeys.FontMode, fontModes, DEFAULT_FONT_MODE);
+
+  setFontSize = (size: number) => {
+    writeItem(StorageKeys.FontSize, String(size));
+  };
+
+  // a garbage or out-of-range value gives the default size
+  getFontSize = (): number => parseFontSize(readItem(StorageKeys.FontSize)) ?? DEFAULT_FONT_SIZE;
 
   setLanguage = (language: Languages) => {
     writeItem(StorageKeys.language, language);

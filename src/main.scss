@@ -9,7 +9,8 @@ body,
 input {
   background-color: var(--bg-color);
   color: var(--text-color);
-  font-family: "IBM Plex Mono", monospace;
+  // `set font` (TASK-83) on the terminal pages, see utils/font.ts
+  font-family: var(--terminal-font-family, "IBM Plex Mono", monospace);
 }
 
 // a theme change (TASK-84): the new theme grows as a circle over the old one (see applyTheme),
