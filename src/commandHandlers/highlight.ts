@@ -1,4 +1,5 @@
 import { CommandBase } from "./interfaces";
+import { findHelpTarget } from "./man";
 import { getPipeRanges, HISTORY_EXPANSION, parseGrepStage } from "./shell";
 import { separateCommand } from "./utils";
 
@@ -12,7 +13,7 @@ export type HighlightKind = "command" | "unknown" | "argument" | "path" | "text"
 
 export interface HighlightOptions {
   // the command lists in the order the line is matched against them, as the handler does:
-  // the commands of the page, then easter eggs
+  // the commands of the page, then easter eggs; only the first one has manuals (`ls --help`)
   commandLists: CommandBase[][];
   // `!!` is the previous command: without history it fails
   hasHistory: boolean;
@@ -40,6 +41,9 @@ const getCommandLength = (
   words: Word[],
 ) => {
   if (words[0].text === HISTORY_EXPANSION) return hasHistory ? 1 : 0;
+  // "ls projects --help" runs as the manual of `ls` (TASK-89): the flag is an argument
+  const helpTarget = findHelpTarget(commandLists[0], part);
+  if (helpTarget) return words.length - 1 - helpTarget.params.length;
   for (const commands of commandLists) {
     const separated = separateCommand(commands, part);
     if (separated) return words.length - separated.params.length;

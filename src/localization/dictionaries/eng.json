@@ -146,5 +146,14 @@
   "askUnavailable": "The assistant is unavailable right now. Try later or see contacts",
   "askRateLimited": "Too many questions: wait a minute and ask again",
   "askBudgetSpent": "The assistant has answered enough for today. Come back tomorrow or see contacts",
-  "askInterrupted": "The answer broke off. Try asking again"
+  "askInterrupted": "The answer broke off. Try asking again",
+  "helpMan": "the manual of a command: man ls, or ls --help",
+  "manName": "NAME",
+  "manSynopsis": "SYNOPSIS",
+  "manDescription": "DESCRIPTION",
+  "manAliases": "ALIASES",
+  "manParams": "PARAMS",
+  "manArgument": "argument",
+  "manUsage": "What manual page do you want? For example, try $man",
+  "manNotFound": "No manual entry for $command"
 }

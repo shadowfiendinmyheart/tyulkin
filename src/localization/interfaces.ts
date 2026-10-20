@@ -87,6 +87,13 @@ export interface CommonDictionary {
   askRateLimited: string;
   askBudgetSpent: string;
   askInterrupted: string;
+  // the sections of a man page (TASK-89), and the argument in its synopsis: "ls [argument]"
+  manName: string;
+  manSynopsis: string;
+  manDescription: string;
+  manAliases: string;
+  manParams: string;
+  manArgument: string;
 }
 
 // one line of `help` per command, see commandHandlers/commands
@@ -132,6 +139,7 @@ export interface CommandDescriptionDictionary {
   helpBlog: string;
   helpRead: string;
   helpAsk: string;
+  helpMan: string;
 }
 
 export interface DictionaryWithArgs {
@@ -204,6 +212,9 @@ export interface DictionaryWithArgs {
   readNotFound: string;
   // `ask` with a question longer than $max characters
   askTooLong: string;
+  // `man` without a command, $man is a command placeholder; no command $command typed by the visitor
+  manUsage: string;
+  manNotFound: string;
 }
 
 export type Dictionary = CommonDictionary & CommandDescriptionDictionary & DictionaryWithArgs;
@@ -266,6 +277,8 @@ type CatUsageLocale = LocaleWithArgsGenerator<"catUsage", "ls">;
 type ReadUsageLocale = LocaleWithArgsGenerator<"readUsage", "blog">;
 type ReadNotFoundLocale = LocaleWithArgsGenerator<"readNotFound", "slug" | "blog">;
 type AskTooLongLocale = LocaleWithArgsGenerator<"askTooLong", "max">;
+type ManUsageLocale = LocaleWithArgsGenerator<"manUsage", "man">;
+type ManNotFoundLocale = LocaleWithArgsGenerator<"manNotFound", "command">;
 type NeofetchLocale = LocaleWithArgsGenerator<
   "neofetch",
   "uptime" | "theme" | "caret" | "language"
@@ -315,7 +328,9 @@ export type LocaleWithArgs =
   | CatUsageLocale
   | ReadUsageLocale
   | ReadNotFoundLocale
-  | AskTooLongLocale;
+  | AskTooLongLocale
+  | ManUsageLocale
+  | ManNotFoundLocale;
 export type LocaleParams = CommonLocale | LocaleWithArgs;
 
 export const languages = ["ru", "eng"] as const;

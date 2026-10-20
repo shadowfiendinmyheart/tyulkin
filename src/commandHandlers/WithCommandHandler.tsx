@@ -21,6 +21,7 @@ import { commandsByRoute, globalCommands, secretCommands } from "./commands";
 import { CommandContext } from "./interfaces";
 import { isExistingPath } from "./fileSystem";
 import { highlightLine } from "./highlight";
+import { findHelpTarget, getManPage } from "./man";
 import { findSecret } from "./secrets";
 import { expandHistory, grep, parsePipeline } from "./shell";
 import { getAllCommandsWithParams, getSuggestion, separateCommand } from "./utils";
@@ -86,6 +87,14 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ route, children
       const commands = fromLink
         ? availableCommands.filter(({ linkable }) => linkable !== false)
         : availableCommands;
+      // "ls --help" (TASK-89): the manual of a command of the page, as `man ls`
+      const helpTarget = findHelpTarget(commands, line);
+      if (helpTarget) {
+        trackCommand("man");
+        log(getManPage(helpTarget.command, t));
+        return;
+      }
+
       const separated =
         separateCommand(commands, line) ??
         (fromLink ? undefined : separateCommand(secretCommands, line));

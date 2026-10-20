@@ -58,6 +58,15 @@ describe("highlightLine (TASK-86)", () => {
     expect(highlight("set theme dark x")).toBe("uuu.aaaaa.aaaa.a");
   });
 
+  it("colors a command with --help as the command and the flag as an argument (TASK-89)", () => {
+    expect(highlight("help --help")).toBe("cccc.aaaaaa");
+    expect(highlight("set theme dark --help")).toBe("ccc.ccccc.aaaa.aaaaaa");
+    expect(highlight("hel --help")).toBe("uuu.aaaaaa");
+    // easter eggs have no manual: the flag is their argument as usual
+    expect(highlight("sudo --help")).toBe("cccc.aaaaaa");
+    expect(highlight("--help")).toBe("uuuuuu");
+  });
+
   it("underlines arguments that are existing paths", () => {
     expect(highlight("cat about.md")).toBe("ccc.pppppppp");
     expect(highlight("cat ~/projects/README.md")).toBe(`ccc.${"p".repeat(20)}`);

@@ -5,9 +5,16 @@ import { Command } from "../interfaces";
 import { stopAsk } from "../ask";
 import { gameCommands } from "./games";
 import { getNeofetch } from "../neofetch";
+import { getManPage } from "../man";
 import { getSecretsLog } from "../secrets";
 import { formatDate, formatHistory, getWorkingDirectory, unquote, USER_NAME } from "../shell";
-import { getCommandLink, getHelpRow, getParentPath, getShareableCommand } from "../utils";
+import {
+  getCommandLink,
+  getHelpRow,
+  getParentPath,
+  getShareableCommand,
+  separateCommand,
+} from "../utils";
 
 export const globalCommands: Command[] = [
   {
@@ -45,6 +52,33 @@ export const globalCommands: Command[] = [
         getHelpRow(command, t({ key: command.descriptionKey })),
       );
       log({ type: "table", rows });
+    },
+  },
+  {
+    // the manual of a command of the page (TASK-89); `<command> --help` shows it too
+    name: "man",
+    anyArgs: true,
+    descriptionKey: "helpMan",
+    run: ({ log, fail, t, commands }, args) => {
+      if (!args.length) {
+        log(
+          withNode((man) => t({ key: "manUsage", args: { man } }), {
+            type: "command",
+            command: "man man",
+          }),
+        );
+        fail();
+        return;
+      }
+      // "man set theme": a command may be several words
+      const separated = separateCommand(commands, args.join(" "));
+      if (!separated) {
+        const command = args.join(" ");
+        log({ type: "text", text: t({ key: "manNotFound", args: { command } }), color: "error" });
+        fail();
+        return;
+      }
+      log(getManPage(separated.command, t));
     },
   },
   {

@@ -132,7 +132,9 @@ src/
 Реестр — [`src/commandHandlers/commands/`](src/commandHandlers/commands):
 
 - `global.ts` — команды, доступные на любой странице (`help`, `clear`, `back`, `menu`,
-  `neofetch`, `gui`, `share`, `matrix`, `secrets`, `history`, `echo`, `whoami`, `pwd`, `date`);
+  `neofetch`, `gui`, `share`, `matrix`, `secrets`, `history`, `echo`, `whoami`, `pwd`, `date`,
+  `man`). `man <команда>` и `<команда> --help` собирают man-страницу из полей команды
+  ([`commandHandlers/man.ts`](src/commandHandlers/man.ts)), заголовки разделов — из словарей;
 - `main.ts`, `settings.ts` — команды страниц;
 - `fileSystem.ts` — `ls`, `cd`, `cat`, `tree`: создаются для каждой страницы-каталога (см. ниже);
 - `secrets.ts` — пасхалки (`sudo …`, `rm -rf /`, `vim`, `cowsay`, `fortune`, `sl`, `coffee`):
