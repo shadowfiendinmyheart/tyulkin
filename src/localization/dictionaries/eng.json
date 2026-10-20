@@ -155,5 +155,10 @@
   "manParams": "PARAMS",
   "manArgument": "argument",
   "manUsage": "What manual page do you want? For example, try $man",
-  "manNotFound": "No manual entry for $command"
+  "manNotFound": "No manual entry for $command",
+  "helpQr": "a QR code of the site address, or of my contacts with qr --vcard",
+  "qrSite": "Scan to open",
+  "qrVcard": "Scan to save my contact",
+  "qrLoadFailed": "The QR code generator could not be loaded, check the connection and try again",
+  "qrUsage": "Type qr for the site address or $vcard for my contacts"
 }

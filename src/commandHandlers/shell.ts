@@ -196,7 +196,8 @@ const grepNodes = (nodes: LogNode[], regexp: RegExp): LogNode[] => {
     const { block } = chunk;
     if (block.type === "pre") {
       const lines = block.text.split("\n").filter(matches);
-      if (lines.length) result.push({ ...block, text: lines.join("\n") });
+      // some rows of a QR code are no code: plain text then
+      if (lines.length) result.push({ ...block, text: lines.join("\n"), qr: undefined });
     } else {
       const rows = block.rows.flatMap((row) => {
         const isLine = row.every(

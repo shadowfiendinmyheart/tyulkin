@@ -26,6 +26,7 @@ export type Styles = {
   log: string;
   muted: string;
   pre: string;
+  qr: string;
   succeeded: string;
   success: string;
   table: string;

@@ -6,6 +6,7 @@ import { stopAsk } from "../ask";
 import { gameCommands } from "./games";
 import { getNeofetch } from "../neofetch";
 import { getManPage } from "../man";
+import { QR_VCARD_PARAM, showQr, stopQr } from "../qr";
 import { getSecretsLog } from "../secrets";
 import { formatDate, formatHistory, getWorkingDirectory, unquote, USER_NAME } from "../shell";
 import {
@@ -34,6 +35,8 @@ export const globalCommands: Command[] = [
     run: ({ consoleDispatch }) => {
       // an answer of `ask` would go on printing into the cleared console
       stopAsk();
+      // so is a QR code still loading
+      stopQr();
       consoleDispatch(clearLogs());
     },
   },
@@ -144,6 +147,13 @@ export const globalCommands: Command[] = [
     // logs nothing, and a link would cover the recipient's page at once
     shareable: false,
     run: ({ consoleDispatch }) => consoleDispatch(setMatrixShown(true)),
+  },
+  {
+    // a QR code of the site address, or of the contacts as a vCard (TASK-96)
+    name: "qr",
+    params: [QR_VCARD_PARAM],
+    descriptionKey: "helpQr",
+    run: ({ log, fail, t }, [param]) => void showQr({ t, param, log, fail }),
   },
   ...gameCommands,
   {

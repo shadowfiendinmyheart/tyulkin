@@ -18,8 +18,9 @@ export type LogNode =
   | { type: "command"; command: string; label?: string }
   // rows of cells, a cell is a list of nodes
   | { type: "table"; rows: LogNode[][][] }
-  // kept as is: no wrapping, scrolls horizontally (ASCII art, aligned columns)
-  | { type: "pre"; text: string; decorative?: boolean };
+  // kept as is: no wrapping, scrolls horizontally (ASCII art, aligned columns).
+  // qr: a QR code of half blocks (TASK-96), dark on light in any theme and shown on a phone too
+  | { type: "pre"; text: string; decorative?: boolean; qr?: boolean };
 
 // what is logged: one node or several in a row
 export type LogContent = LogNode | LogNode[];

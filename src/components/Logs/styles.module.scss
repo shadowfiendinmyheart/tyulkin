@@ -134,6 +134,21 @@ $ansi-colors: (
   overflow-x: auto;
 }
 
+// a QR code (TASK-96): dark modules on white in every theme, as scanners expect; rows of half
+// blocks touch each other. The blocks are not in IBM Plex Mono: the spaces between them must come
+// from the same font, or the columns would drift apart
+.qr {
+  width: fit-content;
+  max-width: 100%;
+  font-family: Menlo, Consolas, "DejaVu Sans Mono", "Liberation Mono", monospace;
+  line-height: 1;
+  // shrinks to the width of a phone: a character is ~0.6em wide in a monospace font, the
+  // gutters of the console take a few ch
+  font-size: min(1em, calc((100vw - 6ch) / var(--qr-columns) / 0.61));
+  color: #000;
+  background-color: #fff;
+}
+
 // decorative ASCII art (the neofetch logo next to its text) gives its room to the text on a phone
 @media (max-width: 520px) {
   .art,

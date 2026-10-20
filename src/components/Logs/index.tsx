@@ -102,8 +102,14 @@ const renderNode = (node: LogNode): React.ReactNode => {
     case "pre":
       return (
         <pre
-          className={node.decorative ? `${styles.pre} ${styles.art}` : styles.pre}
+          className={cn(styles.pre, node.qr ? styles.qr : node.decorative && styles.art)}
           aria-hidden={node.decorative || undefined}
+          // a QR code shrinks to the width of a phone by its columns
+          style={
+            node.qr
+              ? ({ "--qr-columns": node.text.split("\n")[0].length } as React.CSSProperties)
+              : undefined
+          }
         >
           {node.text}
         </pre>

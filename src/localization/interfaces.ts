@@ -94,6 +94,10 @@ export interface CommonDictionary {
   manAliases: string;
   manParams: string;
   manArgument: string;
+  // `qr` (TASK-96): over the code of the site address, of the vCard; the generator didn't load
+  qrSite: string;
+  qrVcard: string;
+  qrLoadFailed: string;
 }
 
 // one line of `help` per command, see commandHandlers/commands
@@ -140,6 +144,7 @@ export interface CommandDescriptionDictionary {
   helpRead: string;
   helpAsk: string;
   helpMan: string;
+  helpQr: string;
 }
 
 export interface DictionaryWithArgs {
@@ -215,6 +220,8 @@ export interface DictionaryWithArgs {
   // `man` without a command, $man is a command placeholder; no command $command typed by the visitor
   manUsage: string;
   manNotFound: string;
+  // `qr` with an unknown argument, $vcard is a command placeholder
+  qrUsage: string;
 }
 
 export type Dictionary = CommonDictionary & CommandDescriptionDictionary & DictionaryWithArgs;
@@ -282,6 +289,7 @@ type ReadNotFoundLocale = LocaleWithArgsGenerator<"readNotFound", "slug" | "blog
 type AskTooLongLocale = LocaleWithArgsGenerator<"askTooLong", "max">;
 type ManUsageLocale = LocaleWithArgsGenerator<"manUsage", "man">;
 type ManNotFoundLocale = LocaleWithArgsGenerator<"manNotFound", "command">;
+type QrUsageLocale = LocaleWithArgsGenerator<"qrUsage", "vcard">;
 type NeofetchLocale = LocaleWithArgsGenerator<
   "neofetch",
   "uptime" | "theme" | "caret" | "language"
@@ -333,7 +341,8 @@ export type LocaleWithArgs =
   | ReadNotFoundLocale
   | AskTooLongLocale
   | ManUsageLocale
-  | ManNotFoundLocale;
+  | ManNotFoundLocale
+  | QrUsageLocale;
 export type LocaleParams = CommonLocale | LocaleWithArgs;
 
 export const languages = ["ru", "eng"] as const;
