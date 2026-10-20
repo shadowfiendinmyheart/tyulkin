@@ -85,7 +85,7 @@ test("rains in the theme colors by matrix, closes on a key (TASK-65)", async ({ 
   await open(page);
   await page.keyboard.type("matrix");
   await page.keyboard.press("Enter");
-  await expect(page.getByText(eng.matrixExit)).toBeVisible();
+  await expect(page.getByText(eng.overlayExit)).toBeVisible();
   // the rain is drawn: some pixel differs from the theme background
   await expect
     .poll(() =>
@@ -96,8 +96,29 @@ test("rains in the theme colors by matrix, closes on a key (TASK-65)", async ({ 
     )
     .toBe(true);
   await page.keyboard.press("q");
-  await expect(page.getByText(eng.matrixExit)).toBeHidden();
+  await expect(page.getByText(eng.overlayExit)).toBeHidden();
   await expect(input(page)).toHaveValue("");
+});
+
+test("draws each screensaver, closes on a tap (TASK-95)", async ({ page }) => {
+  await open(page);
+  for (const screensaver of ["pipes", "stars", "logo"]) {
+    await page.keyboard.type(`screensaver ${screensaver}`);
+    await page.keyboard.press("Enter");
+    await expect(page.getByText(eng.overlayExit)).toBeVisible();
+    // something is drawn: some pixel differs from the theme background
+    await expect
+      .poll(() =>
+        page.locator("canvas").evaluate((canvas: HTMLCanvasElement) => {
+          const { data } = canvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height);
+          return data.some((value, index) => index % 4 !== 3 && value > 64);
+        }),
+      )
+      .toBe(true);
+    await page.mouse.click(10, 10);
+    await expect(page.getByText(eng.overlayExit)).toBeHidden();
+    await input(page).focus();
+  }
 });
 
 test.describe("mini-games (TASK-66)", () => {

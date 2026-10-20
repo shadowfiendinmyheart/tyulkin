@@ -132,8 +132,8 @@ src/
 Реестр — [`src/commandHandlers/commands/`](src/commandHandlers/commands):
 
 - `global.ts` — команды, доступные на любой странице (`help`, `clear`, `back`, `menu`,
-  `neofetch`, `gui`, `share`, `matrix`, `secrets`, `history`, `echo`, `whoami`, `pwd`, `date`,
-  `man`). `man <команда>` и `<команда> --help` собирают man-страницу из полей команды
+  `neofetch`, `gui`, `share`, `matrix`, `screensaver`, `secrets`, `history`, `echo`, `whoami`,
+  `pwd`, `date`, `man`). `man <команда>` и `<команда> --help` собирают man-страницу из полей команды
   ([`commandHandlers/man.ts`](src/commandHandlers/man.ts)), заголовки разделов — из словарей;
 - `main.ts`, `settings.ts` — команды страниц;
 - `fileSystem.ts` — `ls`, `cd`, `cat`, `tree`: создаются для каждой страницы-каталога (см. ниже);
@@ -256,7 +256,14 @@ BCP 47-тег в `htmlLangByLanguage` ([`localization/utils.ts`](src/localizatio
 включает её только код Konami ↑↑↓↓←→←→BA на странице терминала
 ([`hooks/useKonamiCode.ts`](src/hooks/useKonamiCode.ts)); сохраняется как обычная тема. Команда
 `matrix` закрывает страницу «цифровым дождём» на canvas в цветах темы
-([`components/MatrixRain`](src/components/MatrixRain/index.tsx)), выход — любая клавиша или тап.
+([`components/MatrixRain`](src/components/MatrixRain/scene.ts)), выход — любая клавиша или тап.
+`screensaver [pipes|stars|logo]` (без аргумента — любая) показывает заставку
+([`components/Screensaver`](src/components/Screensaver/scenes.ts)); она же включается сама после
+`SCREENSAVER_DELAY_MS` без ввода ([`hooks/useIdle.ts`](src/hooks/useIdle.ts)) — но не в скрытой
+вкладке, не при `prefers-reduced-motion`, не поверх игры, палитры или печатаемого вывода. Дождь
+и заставки — сцены общего каркаса
+[`components/CanvasOverlay`](src/components/CanvasOverlay/index.tsx): canvas на всю страницу, цвета
+темы, выход, неподвижный кадр при reduced motion; что показано — `overlay` в состоянии консоли.
 
 `set crt on|off` (по умолчанию выкл., `crtModes` в `src/domain`, хранится в storage) включает
 CRT-эффект терминала: свечение текста и слой поверх страницы со scanlines, виньеткой и мерцанием

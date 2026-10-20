@@ -16,6 +16,7 @@ import {
   FONT_SIZE_MAX,
   FONT_SIZE_MIN,
   fontModes,
+  screensaverIds,
   secretIds,
   soundModes,
   themeModes,
@@ -25,7 +26,7 @@ import inputStyles from "../Input/styles.module.scss";
 import hintStyles from "../CommandsHint/style.module.scss";
 import { QUICK_COMMANDS, QUICK_COMMANDS_TYPED_LIMIT } from "../QuickCommands";
 import { EXTRA_KEYS } from "../ExtraKeys";
-import { GUI_HINT_DELAY_MS } from "../../pages/ConsolePage";
+import { GUI_HINT_DELAY_MS, SCREENSAVER_DELAY_MS } from "../../pages/ConsolePage";
 import { ACHIEVEMENT_TOAST_MS } from "../../router/ConsoleSessionLayout";
 import pageStyles from "../../pages/ConsolePage/styles.module.scss";
 import logsStyles from "../Logs/styles.module.scss";
@@ -1443,6 +1444,107 @@ describe("share (TASK-62)", () => {
   });
 });
 
+describe("screensaver (TASK-95)", () => {
+  beforeEach(() => {
+    // jsdom has no canvas: nothing is drawn, the overlay works without it
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const queryScreensaver = () => screen.queryByText(eng.overlayExit);
+
+  it("covers the page by screensaver, any key closes it and is not typed", async () => {
+    const { user, input } = renderConsole("/settings");
+    await user.keyboard("screensaver pipes{Enter}");
+    expect(queryScreensaver()).toBeTruthy();
+    await user.keyboard("x");
+    expect(queryScreensaver()).toBeNull();
+    expect(input.value).toBe("");
+    // any of them without an argument
+    await user.keyboard("screensaver{Enter}");
+    expect(queryScreensaver()).toBeTruthy();
+  });
+
+  it("tells the names on a wrong one", async () => {
+    const { user } = renderConsole("/settings");
+    await user.keyboard("screensaver toasters{Enter}");
+    expect(queryScreensaver()).toBeNull();
+    const wrong = t({
+      key: "wrongScreensaver",
+      args: { screensaverName: "toasters", screensavers: getParamsString(screensaverIds) },
+    });
+    expect(getLogs().at(-1)).toBe(wrong);
+  });
+
+  describe("after a while without input", () => {
+    let visibilityState: DocumentVisibilityState;
+    beforeEach(() => {
+      vi.useFakeTimers();
+      // no reduced motion
+      vi.stubGlobal("matchMedia", () => ({ matches: false }));
+      visibilityState = "visible";
+      vi.spyOn(document, "visibilityState", "get").mockImplementation(() => visibilityState);
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("starts after the delay, input starts the wait over", () => {
+      renderConsole("/settings");
+      act(() => vi.advanceTimersByTime(SCREENSAVER_DELAY_MS - 1000));
+      fireEvent.pointerMove(document.body);
+      act(() => vi.advanceTimersByTime(SCREENSAVER_DELAY_MS - 1000));
+      fireEvent.keyDown(document.body, { key: "a" });
+      act(() => vi.advanceTimersByTime(SCREENSAVER_DELAY_MS - 1000));
+      expect(queryScreensaver()).toBeNull();
+
+      act(() => vi.advanceTimersByTime(1000));
+      expect(queryScreensaver()).toBeTruthy();
+      // the key closes it and goes no further; the wait starts over
+      fireEvent.keyDown(document.body, { key: "a" });
+      expect(queryScreensaver()).toBeNull();
+      act(() => vi.advanceTimersByTime(SCREENSAVER_DELAY_MS));
+      expect(queryScreensaver()).toBeTruthy();
+    });
+
+    it("does not start over a log being typed out", () => {
+      renderConsole("/settings");
+      // the boot is typed out (no reduced motion) and jsdom never ends its animations
+      act(() => vi.advanceTimersByTime(SCREENSAVER_DELAY_MS * 2));
+      expect(queryScreensaver()).toBeNull();
+      // a key shows it in full
+      fireEvent.keyDown(document.body, { key: "a" });
+      act(() => vi.advanceTimersByTime(SCREENSAVER_DELAY_MS));
+      expect(queryScreensaver()).toBeTruthy();
+    });
+
+    it("does not start in a hidden tab, the tab shown again starts the wait over", () => {
+      renderConsole("/settings");
+      // a key shows the boot in full: nothing is typed out
+      fireEvent.keyDown(document.body, { key: "a" });
+      visibilityState = "hidden";
+      act(() => vi.advanceTimersByTime(SCREENSAVER_DELAY_MS * 3));
+      expect(queryScreensaver()).toBeNull();
+      act(() => vi.advanceTimersByTime(SCREENSAVER_DELAY_MS / 2));
+      visibilityState = "visible";
+      fireEvent(document, new Event("visibilitychange"));
+      act(() => vi.advanceTimersByTime(SCREENSAVER_DELAY_MS - 1000));
+      expect(queryScreensaver()).toBeNull();
+      act(() => vi.advanceTimersByTime(1000));
+      expect(queryScreensaver()).toBeTruthy();
+    });
+
+    it("does not start with reduced motion", () => {
+      vi.stubGlobal("matchMedia", () => ({ matches: true }));
+      renderConsole("/settings");
+      act(() => vi.advanceTimersByTime(SCREENSAVER_DELAY_MS * 2));
+      expect(queryScreensaver()).toBeNull();
+    });
+  });
+});
+
 describe("matrix and the Konami code (TASK-65)", () => {
   beforeEach(() => {
     // jsdom has no canvas: the rain is not drawn, the overlay works without it
@@ -1452,7 +1554,7 @@ describe("matrix and the Konami code (TASK-65)", () => {
     vi.restoreAllMocks();
   });
 
-  const queryMatrix = () => screen.queryByText(eng.matrixExit);
+  const queryMatrix = () => screen.queryByText(eng.overlayExit);
 
   it("covers the console by matrix, any key closes it and is not typed", async () => {
     const { user, input } = renderConsole("/settings");

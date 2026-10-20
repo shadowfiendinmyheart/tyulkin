@@ -33,7 +33,7 @@ const initialState: ConsoleState = {
   fontMode: "ibm-plex-mono",
   fontSize: 16,
   commandsHint: [],
-  isMatrixShown: false,
+  overlay: null,
   game: null,
   achievement: null,
 };

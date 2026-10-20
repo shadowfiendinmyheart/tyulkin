@@ -1,4 +1,4 @@
-import { CaretMode, CrtMode, FontMode, GameId, SecretId, SoundMode } from "../../domain";
+import { CaretMode, CrtMode, FontMode, GameId, OverlayId, SecretId, SoundMode } from "../../domain";
 import {
   ActionAddHistoryCommand,
   ActionAddLogs,
@@ -13,7 +13,7 @@ import {
   ActionSetFontMode,
   ActionSetFontSize,
   ActionSetCommandsHint,
-  ActionSetMatrixShown,
+  ActionSetOverlay,
   ActionSetGame,
   ActionShowAchievement,
   ActionHideAchievement,
@@ -63,9 +63,10 @@ export const finishTyping = (logId: number): ActionFinishTyping => ({
 });
 // shows every log in full at once
 export const skipTyping = (): ActionSkipTyping => ({ type: ConsoleActionKind.SkipTyping });
-export const setMatrixShown = (isShown: boolean): ActionSetMatrixShown => ({
-  type: ConsoleActionKind.SetMatrixShown,
-  payload: isShown,
+// covers the page with the `matrix` rain or a screensaver (TASK-95); null takes it away
+export const setOverlay = (overlay: OverlayId | null): ActionSetOverlay => ({
+  type: ConsoleActionKind.SetOverlay,
+  payload: overlay,
 });
 // starts a mini-game over the console (TASK-66); null ends it
 export const setGame = (game: GameId | null): ActionSetGame => ({

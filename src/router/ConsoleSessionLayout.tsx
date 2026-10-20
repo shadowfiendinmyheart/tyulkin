@@ -4,7 +4,7 @@ import { ConsoleContext } from "../context/consoleContext";
 import storage from "../storage";
 import { reducer } from "../store/console/reducer";
 import { ConsoleState } from "../store/console/interfaces";
-import { hideAchievement, setGame, setMatrixShown } from "../store/console/actions";
+import { hideAchievement, setGame, setOverlay } from "../store/console/actions";
 
 // how long the toast of a found secret stays on screen (TASK-97)
 export const ACHIEVEMENT_TOAST_MS = 5000;
@@ -24,7 +24,7 @@ const createInitialState = (): ConsoleState => ({
   fontMode: storage.getFontMode(),
   fontSize: storage.getFontSize(),
   commandsHint: [],
-  isMatrixShown: false,
+  overlay: null,
   game: null,
   achievement: null,
 });
@@ -33,15 +33,15 @@ const createInitialState = (): ConsoleState => ({
 // view and back doesn't wipe it
 export const ConsoleSessionLayout: React.FC = () => {
   const [state, dispatch] = React.useReducer(reducer, undefined, createInitialState);
-  // the rain and a game belong to the page they were run on: leaving it without a key or tap (the
-  // browser's back by a mouse button or a swipe) closes them. A change of the query alone (a deep link
-  // dropping ?cmd before running `matrix`) is not leaving
+  // the rain, a screensaver and a game belong to the page they were run on: leaving it without a
+  // key or tap (the browser's back by a mouse button or a swipe) closes them. A change of the query
+  // alone (a deep link dropping ?cmd before running `matrix`) is not leaving
   const { pathname } = useLocation();
   const pathnameRef = React.useRef(pathname);
   React.useLayoutEffect(() => {
     if (pathnameRef.current === pathname) return;
     pathnameRef.current = pathname;
-    dispatch(setMatrixShown(false));
+    dispatch(setOverlay(null));
     dispatch(setGame(null));
   }, [pathname]);
 

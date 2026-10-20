@@ -120,11 +120,11 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
       };
     }
 
-    case ConsoleActionKind.SetMatrixShown: {
-      if (action.payload === state.isMatrixShown) return state;
+    case ConsoleActionKind.SetOverlay: {
+      if (action.payload === state.overlay) return state;
       return {
         ...state,
-        isMatrixShown: action.payload,
+        overlay: action.payload,
       };
     }
 

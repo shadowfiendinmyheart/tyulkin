@@ -80,6 +80,14 @@ export const parseFontSize = (value: unknown): number | undefined => {
 export const gameIds = ["snake", "2048", "tetris"] as const;
 export type GameId = (typeof gameIds)[number];
 
+// the screensavers (TASK-95): after a while without input, or by `screensaver`
+export const screensaverIds = ["pipes", "stars", "logo"] as const;
+export type ScreensaverId = (typeof screensaverIds)[number];
+export const getRandomScreensaver = (): ScreensaverId =>
+  screensaverIds[Math.floor(Math.random() * screensaverIds.length)];
+// what covers the whole page with a canvas until any key or tap: the `matrix` rain or a screensaver
+export type OverlayId = "matrix" | ScreensaverId;
+
 // narrows an arbitrary (e.g. user- or storage-provided) value to one of the allowed ones
 export const oneOf = <T extends string>(allowed: readonly T[], value: unknown): T | undefined =>
   allowed.find((item) => item === value);

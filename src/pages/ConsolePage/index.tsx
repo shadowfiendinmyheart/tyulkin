@@ -7,14 +7,17 @@ import Console from "../../components/Console";
 import DeepLinkCommand from "../../components/DeepLinkCommand";
 import ExtraKeys from "../../components/ExtraKeys";
 import Game from "../../components/Game";
-import MatrixRain from "../../components/MatrixRain";
+import CanvasOverlay, { CreateScene } from "../../components/CanvasOverlay";
+import { createMatrixScene } from "../../components/MatrixRain/scene";
+import { screensaverScenes } from "../../components/Screensaver/scenes";
 import ViewSwitch from "../../components/ViewSwitch";
 import WithCommandHandler from "../../commandHandlers/WithCommandHandler";
 import { useConsoleContext } from "../../context/consoleContext";
 import { ROUTES } from "../../router/const";
-import { addConsoleLog, setMatrixShown } from "../../store/console/actions";
+import { addConsoleLog, setOverlay } from "../../store/console/actions";
 import { setTheme } from "../../store/app/actions";
-import { SECRET_THEME } from "../../domain";
+import { getRandomScreensaver, OverlayId, SECRET_THEME } from "../../domain";
+import { useIdle } from "../../hooks/useIdle";
 import { useKonamiCode } from "../../hooks/useKonamiCode";
 import { usePinchFontSize } from "../../hooks/usePinchFontSize";
 import { useViewportHeight } from "../../hooks/useViewportHeight";
@@ -71,6 +74,14 @@ const startSession = (): { lastLogin: Date | null } | undefined => {
 
 // a visitor who has done nothing for this long is offered the regular view
 export const GUI_HINT_DELAY_MS = 15_000;
+// a screensaver covers the page after this long without input (TASK-95)
+export const SCREENSAVER_DELAY_MS = 3 * 60_000;
+// what is drawn over the page by `matrix` and `screensaver`
+const overlayScenes: Record<OverlayId, CreateScene> = {
+  matrix: createMatrixScene,
+  ...screensaverScenes,
+};
+
 // what counts as doing something: typing, clicking or tapping, scrolling the console
 const ACTIVITY_EVENTS = ["keydown", "pointerdown", "wheel", "touchmove"] as const;
 
@@ -179,8 +190,28 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
   const openPalette = React.useCallback(() => setIsPaletteOpen(true), []);
   const closePalette = React.useCallback(() => setIsPaletteOpen(false), []);
   usePaletteShortcut(React.useCallback(() => setIsPaletteOpen((isOpen) => !isOpen), []));
-  // the matrix rain and the games take every key: the palette would get none
-  const isOverlayShown = state.isMatrixShown || Boolean(state.game);
+  // the matrix rain, a screensaver and the games take every key: the palette would get none
+  const { overlay } = state;
+  const isOverlayShown = Boolean(overlay) || Boolean(state.game);
+
+  // a screensaver after a while without input (TASK-95): not over a game, the rain or the palette,
+  // nor over a log still being typed out, not in a hidden tab (useIdle), and not for a visitor who
+  // asked for less motion
+  const isTyping = state.typedLogId < state.nextLogId;
+  useIdle(
+    React.useCallback(() => {
+      // a key of a virtual keyboard can't be stopped from typing into the focused command line
+      // (an IME input): the keyboard is closed under the screensaver
+      if (
+        window.matchMedia("(pointer: coarse)").matches &&
+        document.activeElement instanceof HTMLElement
+      )
+        document.activeElement.blur();
+      dispatch(setOverlay(getRandomScreensaver()));
+    }, [dispatch]),
+    SCREENSAVER_DELAY_MS,
+    !isOverlayShown && !isPaletteOpen && !isTyping && !prefersReducedMotion(),
+  );
 
   // `set font` and `set fontsize` (TASK-83): on <html>, so the palette, the games and the rain over
   // the console take the font family too (the size is the console's: the overlays keep their rem
@@ -205,7 +236,7 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
   const pinchHandlers = usePinchFontSize();
 
   const isCrt = state.crtMode === "on";
-  const exitMatrix = React.useCallback(() => dispatch(setMatrixShown(false)), [dispatch]);
+  const exitOverlay = React.useCallback(() => dispatch(setOverlay(null)), [dispatch]);
 
   // "/settings/" and "/Settings" match this route too: switch to the canonical path,
   // so the prompt, history and `back` see the same path the commands were picked for
@@ -231,7 +262,7 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
       </div>
       <DeepLinkCommand />
       {isPaletteOpen && !isOverlayShown && <CommandPalette onClose={closePalette} />}
-      {state.isMatrixShown && <MatrixRain onExit={exitMatrix} />}
+      {overlay && <CanvasOverlay createScene={overlayScenes[overlay]} onExit={exitOverlay} />}
       {state.game && <Game key={state.game} game={state.game} />}
       <AchievementToast />
       {isCrt && <div className={styles.crt} aria-hidden="true" />}

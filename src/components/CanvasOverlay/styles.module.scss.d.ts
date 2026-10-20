@@ -1,7 +1,7 @@
 export type Styles = {
   canvas: string;
   hint: string;
-  matrix: string;
+  overlay: string;
 };
 
 export type ClassNames = keyof Styles;

@@ -1,5 +1,6 @@
+import { getRandomScreensaver, oneOf, screensaverIds } from "../../domain";
 import { ROUTES } from "../../router/const";
-import { clearHistory, clearLogs, setMatrixShown } from "../../store/console/actions";
+import { clearHistory, clearLogs, setOverlay } from "../../store/console/actions";
 import { withNode } from "../../store/console/logNodes";
 import { Command } from "../interfaces";
 import { stopAsk } from "../ask";
@@ -11,6 +12,7 @@ import { getSecretsLog } from "../secrets";
 import { formatDate, formatHistory, getWorkingDirectory, unquote, USER_NAME } from "../shell";
 import {
   getCommandLink,
+  getParamsString,
   getHelpRow,
   getParentPath,
   getShareableCommand,
@@ -146,7 +148,32 @@ export const globalCommands: Command[] = [
     descriptionKey: "helpMatrix",
     // logs nothing, and a link would cover the recipient's page at once
     shareable: false,
-    run: ({ consoleDispatch }) => consoleDispatch(setMatrixShown(true)),
+    run: ({ consoleDispatch }) => consoleDispatch(setOverlay("matrix")),
+  },
+  {
+    // a screensaver over the page until any key or tap (TASK-95); it also starts by itself after
+    // a while without input, see ConsolePage. Without an argument: any of them
+    name: "screensaver",
+    params: screensaverIds,
+    descriptionKey: "helpScreensaver",
+    // a link would cover the recipient's page at once
+    shareable: false,
+    run: ({ log, fail, t, consoleDispatch }, [param]) => {
+      const screensaver = param
+        ? oneOf(screensaverIds, param.toLowerCase())
+        : getRandomScreensaver();
+      if (!screensaver) {
+        log(
+          t({
+            key: "wrongScreensaver",
+            args: { screensaverName: param, screensavers: getParamsString(screensaverIds) },
+          }),
+        );
+        fail();
+        return;
+      }
+      consoleDispatch(setOverlay(screensaver));
+    },
   },
   {
     // a QR code of the site address, or of the contacts as a vCard (TASK-96)

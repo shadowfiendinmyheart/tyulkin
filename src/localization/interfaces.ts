@@ -39,8 +39,8 @@ export interface CommonDictionary {
   palettePlaceholder: string;
   paletteResultsLabel: string;
   paletteEmpty: string;
-  // shown over the `matrix` digital rain
-  matrixExit: string;
+  // shown over the `matrix` digital rain and a screensaver
+  overlayExit: string;
   // the mini-games (TASK-66): the exit button, the end of a game, a chunk that didn't load
   gameExit: string;
   gameOver: string;
@@ -142,6 +142,7 @@ export interface CommandDescriptionDictionary {
   helpCv: string;
   helpShare: string;
   helpMatrix: string;
+  helpScreensaver: string;
   helpSnake: string;
   helpGame2048: string;
   helpTetris: string;
@@ -186,6 +187,8 @@ export interface DictionaryWithArgs {
   crtStatus: string;
   wrongCrt: string;
   changeCrt: string;
+  // `screensaver` with a wrong name (TASK-95): $screensavers lists the names
+  wrongScreensaver: string;
   // `set sound` (TASK-67): $state is on or off, $modes lists both
   soundStatus: string;
   wrongSound: string;
@@ -278,6 +281,10 @@ type CaretListLocale = LocaleWithArgsGenerator<"caretList", "carets">;
 type CrtStatusLocale = LocaleWithArgsGenerator<"crtStatus", "state" | "modes">;
 type WrongCrtLocale = LocaleWithArgsGenerator<"wrongCrt", "crtName" | "modes">;
 type ChangeCrtLocale = LocaleWithArgsGenerator<"changeCrt", "state">;
+type WrongScreensaverLocale = LocaleWithArgsGenerator<
+  "wrongScreensaver",
+  "screensaverName" | "screensavers"
+>;
 type SoundStatusLocale = LocaleWithArgsGenerator<"soundStatus", "state" | "modes">;
 type WrongSoundLocale = LocaleWithArgsGenerator<"wrongSound", "soundName" | "modes">;
 type ChangeSoundLocale = LocaleWithArgsGenerator<"changeSound", "state">;
@@ -343,6 +350,7 @@ export type LocaleWithArgs =
   | CrtStatusLocale
   | WrongCrtLocale
   | ChangeCrtLocale
+  | WrongScreensaverLocale
   | SoundStatusLocale
   | WrongSoundLocale
   | ChangeSoundLocale

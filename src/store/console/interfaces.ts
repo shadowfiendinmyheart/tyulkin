@@ -5,6 +5,7 @@ import {
   CrtMode,
   FontMode,
   GameId,
+  OverlayId,
   SecretId,
   SoundMode,
 } from "../../domain";
@@ -100,8 +101,9 @@ export interface ConsoleState {
   fontMode: FontMode;
   fontSize: number;
   commandsHint: string[];
-  // the `matrix` digital rain covers the console until any key or tap
-  isMatrixShown: boolean;
+  // the `matrix` digital rain or a screensaver (TASK-95) covers the console until any key or tap,
+  // null when none
+  overlay: OverlayId | null;
   // the mini-game played over the console (TASK-66), null when none
   game: GameId | null;
   // the toast of the last found secret (TASK-97), null when hidden
@@ -122,7 +124,7 @@ export type ConsoleActionType =
   | ActionSetCommandsHint
   | ActionFinishTyping
   | ActionSkipTyping
-  | ActionSetMatrixShown
+  | ActionSetOverlay
   | ActionSetGame
   | ActionShowAchievement
   | ActionHideAchievement
@@ -135,7 +137,7 @@ export type ActionFailCommand = ActionTypeGenerator<ConsoleActionKind.FailComman
 // payload: id of the typed out log
 export type ActionFinishTyping = ActionTypeGenerator<ConsoleActionKind.FinishTyping, number>;
 export type ActionSkipTyping = ActionTypeGenerator<ConsoleActionKind.SkipTyping>;
-export type ActionSetMatrixShown = ActionTypeGenerator<ConsoleActionKind.SetMatrixShown, boolean>;
+export type ActionSetOverlay = ActionTypeGenerator<ConsoleActionKind.SetOverlay, OverlayId | null>;
 export type ActionSetGame = ActionTypeGenerator<ConsoleActionKind.SetGame, GameId | null>;
 export type ActionShowAchievement = ActionTypeGenerator<
   ConsoleActionKind.ShowAchievement,
@@ -174,7 +176,7 @@ export enum ConsoleActionKind {
   SetCommandsHint = "setCommandsHint",
   FinishTyping = "finishTyping",
   SkipTyping = "skipTyping",
-  SetMatrixShown = "setMatrixShown",
+  SetOverlay = "setOverlay",
   SetGame = "setGame",
   ShowAchievement = "showAchievement",
   HideAchievement = "hideAchievement",
