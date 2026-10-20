@@ -426,6 +426,36 @@ describe("autosuggestion (TASK-87)", () => {
   });
 });
 
+describe("highlighting (TASK-86)", () => {
+  // the typed chars by their highlight class, e.g. "cat" -> "command"
+  const getHighlighted = (input: HTMLInputElement, className: string) =>
+    Array.from(input.parentElement?.querySelectorAll(`.${className}`) ?? [])
+      .filter((char) => !char.className.includes(inputStyles.autosuggestion))
+      .map((char) => char.textContent)
+      .join("");
+
+  it("colors the command, arguments and paths of the page; Ctrl+R query is plain", async () => {
+    const { user, input } = renderConsole("/settings");
+    await user.keyboard("cat ../about.md");
+    expect(getHighlighted(input, inputStyles.highlightCommand)).toBe("cat");
+    expect(getHighlighted(input, inputStyles.highlightPath)).toBe("../about.md");
+
+    await user.clear(input);
+    await user.keyboard("cd nope");
+    expect(getHighlighted(input, inputStyles.highlightCommand)).toBe("cd");
+    expect(getHighlighted(input, inputStyles.highlightArgument)).toBe("nope");
+
+    await user.clear(input);
+    await user.keyboard("about");
+    // `about` is a command of the main page only
+    expect(getHighlighted(input, inputStyles.highlightUnknown)).toBe("about");
+
+    await user.clear(input);
+    await user.keyboard("{Control>}r{/Control}cat");
+    expect(getHighlighted(input, inputStyles.highlightCommand)).toBe("");
+  });
+});
+
 describe("caret (TASK-26)", () => {
   // localStorage is cleared before each test, so the caret mode is the default one
   const caretClass = new RegExp(`_${CaretMode.Block}_`);

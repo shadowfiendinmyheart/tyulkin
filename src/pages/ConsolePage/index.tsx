@@ -8,7 +8,6 @@ import Game from "../../components/Game";
 import MatrixRain from "../../components/MatrixRain";
 import ViewSwitch from "../../components/ViewSwitch";
 import WithCommandHandler from "../../commandHandlers/WithCommandHandler";
-import { commandsByRoute } from "../../commandHandlers/commands";
 import { useConsoleContext } from "../../context/consoleContext";
 import { ROUTES } from "../../router/const";
 import { addConsoleLog, setMatrixShown } from "../../store/console/actions";
@@ -181,7 +180,7 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
   }
 
   return (
-    <WithCommandHandler commands={commandsByRoute[route]}>
+    <WithCommandHandler route={route}>
       <div className={styles.page}>
         <nav className={cn(styles.toolbar, isCrt && styles.crtGlow)}>
           <ViewSwitch to="gui" quiet />

@@ -38,23 +38,30 @@ export const formatDate = (now: Date, language: Languages) =>
 // quoted parts lose their quotes, as in a shell: echo "a" 'it"s' -> a it"s
 export const unquote = (text: string) => text.replace(/(["'])([\s\S]*?)\1/g, "$2");
 
-// splits the line by "|" outside quotes: echo "a|b" is one command
-const splitPipes = (line: string) => {
-  const parts = [""];
+// [start, end) of each part of the line split by "|" outside quotes: echo "a|b" is one command;
+// positions are UTF-16 units (a surrogate is never a quote or a "|"), as the line highlighting
+// (TASK-86) draws it
+export const getPipeRanges = (line: string) => {
+  const ranges: [number, number][] = [];
+  let start = 0;
   let quote: string | undefined;
-  for (const char of line) {
+  for (let index = 0; index < line.length; index++) {
+    const char = line[index];
     if (quote) {
       if (char === quote) quote = undefined;
     } else if (char === '"' || char === "'") {
       quote = char;
     } else if (char === "|") {
-      parts.push("");
-      continue;
+      ranges.push([start, index]);
+      start = index + 1;
     }
-    parts[parts.length - 1] += char;
   }
-  return parts;
+  ranges.push([start, line.length]);
+  return ranges;
 };
+
+const splitPipes = (line: string) =>
+  getPipeRanges(line).map(([start, end]) => line.slice(start, end));
 
 // `!!` is the previous command, wherever it is in the line ("sudo !!");
 // undefined when there is no previous command
@@ -88,16 +95,23 @@ export interface GrepFilter {
   ignoreCase: boolean;
 }
 
+// a stage after a "|" (trimmed): "grep -i 'set the'"; undefined when it is not grep with a pattern
+export const parseGrepStage = (stage: string): GrepFilter | undefined => {
+  const match = /^grep(?:\s+(-i))?\s+(\S[\s\S]*)$/i.exec(stage);
+  const pattern = match && unquote(match[2]);
+  if (!pattern) return;
+  return { pattern, ignoreCase: Boolean(match[1]) };
+};
+
 // "help | grep theme | grep -i set": the command and its filters;
 // undefined when something other than grep follows a "|"
 export const parsePipeline = (line: string) => {
   const [command, ...stages] = splitPipes(line).map((part) => part.trim());
   const filters: GrepFilter[] = [];
   for (const stage of stages) {
-    const match = /^grep(?:\s+(-i))?\s+(\S[\s\S]*)$/i.exec(stage);
-    const pattern = match && unquote(match[2]);
-    if (!pattern) return;
-    filters.push({ pattern, ignoreCase: Boolean(match[1]) });
+    const filter = parseGrepStage(stage);
+    if (!filter) return;
+    filters.push(filter);
   }
   if (!command && filters.length) return;
   return { command, filters };

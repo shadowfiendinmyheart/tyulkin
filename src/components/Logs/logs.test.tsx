@@ -31,7 +31,7 @@ const renderLog = (content: LogNode[]) => {
         consoleDispatch: () => undefined,
       }}
     >
-      <HandlerContext.Provider value={{ executeCommand, allCommands: [] }}>
+      <HandlerContext.Provider value={{ executeCommand, allCommands: [], highlight: () => [] }}>
         <Logs />
       </HandlerContext.Provider>
     </ConsoleContext.Provider>,

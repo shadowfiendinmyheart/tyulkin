@@ -85,3 +85,21 @@
   white-space: pre;
   text-overflow: ellipsis;
 }
+
+// fish-like highlighting of the typed line (TASK-86), a class per char
+.highlightCommand {
+  color: var(--success-color);
+}
+
+.highlightUnknown {
+  color: var(--error-color);
+}
+
+.highlightArgument {
+  color: var(--muted-color);
+}
+
+.highlightPath {
+  color: var(--muted-color);
+  text-decoration: underline;
+}

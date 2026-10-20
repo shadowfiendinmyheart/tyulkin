@@ -18,6 +18,7 @@ import { useT } from "../../context/localizationContext";
 import { withNode } from "../../store/console/logNodes";
 import { isClickingKey, playKeyClick } from "../../utils/keySound";
 import { getAutosuggestion } from "../../commandHandlers/utils";
+import { HighlightKind } from "../../commandHandlers/highlight";
 
 import styles from "./styles.module.scss";
 
@@ -40,6 +41,15 @@ const isCtrlShortcut = (e: React.KeyboardEvent, letter: string) => {
 // text selected on the page (in logs); the input's own selection is always collapsed
 const isTextSelected = () => Boolean(window.getSelection()?.toString());
 
+// fish-like highlighting (TASK-86): the class of a char by its kind
+const highlightClassName: Record<HighlightKind, string | undefined> = {
+  command: styles.highlightCommand,
+  unknown: styles.highlightUnknown,
+  argument: styles.highlightArgument,
+  path: styles.highlightPath,
+  text: undefined,
+};
+
 // keys that end Ctrl+R search with the found entry in the line, to edit it
 const SEARCH_ACCEPT_KEYS = [
   "Tab",
@@ -57,7 +67,7 @@ interface InputProps {
 }
 
 const Input: React.FC<InputProps> = ({ onInputElement }) => {
-  const { executeCommand, allCommands } = useHandlerContext();
+  const { executeCommand, allCommands, highlight } = useHandlerContext();
   const { consoleDispatch, consoleState } = useConsoleContext();
   const { logs, history, soundMode } = consoleState;
   const [inputValue, setInputValue] = React.useState<string>("");
@@ -103,6 +113,11 @@ const Input: React.FC<InputProps> = ({ onInputElement }) => {
   );
   // the typed part is drawn as typed; accepting takes the whole entry, case included
   const autosuggestionRest = autosuggestion?.slice(inputValue.length);
+  // a Ctrl+R query is a text to find, not a command: it is not highlighted
+  const highlightKinds = React.useMemo(
+    () => (reverseSearch.isSearching ? [] : highlight(inputValue)),
+    [reverseSearch.isSearching, highlight, inputValue],
+  );
 
   // the native input is the single source of truth for the caret
   const syncCaretPosition = React.useCallback(() => {
@@ -318,9 +333,13 @@ const Input: React.FC<InputProps> = ({ onInputElement }) => {
           <Char isCaret={true} className={styles.zeroChar} />
         ) : undefined}
         {inputValue.split("").map((char, index) => (
-          // characters repeat and have no identity of their own: the position is the key
-          // eslint-disable-next-line @eslint-react/no-array-index-key
-          <Char key={index} isCaret={caretPosition === index}>
+          <Char
+            // characters repeat and have no identity of their own: the position is the key
+            // eslint-disable-next-line @eslint-react/no-array-index-key
+            key={index}
+            isCaret={caretPosition === index}
+            className={highlightClassName[highlightKinds[index] ?? "text"]}
+          >
             {char}
           </Char>
         ))}

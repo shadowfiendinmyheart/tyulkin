@@ -3,6 +3,10 @@ export type Styles = {
   autosuggestionRest: string;
   chars: string;
   charsAutosuggesting: string;
+  highlightArgument: string;
+  highlightCommand: string;
+  highlightPath: string;
+  highlightUnknown: string;
   hint: string;
   locator: string;
   nativeInput: string;

@@ -105,6 +105,14 @@ export const resolvePath = (route: ConsoleRouteValues, typed: string): FsPath | 
   return path;
 };
 
+// a path as typed is an existing file or directory (TASK-86); "about.md/" is not, a file is not
+// a directory
+export const isExistingPath = (route: ConsoleRouteValues, typed: string) => {
+  const path = resolvePath(route, typed);
+  if (!path) return false;
+  return !(typed.endsWith("/") && path[path.length - 1].kind === "file");
+};
+
 // the path of a node as typed from a directory: "projects/README.md", "..", "../about.md"
 const getRelativePath = (from: FsPath, to: FsPath) => {
   let common = 0;

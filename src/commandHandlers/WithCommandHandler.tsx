@@ -13,21 +13,26 @@ import {
   addUserLog,
   setCommandsHint,
 } from "../store/console/actions";
+import { ConsoleRouteValues } from "../router/interfaces";
 import { LogNode } from "../store/console/interfaces";
 import { withNode, withNodes } from "../store/console/logNodes";
-import { globalCommands, secretCommands } from "./commands";
-import { Command, CommandContext } from "./interfaces";
+import { commandsByRoute, globalCommands, secretCommands } from "./commands";
+import { CommandContext } from "./interfaces";
+import { isExistingPath } from "./fileSystem";
+import { highlightLine } from "./highlight";
 import { findSecret } from "./secrets";
 import { expandHistory, grep, parsePipeline } from "./shell";
 import { getAllCommandsWithParams, getSuggestion, separateCommand } from "./utils";
 
 interface WithCommandHandlerProps {
-  // commands of the current page; global commands are always available
-  commands: Command[];
+  // the page: its commands (global ones are always available); typed paths start from its
+  // directory (highlighting, TASK-86)
+  route: ConsoleRouteValues;
   children?: React.ReactNode;
 }
 
-const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, children }) => {
+const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ route, children }) => {
+  const commands = commandsByRoute[route];
   const { consoleState, consoleDispatch } = useConsoleContext();
   const { caretMode, crtMode, soundMode, history } = consoleState;
   // read by `share`, `history` and `!!`: kept out of the deps, so the handlers don't change
@@ -168,9 +173,26 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ commands, child
     [consoleDispatch, prompt, commandHandler, t],
   );
 
+  // fish-like highlighting of the typed line (TASK-86), matched as commandHandler matches it:
+  // easter eggs run, so they are commands too
+  const hasHistory = history.length > 0;
+  const highlight = React.useCallback<HandlerContextType["highlight"]>(
+    (line) =>
+      highlightLine(
+        {
+          commandLists: [availableCommands, secretCommands],
+          hasHistory,
+          // as typed, quotes included: the file system commands don't unquote their argument
+          isPath: (typed) => isExistingPath(route, typed),
+        },
+        line,
+      ),
+    [availableCommands, hasHistory, route],
+  );
+
   const handlerContextValue = React.useMemo(
-    () => ({ executeCommand, allCommands }),
-    [executeCommand, allCommands],
+    () => ({ executeCommand, allCommands, highlight }),
+    [executeCommand, allCommands, highlight],
   );
 
   return <HandlerContext.Provider value={handlerContextValue}>{children}</HandlerContext.Provider>;
