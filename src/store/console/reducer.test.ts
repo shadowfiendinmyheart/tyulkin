@@ -7,6 +7,7 @@ import {
   clearHistory,
   clearLogs,
   countTypedCommand,
+  failCommand,
   finishTyping,
   setCaretMode,
   setCommandsHint,
@@ -38,9 +39,27 @@ describe("console reducer", () => {
     state = reducer(state, addUserLog("ls", "~$"));
     expect(state.logs).toEqual([
       { content: ["hello"], id: 0 },
-      { content: ["~$ ls"], id: 1 },
+      { content: ["~$ ls"], id: 1, echo: expect.objectContaining({ prompt: "~$", input: "ls" }) },
     ]);
     expect(reducer(state, clearLogs()).logs).toEqual([]);
+  });
+
+  it("marks the block of its command failed, even after another command (TASK-82)", () => {
+    const failing = addUserLog("ask hi", "~$", "ask hi");
+    let state = reducer(initialState, failing);
+    state = reducer(state, addConsoleLog("thinking…"));
+    state = reducer(state, addUserLog("ls", "~$", "ls"));
+    state = reducer(state, addUserLog("pw^C", "~$"));
+    state = reducer(state, failCommand(failing.payload.echo.blockId));
+    expect(state.logs.map((log) => log.echo?.failed)).toEqual([
+      true,
+      undefined,
+      undefined,
+      undefined,
+    ]);
+    // already failed, or dropped by clear: nothing changes
+    expect(reducer(state, failCommand(failing.payload.echo.blockId))).toBe(state);
+    expect(reducer(initialState, failCommand(failing.payload.echo.blockId))).toBe(initialState);
   });
 
   it("keeps log ids unique after clear", () => {

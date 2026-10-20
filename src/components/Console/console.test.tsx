@@ -18,6 +18,7 @@ import { QUICK_COMMANDS, QUICK_COMMANDS_TYPED_LIMIT } from "../QuickCommands";
 import { EXTRA_KEYS } from "../ExtraKeys";
 import { GUI_HINT_DELAY_MS } from "../../pages/ConsolePage";
 import pageStyles from "../../pages/ConsolePage/styles.module.scss";
+import logsStyles from "../Logs/styles.module.scss";
 
 const t = createT(eng);
 
@@ -1663,5 +1664,40 @@ describe("mini-games (TASK-66)", () => {
     await act(() => router.navigate(-1));
     expect(router.state.location.pathname).toBe("/");
     expect(queryGame()).toBeNull();
+  });
+});
+
+describe("command blocks (TASK-82)", () => {
+  const getEchoes = () =>
+    screen.queryAllByRole("listitem").filter((item) => item.classList.contains(logsStyles.echo));
+  const getStatus = (item: HTMLElement) =>
+    item.querySelector(`.${logsStyles.failed}`)
+      ? "failed"
+      : item.querySelector(`.${logsStyles.succeeded}`)
+        ? "succeeded"
+        : undefined;
+
+  it("marks a block by whether its command failed", async () => {
+    const { user } = renderConsole();
+    await user.keyboard(
+      "about{Enter}foo{Enter}cd nowhere{Enter}!!{Enter}help | grep{Enter}read nosuchpost{Enter}",
+    );
+    expect(getEchoes().map(getStatus)).toEqual([
+      "succeeded",
+      "failed",
+      "failed",
+      // !! repeats the failed cd
+      "failed",
+      "failed",
+      "failed",
+    ]);
+  });
+
+  it("repeats the command of a block on click", async () => {
+    const { user } = renderConsole();
+    await user.keyboard("about{Enter}help{Enter}");
+    await user.click(within(getEchoes()[0]).getByRole("button", { name: "about" }));
+    expect(getLogs().slice(-2)).toEqual(["visitor@tyulkin ~ ❯ about", eng.about]);
+    expect(getEchoes()).toHaveLength(3);
   });
 });

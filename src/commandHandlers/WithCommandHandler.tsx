@@ -11,6 +11,7 @@ import {
   addConsoleLog,
   addHistoryCommand,
   addUserLog,
+  failCommand,
   setCommandsHint,
 } from "../store/console/actions";
 import { ConsoleRouteValues } from "../router/interfaces";
@@ -60,7 +61,8 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ route, children
   );
 
   const commandHandler = React.useCallback(
-    (userCommand: string, fromLink: boolean) => {
+    // fail: marks the block of the command ✗ (TASK-82); not through grep, the error may be filtered out
+    (userCommand: string, fromLink: boolean, fail: () => void) => {
       if (userCommand.trim() === "") return;
 
       const rawLog: CommandContext["log"] = (content) => consoleDispatch(addConsoleLog(content));
@@ -69,6 +71,7 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ route, children
       const pipeline = parsePipeline(userCommand);
       if (!pipeline) {
         rawLog({ type: "text", text: t({ key: "pipeUsage" }), color: "error" });
+        fail();
         return;
       }
       const { command: line, filters } = pipeline;
@@ -106,12 +109,14 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ route, children
           content.push("\n", ...didYouMean);
         }
         rawLog(content);
+        fail();
         return;
       }
 
       trackCommand(separated.command.name);
       const ctx: CommandContext = {
         log,
+        fail,
         t,
         language,
         theme,
@@ -158,17 +163,22 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ route, children
       // `!!` is the previous command (TASK-61); a link runs what it says
       const command = fromLink ? typed : expandHistory(typed, historyRef.current[0]);
       consoleDispatch(setCommandsHint([]));
-      consoleDispatch(addUserLog(typed, prompt));
+      // a click on the echoed line runs it again: expanded, or `!!` once more if nothing was found
+      const echo = addUserLog(typed, prompt, command ?? typed);
+      consoleDispatch(echo);
+      const { blockId } = echo.payload.echo;
+      const fail = () => consoleDispatch(failCommand(blockId));
       if (command === undefined) {
         consoleDispatch(
           addConsoleLog({ type: "text", text: t({ key: "historyNotFound" }), color: "error" }),
         );
+        fail();
         return;
       }
       // the history keeps the expanded command, and it is shown as in bash
       consoleDispatch(addHistoryCommand(command));
       if (command !== typed) consoleDispatch(addConsoleLog(command));
-      commandHandler(command, fromLink);
+      commandHandler(command, fromLink, fail);
     },
     [consoleDispatch, prompt, commandHandler, t],
   );

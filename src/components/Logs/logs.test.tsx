@@ -1,23 +1,23 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { ConsoleContext } from "../../context/consoleContext";
 import { HandlerContext } from "../../context/handlerContext";
 import { CaretMode } from "../../domain";
-import { LogNode } from "../../store/console/interfaces";
+import { Log, LogNode } from "../../store/console/interfaces";
 import Logs from ".";
 import styles from "./styles.module.scss";
 import commandStyles from "../CommandButton/styles.module.scss";
 
 const executeCommand = vi.fn();
 
-const renderLog = (content: LogNode[]) => {
+const renderLogs = (logs: Log[]) =>
   render(
     <ConsoleContext.Provider
       value={{
         consoleState: {
-          logs: [{ id: 0, content }],
-          nextLogId: 1,
-          typedLogId: 1,
+          logs,
+          nextLogId: logs.length,
+          typedLogId: logs.length,
           history: [],
           historyAdded: 0,
           typedCommandsCount: 0,
@@ -36,6 +36,9 @@ const renderLog = (content: LogNode[]) => {
       </HandlerContext.Provider>
     </ConsoleContext.Provider>,
   );
+
+const renderLog = (content: LogNode[]) => {
+  renderLogs([{ id: 0, content }]);
   return screen.getByRole("listitem");
 };
 
@@ -103,5 +106,52 @@ describe("clickable commands (TASK-55)", () => {
     expect(button.getAttribute("type")).toBe("button");
     fireEvent.click(button);
     expect(executeCommand).toHaveBeenCalledExactlyOnceWith("cd ..");
+  });
+});
+
+describe("command blocks (TASK-82)", () => {
+  const time = new Date(2026, 9, 20, 9, 5, 7).getTime();
+  const echo = (input: string, command?: string, failed?: boolean): Log["echo"] => ({
+    prompt: "~ ❯",
+    input,
+    command,
+    blockId: 1,
+    time,
+    failed,
+  });
+
+  it("heads a block by the echoed input with its status and time", () => {
+    renderLogs([
+      { id: 0, content: ["~ ❯ !!"], echo: echo("!!", "about") },
+      { id: 1, content: ["about me"] },
+      { id: 2, content: ["~ ❯ cd nowhere"], echo: echo("cd nowhere", "cd nowhere", true) },
+      { id: 3, content: ["~ ❯ ls^C"], echo: echo("ls^C") },
+    ]);
+    const [ok, output, failed, dropped] = screen.getAllByRole("listitem");
+    // the status and the time are drawn by CSS: the text stays as entered
+    expect([ok, output, failed, dropped].map((item) => item.textContent)).toEqual([
+      "~ ❯ !!",
+      "about me",
+      "~ ❯ cd nowhere",
+      "~ ❯ ls^C",
+    ]);
+    expect(ok.className).toContain(styles.echo);
+    expect(output.className).not.toContain(styles.echo);
+    expect(ok.querySelector(`.${styles.succeeded}`)).not.toBeNull();
+    expect(failed.querySelector(`.${styles.failed}`)).not.toBeNull();
+    expect(dropped.querySelector(`.${styles.succeeded}, .${styles.failed}`)).toBeNull();
+    expect(ok.querySelector(`.${styles.time}`)?.getAttribute("data-time")).toBe("09:05:07");
+    // a line that wasn't run can't be repeated
+    expect(within(dropped).queryByRole("button")).toBeNull();
+  });
+
+  it("runs the command of a block again on click", () => {
+    executeCommand.mockClear();
+    renderLogs([{ id: 0, content: ["~ ❯ !!"], echo: echo("!!", "about") }]);
+    const button = screen.getByRole("button", { name: "!!" });
+    // what a click runs, when the input is not it
+    expect(button.getAttribute("title")).toBe("about");
+    fireEvent.click(button);
+    expect(executeCommand).toHaveBeenCalledExactlyOnceWith("about");
   });
 });

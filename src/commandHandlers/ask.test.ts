@@ -8,6 +8,8 @@ import { mainCommands } from "./commands/main";
 
 const t = createT(eng);
 const URL = "https://ask.example/";
+// the block of the command shows ✗ (TASK-82): not checked here
+const fail = () => undefined;
 
 // a streamed body, in the given chunks; fail: it breaks off after them
 const streamed = (chunks: string[], { fail = false } = {}) => {
@@ -30,9 +32,10 @@ const run = async (question: string, response: Response | Error) => {
   });
   vi.stubGlobal("fetch", fetchMock);
   const logs: LogContent[] = [];
-  await ask({ url: URL, question, language: "eng", log: (content) => logs.push(content), t });
+  const fail = vi.fn();
+  await ask({ url: URL, question, language: "eng", log: (content) => logs.push(content), fail, t });
   vi.unstubAllGlobals();
-  return { logs, fetchMock };
+  return { logs, fetchMock, fail };
 };
 
 const error = (text: string) => ({ type: "text", text, color: "error" });
@@ -73,13 +76,15 @@ describe("ask", () => {
   });
 
   it("explains how to ask without sending a question", async () => {
-    const { logs, fetchMock } = await run("", new Response(""));
+    const { logs, fetchMock, fail } = await run("", new Response(""));
     expect(logs).toEqual([eng.askUsage]);
+    expect(fail).not.toHaveBeenCalled();
 
     const tooLong = await run("a".repeat(MAX_QUESTION_LENGTH + 1), new Response(""));
     expect(tooLong.logs).toEqual([
       error(eng.askTooLong.replace("$max", String(MAX_QUESTION_LENGTH))),
     ]);
+    expect(tooLong.fail).toHaveBeenCalledOnce();
     expect(fetchMock).not.toHaveBeenCalled();
     expect(tooLong.fetchMock).not.toHaveBeenCalled();
   });
@@ -91,8 +96,9 @@ describe("ask", () => {
     [500, "", eng.askUnavailable],
     [400, "", eng.askUnavailable],
   ])("tells the visitor about the status %i %s", async (status, body, text) => {
-    const { logs } = await run("hi", new Response(body, { status }));
+    const { logs, fail } = await run("hi", new Response(body, { status }));
     expect(logs).toEqual([thinking, error(text)]);
+    expect(fail).toHaveBeenCalledOnce();
   });
 
   it("says the assistant is unavailable without an answer", async () => {
@@ -135,9 +141,10 @@ describe("ask", () => {
       question: "a",
       language: "eng",
       log: (c) => first.push(c),
+      fail,
       t,
     });
-    await ask({ url: URL, question: "b", language: "eng", log: (c) => second.push(c), t });
+    await ask({ url: URL, question: "b", language: "eng", log: (c) => second.push(c), fail, t });
     await firstAsk;
     vi.unstubAllGlobals();
 
@@ -156,7 +163,14 @@ describe("ask", () => {
     const fetchMock = vi.fn(async () => new Response(body));
     vi.stubGlobal("fetch", fetchMock);
     const logs: LogContent[] = [];
-    const asking = ask({ url: URL, question: "a", language: "eng", log: (c) => logs.push(c), t });
+    const asking = ask({
+      url: URL,
+      question: "a",
+      language: "eng",
+      log: (c) => logs.push(c),
+      fail,
+      t,
+    });
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalled());
     push("First\n");
     await vi.waitFor(() => expect(logs).toContain("First"));
@@ -170,7 +184,14 @@ describe("ask", () => {
     vi.useFakeTimers();
     vi.stubGlobal("fetch", vi.fn(hanging));
     const logs: LogContent[] = [];
-    const asking = ask({ url: URL, question: "a", language: "eng", log: (c) => logs.push(c), t });
+    const asking = ask({
+      url: URL,
+      question: "a",
+      language: "eng",
+      log: (c) => logs.push(c),
+      fail,
+      t,
+    });
     await vi.advanceTimersByTimeAsync(ASK_TIMEOUT_MS);
     await asking;
     vi.unstubAllGlobals();

@@ -26,7 +26,7 @@ type NodeOf<Kind> = Kind extends FsNode["kind"] ? Extract<FsNode, { kind: Kind }
 // the path typed to a command, of the kind it expects (any kind without one); otherwise the
 // error is logged as a shell puts it: "cd: foo: No such file or directory"
 const resolveTyped = <Kind extends FsNode["kind"] | undefined>(
-  { log, t }: CommandContext,
+  { log, t, fail }: CommandContext,
   route: ConsoleRouteValues,
   command: string,
   typed: string,
@@ -46,6 +46,7 @@ const resolveTyped = <Kind extends FsNode["kind"] | undefined>(
   if (typeof result !== "string") return result;
   // the path is the visitor's: plain text
   log({ type: "text", text: t({ key: result, args: { command, path: typed } }), color: "error" });
+  fail();
 };
 
 // `ls`, `cd`, `cat` and `tree` of a page: paths are relative to its directory, and Tab completes

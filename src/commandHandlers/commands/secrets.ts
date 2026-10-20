@@ -21,7 +21,10 @@ export const secretCommands: SecretCommand[] = [
     name: "sudo",
     secret: "sudo",
     anyArgs: true,
-    run: ({ log, t }) => log({ type: "text", text: t({ key: "sudo" }), color: "error" }),
+    run: ({ log, t, fail }) => {
+      log({ type: "text", text: t({ key: "sudo" }), color: "error" });
+      fail();
+    },
   },
   {
     name: "rm -rf /",

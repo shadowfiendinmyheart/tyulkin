@@ -1,8 +1,9 @@
 import React from "react";
+import cn from "clsx";
 import { useConsoleContext } from "../../context/consoleContext";
 import CommandButton from "../CommandButton";
 import TextLink from "../TextLink";
-import { Log, LogColor, LogNode } from "../../store/console/interfaces";
+import { Echo, Log, LogColor, LogNode } from "../../store/console/interfaces";
 import { getNodesLength, sliceNodes } from "../../store/console/logNodes";
 import { finishTyping, skipTyping } from "../../store/console/actions";
 import { prefersReducedMotion } from "../../utils";
@@ -116,8 +117,33 @@ const renderNodes = (nodes: LogNode[]) =>
     <React.Fragment key={index}>{renderNode(node)}</React.Fragment>
   ));
 
+// "14:03:07": when a command was entered
+const formatTime = (time: number) => {
+  const date = new Date(time);
+  return [date.getHours(), date.getMinutes(), date.getSeconds()]
+    .map((part) => String(part).padStart(2, "0"))
+    .join(":");
+};
+
+// the echoed input heads the block of its command (TASK-82): a click on the command runs it
+// again. The status and the time are drawn by CSS from empty spans, so the text of the line
+// (copied, read by screen readers) stays the input as it was entered
+const EchoItem = ({ prompt, input, command, time, failed }: Echo) => (
+  <li className={cn(styles.log, styles.echo)}>
+    {`${prompt} `}
+    {command ? (
+      <CommandButton command={command} label={input} className={styles.echoCommand} />
+    ) : (
+      input
+    )}
+    {command && <span className={failed ? styles.failed : styles.succeeded} />}
+    <span className={styles.time} data-time={formatTime(time)} />
+  </li>
+);
+
 // a typed out log never changes, so only the one being typed re-renders on a tick
-const LogItem = React.memo(function LogItem({ content }: { content: LogNode[] }) {
+const LogItem = React.memo(function LogItem({ content, echo }: Pick<Log, "content" | "echo">) {
+  if (echo) return <EchoItem {...echo} />;
   return <li className={styles.log}>{renderNodes(content)}</li>;
 });
 
@@ -174,6 +200,7 @@ const Logs: React.FC<LogsProps> = ({ onTypingProgress }) => {
           <LogItem
             key={log.id}
             content={log === typingLog ? sliceNodes(log.content, typedLength) : log.content}
+            echo={log.echo}
           />
         ))}
       </ul>

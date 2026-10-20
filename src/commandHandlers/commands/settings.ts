@@ -157,7 +157,7 @@ export const settingsCommands: Command[] = [
     name: "set language",
     params: languages,
     descriptionKey: "helpSetLanguage",
-    run: ({ log, t, changeLanguage }, [param]) => {
+    run: ({ log, fail, t, changeLanguage }, [param]) => {
       if (!param) {
         log(getLanguageListLocale(t));
         return;
@@ -167,6 +167,7 @@ export const settingsCommands: Command[] = [
 
       if (!language) {
         log(t({ key: "wrongLanguage", args: { languageName: param } }));
+        fail();
         return;
       }
 
@@ -177,6 +178,7 @@ export const settingsCommands: Command[] = [
         })
         .catch(() => {
           log(t({ key: "changeLanguageError", args: { languageName: language } }));
+          fail();
         });
     },
   },

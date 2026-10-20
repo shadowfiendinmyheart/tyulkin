@@ -15,8 +15,8 @@ export const askCommand: Command = {
   // every answer is paid for: a link must not ask on the recipient's behalf
   shareable: false,
   linkable: false,
-  run: ({ log, t, language }, args) =>
-    void ask({ url: askUrl, question: args.join(" "), language, log, t }),
+  run: ({ log, fail, t, language }, args) =>
+    void ask({ url: askUrl, question: args.join(" "), language, log, fail, t }),
 };
 
 export const mainCommands: Command[] = [
@@ -91,7 +91,10 @@ export const mainCommands: Command[] = [
     // Tab completes the slugs of the posts
     params: blogPosts.map(({ slug }) => slug),
     descriptionKey: "helpRead",
-    run: ({ log, t }, [slug]) => getBlogPost(t, blogPosts, slug).forEach((content) => log(content)),
+    run: ({ log, fail, t }, [slug]) => {
+      getBlogPost(t, blogPosts, slug).forEach((content) => log(content));
+      if (slug && !blogPosts.some((post) => post.slug === slug.toLowerCase())) fail();
+    },
   },
   ...(askUrl ? [askCommand] : []),
   {

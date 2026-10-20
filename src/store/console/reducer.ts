@@ -1,5 +1,5 @@
 import { HISTORY_LIMIT } from "../../domain";
-import { ConsoleActionKind, ConsoleActionType, ConsoleState } from "./interfaces";
+import { ConsoleActionKind, ConsoleActionType, ConsoleState, Log } from "./interfaces";
 
 // scrollback limit: older logs are dropped so a long session doesn't grow the DOM forever;
 // a log is one command echo or one whole output (help is a single log), so this is
@@ -9,8 +9,8 @@ export const MAX_LOGS = 500;
 export function reducer(state: ConsoleState, action: ConsoleActionType): ConsoleState {
   switch (action.type) {
     case ConsoleActionKind.AddLogs: {
-      const { content, instant } = action.payload;
-      const log = { content, id: state.nextLogId };
+      const { content, instant, echo } = action.payload;
+      const log: Log = { content, id: state.nextLogId, ...(echo && { echo }) };
       const keptLogs =
         state.logs.length >= MAX_LOGS ? state.logs.slice(-(MAX_LOGS - 1)) : state.logs;
       return {
@@ -28,6 +28,19 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
         logs: [],
         typedLogId: state.nextLogId,
       };
+    }
+
+    case ConsoleActionKind.FailCommand: {
+      // searched from the end: the block is most likely the latest one; a dropped one changes nothing
+      for (let index = state.logs.length - 1; index >= 0; index--) {
+        const { echo } = state.logs[index];
+        if (echo?.blockId !== action.payload) continue;
+        if (echo.failed) return state;
+        const logs = [...state.logs];
+        logs[index] = { ...state.logs[index], echo: { ...echo, failed: true } };
+        return { ...state, logs };
+      }
+      return state;
     }
 
     case ConsoleActionKind.AddHistoryCommand: {

@@ -6,6 +6,8 @@ import { ConsoleActionType, LogContent } from "../store/console/interfaces";
 
 export interface CommandContext {
   log: (content: LogContent) => void;
+  // marks the command failed: its block shows ✗ (TASK-82); the error itself is logged as usual
+  fail: () => void;
   t: TFunction;
   language: Languages;
   theme: ThemeMode;

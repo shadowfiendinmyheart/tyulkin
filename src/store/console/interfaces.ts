@@ -24,15 +24,35 @@ export type LogNode =
 // what is logged: one node or several in a row
 export type LogContent = LogNode | LogNode[];
 
+// the echoed input: it starts a block of the command and its output, as in Warp (TASK-82)
+export interface Echo {
+  // "visitor@tyulkin ~ ❯"
+  prompt: string;
+  // the line as entered
+  input: string;
+  // what a click on the input runs again (`!!` expanded); none for a line that wasn't run
+  // (empty, dropped by ^C): plain text then, without a status
+  command?: string;
+  // tells the block apart for failCommand: an error may come after another command was entered
+  // (`ask` fails once its request does)
+  blockId: number;
+  // when it was entered, ms since the epoch: shown on hover
+  time: number;
+  // the command failed (unknown, wrong path…): ✗ instead of ✓
+  failed?: boolean;
+}
+
 export interface Log {
   content: LogNode[];
   // stable React key: logs are dropped from the start (MAX_LOGS), so indexes shift
   id: number;
+  echo?: Echo;
 }
 export interface NewLog {
   content: LogNode[];
   // shown at once, not typed out (the echoed input); everything typed before it is shown too
   instant?: boolean;
+  echo?: Echo;
 }
 export type Logs = Array<Log>;
 
@@ -76,10 +96,13 @@ export type ConsoleActionType =
   | ActionFinishTyping
   | ActionSkipTyping
   | ActionSetMatrixShown
-  | ActionSetGame;
+  | ActionSetGame
+  | ActionFailCommand;
 
 export type ActionAddLogs = ActionTypeGenerator<ConsoleActionKind.AddLogs, NewLog>;
 export type ActionClearLogs = ActionTypeGenerator<ConsoleActionKind.ClearLogs>;
+// payload: the blockId of the echo
+export type ActionFailCommand = ActionTypeGenerator<ConsoleActionKind.FailCommand, number>;
 // payload: id of the typed out log
 export type ActionFinishTyping = ActionTypeGenerator<ConsoleActionKind.FinishTyping, number>;
 export type ActionSkipTyping = ActionTypeGenerator<ConsoleActionKind.SkipTyping>;
@@ -102,6 +125,7 @@ export type ActionSetCommandsHint = ActionTypeGenerator<
 export enum ConsoleActionKind {
   AddLogs = "addLogs",
   ClearLogs = "clearLogs",
+  FailCommand = "failCommand",
   AddHistoryCommand = "addHistoryCommand",
   ClearHistory = "clearHistory",
   CountTypedCommand = "countTypedCommand",

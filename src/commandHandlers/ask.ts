@@ -21,6 +21,8 @@ interface AskOptions {
   question: string;
   language: Languages;
   log: (content: LogContent) => void;
+  // marks the block of the command failed (TASK-82): with every error
+  fail: () => void;
   t: TFunction;
 }
 
@@ -34,8 +36,11 @@ const getErrorKey = async (response: Response) => {
 
 // asks the proxy and prints the answer as it comes: line by line, each one is typed out as it arrives.
 // The answer is the model's text: plain strings, never links or commands
-export const ask = async ({ url, question, language, log, t }: AskOptions) => {
-  const error = (text: string) => log({ type: "text", text, color: "error" });
+export const ask = async ({ url, question, language, log, fail, t }: AskOptions) => {
+  const error = (text: string) => {
+    log({ type: "text", text, color: "error" });
+    fail();
+  };
   if (!question) {
     log(t({ key: "askUsage" }));
     return;
@@ -60,7 +65,7 @@ export const ask = async ({ url, question, language, log, t }: AskOptions) => {
 };
 
 const streamAnswer = async (
-  { url, question, language, log, t }: AskOptions,
+  { url, question, language, log, t }: Omit<AskOptions, "fail">,
   signal: AbortSignal,
   error: (text: string) => void,
   onStart: () => void,

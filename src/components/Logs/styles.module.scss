@@ -10,6 +10,54 @@
   overflow-wrap: anywhere;
 }
 
+// a command and its output are one block (TASK-82): the echoed input heads it, blocks are apart
+.echo:not(:first-child) {
+  margin-top: var(--space-4);
+}
+
+// the input as typed, not the accent color of a command in the output
+.echo .echoCommand {
+  color: inherit;
+}
+
+// the status and the time are drawn by CSS, so they are neither copied nor read
+// (after "/": no alternative text; a browser without it takes the first declaration)
+.succeeded {
+  color: var(--success-color);
+
+  &::after {
+    content: " ✓";
+    content: " ✓" / "";
+  }
+}
+
+.failed {
+  color: var(--error-color);
+
+  &::after {
+    content: " ✗";
+    content: " ✗" / "";
+  }
+}
+
+// when the command was entered: on hover, or on focus of the command
+.time {
+  float: right;
+  padding-left: 2ch;
+  color: var(--muted-color);
+  visibility: hidden;
+}
+
+.time::after {
+  content: attr(data-time);
+  content: attr(data-time) / "";
+}
+
+.echo:hover .time,
+.echo:focus-within .time {
+  visibility: visible;
+}
+
 .link {
   color: inherit;
   text-decoration: underline;

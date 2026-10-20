@@ -4,6 +4,7 @@ import {
   ActionAddLogs,
   ActionClearHistory,
   ActionClearLogs,
+  ActionFailCommand,
   ActionCountTypedCommand,
   ActionFinishTyping,
   ActionSetCaretMode,
@@ -14,6 +15,7 @@ import {
   ActionSetGame,
   ActionSkipTyping,
   ConsoleActionKind,
+  Echo,
   LogContent,
 } from "./interfaces";
 
@@ -21,13 +23,36 @@ export const addConsoleLog = (content: LogContent): ActionAddLogs => ({
   type: ConsoleActionKind.AddLogs,
   payload: { content: Array.isArray(content) ? content : [content] },
 });
-// the echoed input is plain text: never a link or a command
-// prompt: "visitor@tyulkin ~ ❯" (see getPrompt)
-export const addUserLog = (message: string, prompt: string): ActionAddLogs => ({
+// unique within the page's session: logs outlive a route change, the store too
+let lastBlockId = 0;
+
+// the echoed input is plain text: never a link or a command node; it starts a block (TASK-82).
+// prompt: "visitor@tyulkin ~ ❯" (see getPrompt); command: what a click on the input runs again,
+// none for a line that wasn't run (^C)
+export const addUserLog = (
+  message: string,
+  prompt: string,
+  command?: string,
+): ActionAddLogs & { payload: { echo: Echo } } => ({
   type: ConsoleActionKind.AddLogs,
-  payload: { content: [`${prompt} ${message}`], instant: true },
+  payload: {
+    content: [`${prompt} ${message}`],
+    instant: true,
+    echo: {
+      prompt,
+      input: message,
+      command: command || undefined,
+      blockId: ++lastBlockId,
+      time: Date.now(),
+    },
+  },
 });
 export const clearLogs = (): ActionClearLogs => ({ type: ConsoleActionKind.ClearLogs });
+// marks the block of a command failed: ✗ instead of ✓ (TASK-82); blockId: of its echo
+export const failCommand = (blockId: number): ActionFailCommand => ({
+  type: ConsoleActionKind.FailCommand,
+  payload: blockId,
+});
 export const finishTyping = (logId: number): ActionFinishTyping => ({
   type: ConsoleActionKind.FinishTyping,
   payload: logId,

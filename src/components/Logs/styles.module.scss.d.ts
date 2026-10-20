@@ -17,15 +17,20 @@ export type Styles = {
   ansiWhite: string;
   ansiYellow: string;
   art: string;
+  echo: string;
+  echoCommand: string;
   error: string;
+  failed: string;
   link: string;
   list: string;
   log: string;
   muted: string;
   pre: string;
+  succeeded: string;
   success: string;
   table: string;
   text: string;
+  time: string;
   warning: string;
 };
 
