@@ -1,6 +1,7 @@
 import React from "react";
 import cn from "clsx";
 import { Navigate, useLocation } from "react-router";
+import AchievementToast from "../../components/AchievementToast";
 import Console from "../../components/Console";
 import DeepLinkCommand from "../../components/DeepLinkCommand";
 import ExtraKeys from "../../components/ExtraKeys";
@@ -151,8 +152,8 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
       const { t } = welcomeParamsRef.current.localization;
       dispatch(addConsoleLog(t({ key: "secretTheme", args: { themeName: SECRET_THEME } })));
       // the code is one of the secrets of `secrets` (TASK-63)
-      const found = findSecret("konami", t);
-      if (found) dispatch(addConsoleLog(found));
+      const found = findSecret("konami");
+      if (found) dispatch(found);
     }, [appDispatch, dispatch]),
   );
 
@@ -193,6 +194,7 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
       <DeepLinkCommand />
       {state.isMatrixShown && <MatrixRain onExit={exitMatrix} />}
       {state.game && <Game key={state.game} game={state.game} />}
+      <AchievementToast />
       {isCrt && <div className={styles.crt} aria-hidden="true" />}
     </WithCommandHandler>
   );

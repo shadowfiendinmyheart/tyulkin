@@ -1,4 +1,4 @@
-import { CaretMode, CrtMode, GameId, SoundMode } from "../../domain";
+import { CaretMode, CrtMode, GameId, SecretId, SoundMode } from "../../domain";
 import {
   ActionAddHistoryCommand,
   ActionAddLogs,
@@ -13,6 +13,8 @@ import {
   ActionSetCommandsHint,
   ActionSetMatrixShown,
   ActionSetGame,
+  ActionShowAchievement,
+  ActionHideAchievement,
   ActionSkipTyping,
   ConsoleActionKind,
   Echo,
@@ -67,6 +69,16 @@ export const setMatrixShown = (isShown: boolean): ActionSetMatrixShown => ({
 export const setGame = (game: GameId | null): ActionSetGame => ({
   type: ConsoleActionKind.SetGame,
   payload: game,
+});
+let lastAchievementId = 0;
+// the toast of a secret found for the first time (TASK-97); found: how many are found with it
+export const showAchievement = (secret: SecretId, found: number): ActionShowAchievement => ({
+  type: ConsoleActionKind.ShowAchievement,
+  payload: { secret, found, id: ++lastAchievementId },
+});
+export const hideAchievement = (id: number): ActionHideAchievement => ({
+  type: ConsoleActionKind.HideAchievement,
+  payload: id,
 });
 export const addHistoryCommand = (command: string): ActionAddHistoryCommand => ({
   type: ConsoleActionKind.AddHistoryCommand,

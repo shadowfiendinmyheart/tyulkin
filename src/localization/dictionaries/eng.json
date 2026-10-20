@@ -108,7 +108,7 @@
   "secretsProgress": "Secrets found: $found/$total. Some commands of real terminals work here too, even though help keeps quiet about them",
   "secretsAll": "All $total secrets found. You know this terminal inside out!",
   "secretsList": "Found: $list",
-  "secretFound": "Secret found: $found/$total. Your progress: $secrets",
+  "achievementUnlocked": "Achievement unlocked: $name ($found/$total)",
   "helpHistory": "the commands you have run: !! repeats the last one, Ctrl+R searches them, history -c forgets them",
   "helpEcho": "print a text: echo <text>",
   "helpWhoami": "who you are here",

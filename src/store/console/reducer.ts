@@ -122,6 +122,21 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
       };
     }
 
+    case ConsoleActionKind.ShowAchievement: {
+      return {
+        ...state,
+        achievement: action.payload,
+      };
+    }
+
+    case ConsoleActionKind.HideAchievement: {
+      if (state.achievement?.id !== action.payload) return state;
+      return {
+        ...state,
+        achievement: null,
+      };
+    }
+
     case ConsoleActionKind.SetCommandsHint: {
       return {
         ...state,

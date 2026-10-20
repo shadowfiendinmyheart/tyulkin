@@ -17,6 +17,7 @@ import hintStyles from "../CommandsHint/style.module.scss";
 import { QUICK_COMMANDS, QUICK_COMMANDS_TYPED_LIMIT } from "../QuickCommands";
 import { EXTRA_KEYS } from "../ExtraKeys";
 import { GUI_HINT_DELAY_MS } from "../../pages/ConsolePage";
+import { ACHIEVEMENT_TOAST_MS } from "../../router/ConsoleSessionLayout";
 import pageStyles from "../../pages/ConsolePage/styles.module.scss";
 import logsStyles from "../Logs/styles.module.scss";
 
@@ -55,6 +56,11 @@ const renderConsole = (
 };
 
 const getLogs = () => screen.queryAllByRole("listitem").map((item) => item.textContent);
+
+// the toast of a found secret (TASK-97): the live region is there with or without one
+const getToast = () => screen.getByRole("status").textContent;
+const achievement = (name: string, found: number) =>
+  t({ key: "achievementUnlocked", args: { name, found: String(found), total: "10" } });
 
 // the main page greets with neofetch, then the welcome text (TASK-54)
 const neofetch = expect.stringContaining("Uptime: ");
@@ -1245,11 +1251,9 @@ describe("matrix and the Konami code (TASK-65)", () => {
     expect(localStorage.getItem("themeMode")).toBe("Amber");
     // B and A of the code are not typed into the command line
     expect(input.value).toBe("");
-    expect(getLogs().at(-2)).toBe(t({ key: "secretTheme", args: { themeName: "Amber" } }));
+    expect(getLogs().at(-1)).toBe(t({ key: "secretTheme", args: { themeName: "Amber" } }));
     // the code is one of the secrets (TASK-63)
-    expect(getLogs().at(-1)).toBe(
-      t({ key: "secretFound", args: { found: "1", total: "10", secrets: "secrets" } }),
-    );
+    expect(getToast()).toBe(achievement(eng.secretKonami, 1));
   });
 
   it("takes the physical B and A keys on a non-Latin layout", () => {
@@ -1288,9 +1292,6 @@ describe("matrix and the Konami code (TASK-65)", () => {
 });
 
 describe("easter eggs (TASK-63)", () => {
-  const found = (count: number) =>
-    t({ key: "secretFound", args: { found: String(count), total: "10", secrets: "secrets" } });
-
   it("hides secret commands from help, ls and autocomplete", async () => {
     const { user, input } = renderConsole();
     await user.keyboard("help{Enter}ls{Enter}");
@@ -1305,38 +1306,43 @@ describe("easter eggs (TASK-63)", () => {
   it("answers sudo with anything and counts the secret once", async () => {
     const { user } = renderConsole("/settings");
     await user.keyboard("sudo rm -rf /{Enter}");
-    expect(getLogs().slice(-2)).toEqual([eng.sudo, found(1)]);
-    await user.keyboard("SUDO{Enter}");
     expect(getLogs().at(-1)).toBe(eng.sudo);
+    expect(getToast()).toBe(achievement("sudo", 1));
+    await user.keyboard("SUDO{Enter}");
+    expect(getLogs().slice(-2)).toEqual(["visitor@tyulkin ~/settings ❯ SUDO", eng.sudo]);
     expect(JSON.parse(localStorage.getItem("foundSecrets")!)).toEqual(["sudo"]);
   });
 
   it("shows the contacts on sudo hire-me", async () => {
     const { user } = renderConsole();
     await user.keyboard("sudo hire-me{Enter}");
-    expect(getLogs().slice(-3)).toEqual([eng.sudoHireMe, eng.contacts, found(1)]);
+    expect(getLogs().slice(-2)).toEqual([eng.sudoHireMe, eng.contacts]);
+    expect(getToast()).toBe(achievement("sudo hire-me", 1));
   });
 
   it("exits vim", async () => {
     const { user } = renderConsole();
     await user.keyboard("vim{Enter}");
-    expect(getLogs().at(-2)).toBe(t({ key: "vim", args: { quit: ":q", forceQuit: ":q!" } }));
+    expect(getLogs().at(-1)).toBe(t({ key: "vim", args: { quit: ":q", forceQuit: ":q!" } }));
+    expect(getToast()).toBe(achievement("vim", 1));
     await user.click(screen.getByRole("button", { name: ":q!" }));
-    expect(getLogs().slice(-2)).toEqual([eng.vimExit, found(2)]);
+    expect(getLogs().at(-1)).toBe(eng.vimExit);
+    // a newer toast replaces the shown one
+    expect(getToast()).toBe(achievement(":q", 2));
   });
 
   it("puts the visitor's text into the cow's bubble", async () => {
     const { user } = renderConsole();
     await user.keyboard("cowsay hello   world{Enter}");
-    expect(getLogs().at(-2)).toContain("< hello world >");
+    expect(getLogs().at(-1)).toContain("< hello world >");
   });
 
   it("takes extra words after sudo hire-me and rm -rf /", async () => {
     const { user } = renderConsole();
     await user.keyboard("sudo hire-me please{Enter}");
-    expect(getLogs().at(-3)).toBe(eng.sudoHireMe);
+    expect(getLogs().at(-2)).toBe(eng.sudoHireMe);
     await user.keyboard("rm -rf / --no-preserve-root{Enter}");
-    expect(getLogs().at(-2)).toBe(eng.rmRfJoke);
+    expect(getLogs().at(-1)).toBe(eng.rmRfJoke);
   });
 
   it("is not run by a deep link: nobody links the site with their own text", async () => {
@@ -1350,6 +1356,25 @@ describe("easter eggs (TASK-63)", () => {
     await user.keyboard("vim now{Enter}");
     expect(getLogs().at(-1)).toContain("Command vim now not found");
     expect(localStorage.getItem("foundSecrets")).toBeNull();
+  });
+
+  it("hides the toast after a while and shows none for a secret found before (TASK-97)", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      const { user } = renderConsole();
+      await user.keyboard("fortune{Enter}");
+      expect(getToast()).toBe(achievement("fortune", 1));
+      // another page shows it on, for the rest of its time
+      await user.keyboard("cd projects{Enter}");
+      await screen.findByText(eng.projectsWelcome);
+      expect(getToast()).toBe(achievement("fortune", 1));
+      act(() => vi.advanceTimersByTime(ACHIEVEMENT_TOAST_MS));
+      expect(getToast()).toBe("");
+      await user.keyboard("fortune{Enter}");
+      expect(getToast()).toBe("");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("lists the found secrets", async () => {

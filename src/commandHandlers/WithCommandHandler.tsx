@@ -144,8 +144,8 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ route, children
       const { command, params } = separated;
       command.run(ctx, params);
       if ("secret" in command) {
-        const found = findSecret(command.secret, t);
-        if (found) rawLog(found);
+        const found = findSecret(command.secret);
+        if (found) consoleDispatch(found);
       }
     },
     [

@@ -140,8 +140,9 @@ src/
 - `secrets.ts` — пасхалки (`sudo …`, `rm -rf /`, `vim`, `cowsay`, `fortune`, `sl`, `coffee`):
   `SecretCommand` без описания, их нет в `help`, автодополнении и «did you mean»; они
   проверяются, только если не подошла ни одна обычная команда. Первый запуск отмечает секрет
-  найденным (`storage`, список — `secretIds` в `src/domain`, туда же входит код Konami), прогресс
-  показывает `secrets`. Deep link (`?cmd=`) пасхалки не запускает;
+  найденным (`storage`, список — `secretIds` в `src/domain`, туда же входит код Konami) и
+  показывает тост-ачивку ([`components/AchievementToast`](src/components/AchievementToast/index.tsx),
+  `role="status"`), прогресс показывает `secrets`. Deep link (`?cmd=`) пасхалки не запускает;
 - `index.ts` — `commandsByRoute`: какие команды у какого маршрута.
 
 Ввод регистронезависим; команды страницы имеют приоритет над глобальными.

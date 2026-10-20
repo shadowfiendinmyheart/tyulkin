@@ -4,7 +4,10 @@ import { ConsoleContext } from "../context/consoleContext";
 import storage from "../storage";
 import { reducer } from "../store/console/reducer";
 import { ConsoleState } from "../store/console/interfaces";
-import { setGame, setMatrixShown } from "../store/console/actions";
+import { hideAchievement, setGame, setMatrixShown } from "../store/console/actions";
+
+// how long the toast of a found secret stays on screen (TASK-97)
+export const ACHIEVEMENT_TOAST_MS = 5000;
 
 // lazy: storage is read once, not on every render
 const createInitialState = (): ConsoleState => ({
@@ -21,6 +24,7 @@ const createInitialState = (): ConsoleState => ({
   commandsHint: [],
   isMatrixShown: false,
   game: null,
+  achievement: null,
 });
 
 // the terminal session (logs, history, caret) lives above the pages, so a trip to the regular
@@ -42,6 +46,15 @@ export const ConsoleSessionLayout: React.FC = () => {
   React.useEffect(() => {
     storage.setHistory(state.history);
   }, [state.history]);
+
+  // the toast is hidden here, not by the page showing it: a page left meanwhile would keep it
+  // for its return
+  const achievementId = state.achievement?.id;
+  React.useEffect(() => {
+    if (achievementId === undefined) return;
+    const timer = setTimeout(() => dispatch(hideAchievement(achievementId)), ACHIEVEMENT_TOAST_MS);
+    return () => clearTimeout(timer);
+  }, [achievementId]);
 
   const consoleContextValue = React.useMemo(
     () => ({ consoleState: state, consoleDispatch: dispatch }),

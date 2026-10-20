@@ -197,8 +197,8 @@ export interface DictionaryWithArgs {
   secretsProgress: string;
   secretsAll: string;
   secretsList: string;
-  // a secret found for the first time, $secrets is a command placeholder
-  secretFound: string;
+  // the toast of a secret found for the first time (TASK-97): $name of the secret, $found of $total
+  achievementUnlocked: string;
   // "key: value" lines of neofetch, the first line is the title
   neofetch: string;
   // the virtual file system (TASK-60): $command failed on the $path typed by the visitor
@@ -268,7 +268,10 @@ type SlLocale = LocaleWithArgsGenerator<"sl", "ls">;
 type SecretsProgressLocale = LocaleWithArgsGenerator<"secretsProgress", "found" | "total">;
 type SecretsAllLocale = LocaleWithArgsGenerator<"secretsAll", "total">;
 type SecretsListLocale = LocaleWithArgsGenerator<"secretsList", "list">;
-type SecretFoundLocale = LocaleWithArgsGenerator<"secretFound", "found" | "total" | "secrets">;
+type AchievementUnlockedLocale = LocaleWithArgsGenerator<
+  "achievementUnlocked",
+  "name" | "found" | "total"
+>;
 type FsErrorLocale = LocaleWithArgsGenerator<
   "fsNotFound" | "fsNotDirectory" | "fsIsDirectory",
   "command" | "path"
@@ -322,7 +325,7 @@ export type LocaleWithArgs =
   | SecretsProgressLocale
   | SecretsAllLocale
   | SecretsListLocale
-  | SecretFoundLocale
+  | AchievementUnlockedLocale
   | NeofetchLocale
   | FsErrorLocale
   | CatUsageLocale

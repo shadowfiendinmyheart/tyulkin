@@ -1,4 +1,4 @@
-import { AnsiColor, CaretMode, CrtMode, GameId, SoundMode } from "../../domain";
+import { AnsiColor, CaretMode, CrtMode, GameId, SecretId, SoundMode } from "../../domain";
 import { ActionTypeGenerator } from "../interfaces";
 
 // theme colors of a text, see styles/themes.scss: the semantic ones and the ANSI palette
@@ -56,6 +56,15 @@ export interface NewLog {
 }
 export type Logs = Array<Log>;
 
+// a secret found for the first time, shown as a toast (TASK-97)
+export interface Achievement {
+  secret: SecretId;
+  // how many secrets are found with this one
+  found: number;
+  // tells the toasts apart: a new one replaces the shown one and starts its time anew
+  id: number;
+}
+
 export interface ConsoleState {
   // the newest MAX_LOGS logs
   logs: Logs;
@@ -81,6 +90,8 @@ export interface ConsoleState {
   isMatrixShown: boolean;
   // the mini-game played over the console (TASK-66), null when none
   game: GameId | null;
+  // the toast of the last found secret (TASK-97), null when hidden
+  achievement: Achievement | null;
 }
 
 export type ConsoleActionType =
@@ -97,6 +108,8 @@ export type ConsoleActionType =
   | ActionSkipTyping
   | ActionSetMatrixShown
   | ActionSetGame
+  | ActionShowAchievement
+  | ActionHideAchievement
   | ActionFailCommand;
 
 export type ActionAddLogs = ActionTypeGenerator<ConsoleActionKind.AddLogs, NewLog>;
@@ -108,6 +121,12 @@ export type ActionFinishTyping = ActionTypeGenerator<ConsoleActionKind.FinishTyp
 export type ActionSkipTyping = ActionTypeGenerator<ConsoleActionKind.SkipTyping>;
 export type ActionSetMatrixShown = ActionTypeGenerator<ConsoleActionKind.SetMatrixShown, boolean>;
 export type ActionSetGame = ActionTypeGenerator<ConsoleActionKind.SetGame, GameId | null>;
+export type ActionShowAchievement = ActionTypeGenerator<
+  ConsoleActionKind.ShowAchievement,
+  Achievement
+>;
+// payload: the id of the achievement to hide, so a newer one stays
+export type ActionHideAchievement = ActionTypeGenerator<ConsoleActionKind.HideAchievement, number>;
 export type ActionAddHistoryCommand = ActionTypeGenerator<
   ConsoleActionKind.AddHistoryCommand,
   string
@@ -137,4 +156,6 @@ export enum ConsoleActionKind {
   SkipTyping = "skipTyping",
   SetMatrixShown = "setMatrixShown",
   SetGame = "setGame",
+  ShowAchievement = "showAchievement",
+  HideAchievement = "hideAchievement",
 }

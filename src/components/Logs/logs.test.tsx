@@ -27,6 +27,7 @@ const renderLogs = (logs: Log[]) =>
           commandsHint: [],
           isMatrixShown: false,
           game: null,
+          achievement: null,
         },
         consoleDispatch: () => undefined,
       }}

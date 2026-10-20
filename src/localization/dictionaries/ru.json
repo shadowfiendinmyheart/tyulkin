@@ -108,7 +108,7 @@
   "secretsProgress": "Найдено секретов: $found/$total. Здесь работают и некоторые команды настоящих терминалов, хоть help о них и молчит",
   "secretsAll": "Найдены все секреты: $total. Вы знаете этот терминал вдоль и поперёк!",
   "secretsList": "Найдены: $list",
-  "secretFound": "Найден секрет: $found/$total. Ваш прогресс: $secrets",
+  "achievementUnlocked": "Достижение получено: $name ($found/$total)",
   "helpHistory": "выполненные команды: !! повторяет последнюю, Ctrl+R ищет по ним, history -c забывает их",
   "helpEcho": "вывести текст: echo <текст>",
   "helpWhoami": "кто вы здесь",

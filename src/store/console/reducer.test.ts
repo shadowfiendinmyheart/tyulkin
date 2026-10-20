@@ -9,10 +9,12 @@ import {
   countTypedCommand,
   failCommand,
   finishTyping,
+  hideAchievement,
   setCaretMode,
   setCommandsHint,
   setCrtMode,
   setSoundMode,
+  showAchievement,
   skipTyping,
 } from "./actions";
 import { ConsoleState } from "./interfaces";
@@ -31,9 +33,19 @@ const initialState: ConsoleState = {
   commandsHint: [],
   isMatrixShown: false,
   game: null,
+  achievement: null,
 };
 
 describe("console reducer", () => {
+  it("hides the shown achievement only, not a newer one (TASK-97)", () => {
+    const first = showAchievement("vim", 1);
+    const second = showAchievement("sl", 2);
+    let state = reducer(initialState, first);
+    state = reducer(state, second);
+    expect(reducer(state, hideAchievement(first.payload.id))).toBe(state);
+    expect(reducer(state, hideAchievement(second.payload.id)).achievement).toBeNull();
+  });
+
   it("adds and clears logs", () => {
     let state = reducer(initialState, addConsoleLog("hello"));
     state = reducer(state, addUserLog("ls", "~$"));
