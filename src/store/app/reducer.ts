@@ -15,5 +15,12 @@ export function reducer(state: AppState, action: AppActionType): AppState {
         theme: action.payload,
       };
     }
+
+    case AppActionKind.SetPreviewTheme: {
+      return {
+        ...state,
+        previewTheme: action.payload,
+      };
+    }
   }
 }

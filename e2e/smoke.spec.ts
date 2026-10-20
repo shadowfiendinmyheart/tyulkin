@@ -214,6 +214,28 @@ test("takes the theme of a light system until one is set (TASK-73)", async ({ pa
   await expect(page.locator("html")).toHaveAttribute("data-theme", "Nord");
 });
 
+test("sets a theme by a click through a view transition, previews themes by Tab (TASK-84)", async ({
+  page,
+}) => {
+  // with motion, so the theme is set through a view transition
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await open(page, "settings");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "Black");
+  await page.keyboard.type("show themes");
+  await page.keyboard.press("Enter");
+  await lastLog(page).getByRole("button", { name: "Nord" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "Nord");
+  await expect(page.getByRole("log")).toContainText("Theme successfully changed to Nord");
+
+  await page.keyboard.type("set theme ");
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Tab");
+  // the selected option is only previewed: Esc puts the set theme back
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "White");
+  await page.keyboard.press("Escape");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "Nord");
+});
+
 test("opens the site root without the trailing slash", async ({ page }) => {
   await page.goto(BASE_PATH.replace(/\/$/, ""));
   await expect(page.getByRole("log")).toContainText(eng.welcome);

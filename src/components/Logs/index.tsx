@@ -82,7 +82,7 @@ const renderNode = (node: LogNode): React.ReactNode => {
         </TextLink>
       );
     case "command":
-      return <CommandButton command={node.command} label={node.label} />;
+      return <CommandButton command={node.command} label={node.label} theme={node.theme} />;
     case "table":
       return (
         <table className={styles.table}>

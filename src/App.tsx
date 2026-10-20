@@ -12,6 +12,7 @@ import storage from "./storage";
 import LoadingPage from "./pages/LoadingPage";
 import { ErrorScreen } from "./pages/ErrorPage";
 import { delay, prefersReducedMotion } from "./utils";
+import { applyTheme } from "./utils/themeTransition";
 
 // loading animation is shown at least this long, so it doesn't just flash
 const MIN_LOADING_ANIMATION_MS = 1000;
@@ -28,6 +29,7 @@ interface LocalizationState {
 const createInitialState = (): AppState => ({
   status: "init",
   theme: storage.getThemeMode(),
+  previewTheme: null,
 });
 
 const App: React.FC = () => {
@@ -37,9 +39,20 @@ const App: React.FC = () => {
   // language switches run one after another, so the last requested language wins
   const languageQueue = React.useRef<Promise<unknown>>(Promise.resolve());
 
+  // a set theme spreads from the prompt (TASK-84); a previewed one, and the theme back from
+  // a preview, are shown at once: they change on every step through the completion menu
+  const { theme, previewTheme } = state;
+  const lastTheme = React.useRef(theme);
   React.useLayoutEffect(() => {
-    document.documentElement.dataset.theme = state.theme;
-  }, [state.theme]);
+    // a theme set during a preview spreads once the preview ends
+    if (previewTheme) {
+      applyTheme(previewTheme, false);
+      return;
+    }
+    const isSet = lastTheme.current !== theme;
+    lastTheme.current = theme;
+    applyTheme(theme, isSet);
+  }, [theme, previewTheme]);
 
   // known before the dictionary loads, so <html lang> is right during loading and on error too
   const language = localization?.language ?? initialLanguage;

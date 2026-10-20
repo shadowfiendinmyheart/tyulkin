@@ -55,9 +55,9 @@ describe("getLocaleWithArgs placeholders", () => {
   it("substitutes a placeholder followed by word characters", () => {
     expect(
       getLocaleWithArgs({
-        key: "themeList",
-        args: { themes: "Black" },
-        locale: "$themes_list: $themesX",
+        key: "wrongTheme",
+        args: { themeName: "Black" },
+        locale: "$themeName_list: $themeNameX",
       }),
     ).toBe("Black_list: BlackX");
   });

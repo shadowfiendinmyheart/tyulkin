@@ -15,7 +15,10 @@ const renderGui = (path = "/gui") => {
   render(
     <StrictMode>
       <AppContext.Provider
-        value={{ appState: { status: "ok", theme: "Black" }, appDispatch: () => undefined }}
+        value={{
+          appState: { status: "ok", theme: "Black", previewTheme: null },
+          appDispatch: () => undefined,
+        }}
       >
         <LocalizationContext.Provider
           value={{ language: "eng", t, changeLanguage: () => Promise.resolve(t) }}

@@ -60,6 +60,8 @@ export interface CommonDictionary {
   // the state of an on/off setting in `set crt` and `set sound` messages
   stateOn: string;
   stateOff: string;
+  // over the themes of `show themes`, each with its colors (TASK-84)
+  themeList: string;
   // `history` (TASK-61): nothing to list, `history -c`, wrong arguments
   historyEmpty: string;
   historyCleared: string;
@@ -183,7 +185,6 @@ export interface DictionaryWithArgs {
   languageList: string;
   wrongTheme: string;
   changeTheme: string;
-  themeList: string;
   // the Konami code switched to the secret theme $themeName
   secretTheme: string;
   // `changelog`: $total changes, the latest $shown are listed, $all is a command placeholder
@@ -264,7 +265,6 @@ type ChangeLanguageErrorLocale = LocaleWithArgsGenerator<"changeLanguageError", 
 type LanguageListLocale = LocaleWithArgsGenerator<"languageList", "languages">;
 type WrongThemeLocale = LocaleWithArgsGenerator<"wrongTheme", "themeName">;
 type ChangeThemeLocale = LocaleWithArgsGenerator<"changeTheme", "themeName">;
-type ThemeListLocale = LocaleWithArgsGenerator<"themeList", "themes">;
 type SecretThemeLocale = LocaleWithArgsGenerator<"secretTheme", "themeName">;
 type ChangelogLocale = LocaleWithArgsGenerator<"changelog", "total" | "shown" | "all">;
 type ChangelogAllLocale = LocaleWithArgsGenerator<"changelogAll", "total">;
@@ -322,7 +322,6 @@ export type LocaleWithArgs =
   | LanguageListLocale
   | WrongThemeLocale
   | ChangeThemeLocale
-  | ThemeListLocale
   | SecretThemeLocale
   | ChangelogLocale
   | ChangelogAllLocale

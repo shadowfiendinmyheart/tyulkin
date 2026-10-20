@@ -53,7 +53,7 @@ it("opens /settings/ with a trailing slash as /settings (TASK-28)", async () => 
   const user = userEvent.setup();
   await user.keyboard("show themes{Enter}");
   expect(getLastLog()).toBe(
-    "Available themes: White, Black, Light, Dark, Hacker, Dracula, Solarized, Gruvbox, Nord, Monokai",
+    "Available themes, click one to set it:\nWhite\nBlack\nLight\nDark\nHacker\nDracula\nSolarized\nGruvbox\nNord\nMonokai",
   );
   await user.keyboard("back{Enter}");
   await waitFor(() => expect(window.location.pathname).toBe("/"));

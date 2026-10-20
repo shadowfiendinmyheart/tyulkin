@@ -35,7 +35,7 @@ it("switches the language without a reload (TASK-34)", async () => {
   // commands use the new dictionary right away
   await user.keyboard("show themes{Enter}");
   expect(getLastLog()).toBe(
-    "Доступные темы: White, Black, Light, Dark, Hacker, Dracula, Solarized, Gruvbox, Nord, Monokai",
+    "Доступные темы, нажмите на любую, чтобы установить:\nWhite\nBlack\nLight\nDark\nHacker\nDracula\nSolarized\nGruvbox\nNord\nMonokai",
   );
   await user.keyboard("set language{Enter}");
   expect(getLastLog()).toBe("Доступные языки: ru, eng");

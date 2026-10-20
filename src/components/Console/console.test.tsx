@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { routes } from "../../router/routes";
 import { AppContext, AppContextType } from "../../context/appContext";
-import { setTheme } from "../../store/app/actions";
+import { setPreviewTheme, setTheme } from "../../store/app/actions";
 import { KONAMI_CODE } from "../../hooks/useKonamiCode";
 import { LocalizationContext } from "../../context/localizationContext";
 import { createT } from "../../localization";
@@ -36,7 +36,7 @@ const renderConsole = (
     <StrictMode>
       <AppContext.Provider
         value={{
-          appState: { status: "ok", theme: "Black" },
+          appState: { status: "ok", theme: "Black", previewTheme: null },
           appDispatch,
         }}
       >
@@ -1214,7 +1214,7 @@ describe("deep links (TASK-62)", () => {
       expect(getLogs()).toEqual([
         eng.settingsWelcome,
         "visitor@tyulkin ~/settings ❯ show themes",
-        t({ key: "themeList", args: { themes: getParamsString(themeModes) } }),
+        [eng.themeList, ...themeModes].join("\n"),
       ]),
     );
   });
@@ -1370,6 +1370,56 @@ describe("matrix and the Konami code (TASK-65)", () => {
     );
     expect(localStorage.getItem("themeMode")).toBe(others.at(-1));
     expect(getLogs().at(-1)).toBe(t({ key: "changeTheme", args: { themeName: others.at(-1)! } }));
+  });
+});
+
+describe("theme previews (TASK-84)", () => {
+  it("shows the themes with their colors, a click sets one", async () => {
+    const appDispatch = vi.fn();
+    const { user } = renderConsole("/settings", appDispatch);
+    await user.keyboard("show themes{Enter}");
+    // the strip is drawn in the colors of its own theme and is not part of the name
+    const nord = await screen.findByRole("button", { name: "Nord" });
+    expect(nord.querySelector('[data-theme="Nord"][aria-hidden="true"]')).not.toBeNull();
+    await user.click(nord);
+    expect(appDispatch).toHaveBeenCalledWith(setTheme("Nord"));
+    expect(localStorage.getItem("themeMode")).toBe("Nord");
+  });
+
+  it("previews the theme selected in the completion menu, the set one is back once it closes", async () => {
+    const appDispatch = vi.fn();
+    const { user, input } = renderConsole("/settings", appDispatch);
+    await user.type(input, "set theme {Tab}");
+    expect(appDispatch).not.toHaveBeenCalled();
+    await user.keyboard("{Tab}");
+    expect(appDispatch).toHaveBeenLastCalledWith(setPreviewTheme("White"));
+    await user.keyboard("{Tab}");
+    expect(appDispatch).toHaveBeenLastCalledWith(setPreviewTheme("Black"));
+    await user.keyboard("{Escape}");
+    expect(appDispatch).toHaveBeenLastCalledWith(setPreviewTheme(null));
+    // only previewed: neither set nor saved
+    expect(appDispatch).not.toHaveBeenCalledWith(setTheme("White"));
+    expect(localStorage.getItem("themeMode")).toBeNull();
+  });
+
+  it("keeps the preview of an accepted option until it runs: the theme doesn't flick back", async () => {
+    const appDispatch = vi.fn();
+    const { user, input } = renderConsole("/settings", appDispatch);
+    await user.type(input, "set theme {Tab}{Tab}{Enter}");
+    expect(input.value).toBe("set theme White");
+    expect(appDispatch).toHaveBeenLastCalledWith(setPreviewTheme("White"));
+    await user.keyboard("{Enter}");
+    const calls = appDispatch.mock.calls.map(([action]) => action);
+    const setIndex = calls.findIndex((action) => action.type === setTheme("White").type);
+    expect(calls.slice(setIndex)).toEqual([setTheme("White"), setPreviewTheme(null)]);
+  });
+
+  it("does not preview random", async () => {
+    const appDispatch = vi.fn();
+    const { user, input } = renderConsole("/settings", appDispatch);
+    await user.type(input, "set theme {Tab}{Shift>}{Tab}{/Shift}");
+    expect(input.value).toBe("set theme random");
+    expect(appDispatch).not.toHaveBeenCalled();
   });
 });
 

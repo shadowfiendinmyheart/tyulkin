@@ -83,7 +83,7 @@
   "languageList": "Available languages: $languages",
   "wrongTheme": "Theme $themeName not found",
   "changeTheme": "Theme successfully changed to $themeName",
-  "themeList": "Available themes: $themes",
+  "themeList": "Available themes, click one to set it:",
   "secretTheme": "Konami code accepted: the secret theme $themeName is on. Any other one is back with set theme in settings",
   "neofetch": "Ivan Tyulkin\nRole: Frontend developer\nLocation: Saint Petersburg\nStack: React, TypeScript\nUptime: $uptime\nTheme: $theme\nCaret: $caret\nLanguage: $language",
   "helpChangelog": "the history of this site from its commits, all of it: changelog --all",

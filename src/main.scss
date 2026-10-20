@@ -11,3 +11,11 @@ input {
   color: var(--text-color);
   font-family: "IBM Plex Mono", monospace;
 }
+
+// a theme change (TASK-84): the new theme grows as a circle over the old one (see applyTheme),
+// instead of the default cross-fade of the two; other view transitions keep it
+html.theme-transition::view-transition-old(root),
+html.theme-transition::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}

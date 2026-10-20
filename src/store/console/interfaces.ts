@@ -1,4 +1,12 @@
-import { AnsiColor, CaretMode, CrtMode, GameId, SecretId, SoundMode } from "../../domain";
+import {
+  AnsiColor,
+  CaretMode,
+  ThemeMode,
+  CrtMode,
+  GameId,
+  SecretId,
+  SoundMode,
+} from "../../domain";
 import { ActionTypeGenerator } from "../interfaces";
 
 // theme colors of a text, see styles/themes.scss: the semantic ones and the ANSI palette
@@ -14,8 +22,9 @@ export type LogNode =
   // can't make a link that looks like part of the CV
   | { type: "link"; text: string; href: string }
   // a command name, highlighted; a click runs it. label: shown instead of the command
-  // (`ls` shows "about.md", a click runs "cat ~/about.md")
-  | { type: "command"; command: string; label?: string }
+  // (`ls` shows "about.md", a click runs "cat ~/about.md"). theme: the colors of the theme are
+  // shown before it (`show themes`, TASK-84)
+  | { type: "command"; command: string; label?: string; theme?: ThemeMode }
   // rows of cells, a cell is a list of nodes
   | { type: "table"; rows: LogNode[][][] }
   // kept as is: no wrapping, scrolls horizontally (ASCII art, aligned columns).

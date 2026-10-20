@@ -14,3 +14,24 @@
     text-decoration: underline;
   }
 }
+
+// a strip of the colors of a theme (TASK-84): drawn, so it is neither copied nor read
+.swatch {
+  display: inline-flex;
+  gap: 2px;
+  margin-right: 1ch;
+  padding: 3px;
+  border: 1px solid var(--muted-color);
+  background-color: var(--bg-color);
+  vertical-align: middle;
+
+  span {
+    width: 1ch;
+    height: 0.8em;
+  }
+
+  // its own data-theme escapes the black on white of printing (themes.scss)
+  @media print {
+    display: none;
+  }
+}

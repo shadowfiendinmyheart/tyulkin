@@ -25,6 +25,9 @@ export const useCommandsHint = (
   const [selected, setSelected] = React.useState(-1);
   // the line the menu was opened for, Esc puts it back
   const [typedLine, setTypedLine] = React.useState("");
+  // the option accepted by Enter or a click, while it is still the line: its theme stays
+  // previewed until the line runs or changes (TASK-84), not swapped back and forth
+  const [acceptedLine, setAcceptedLine] = React.useState<string>();
 
   const closeMenu = () => {
     if (isMenuOpen) consoleDispatch(setCommandsHint([]));
@@ -52,6 +55,7 @@ export const useCommandsHint = (
   // a click or a tap on an option
   const pickOption = (index: number) => {
     closeMenu();
+    setAcceptedLine(options[index]);
     replaceInputValue(options[index]);
   };
 
@@ -70,6 +74,7 @@ export const useCommandsHint = (
       if (completions.length > 1) {
         setTypedLine(inputValue);
         setSelected(-1);
+        setAcceptedLine(undefined);
         consoleDispatch(setCommandsHint(completions));
       }
       return false;
@@ -86,6 +91,7 @@ export const useCommandsHint = (
     if (e.key === "Enter" && selected !== -1) {
       e.preventDefault();
       closeMenu();
+      setAcceptedLine(options[selected]);
       return false;
     }
     if (e.key === "Escape") {
@@ -105,6 +111,12 @@ export const useCommandsHint = (
     commandsHintOptions: options,
     // stale while the menu is closed
     commandsHintSelected: isMenuOpen ? selected : -1,
+    // the option shown in the line: selected in the open menu, or accepted from it
+    commandsHintShownOption: isMenuOpen
+      ? options[selected]
+      : inputValue === acceptedLine
+        ? acceptedLine
+        : undefined,
     pickCommandsHintOption: pickOption,
     // the line was edited without a key (paste, voice input, a virtual keyboard's suggestion)
     closeCommandsHint: closeMenu,

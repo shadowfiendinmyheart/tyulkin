@@ -83,7 +83,7 @@
   "languageList": "Доступные языки: $languages",
   "wrongTheme": "Тема $themeName не найдена",
   "changeTheme": "Тема $themeName успешно установлена",
-  "themeList": "Доступные темы: $themes",
+  "themeList": "Доступные темы, нажмите на любую, чтобы установить:",
   "secretTheme": "Код Konami принят: включена секретная тема $themeName. Вернуть обычную — set theme в настройках",
   "neofetch": "Иван Тюлькин\nРоль: Frontend-разработчик\nГород: Санкт-Петербург\nСтек: React, TypeScript\nСтаж: $uptime\nТема: $theme\nКурсор: $caret\nЯзык: $language",
   "helpChangelog": "история сайта по его коммитам, целиком: changelog --all",

@@ -14,6 +14,7 @@ import { languages, TFunction } from "../../localization/interfaces";
 import { checkLanguage } from "../../localization/utils";
 import storage from "../../storage";
 import { setTheme } from "../../store/app/actions";
+import { LogNode } from "../../store/console/interfaces";
 import { setCaretMode, setCrtMode, setSoundMode } from "../../store/console/actions";
 import { makeCapitalize } from "../../utils";
 import { suspendKeySound } from "../../utils/keySound";
@@ -26,8 +27,26 @@ const getCaretListLocale = (t: TFunction) =>
 const getLanguageListLocale = (t: TFunction) =>
   t({ key: "languageList", args: { languages: getParamsString(languages) } });
 
-const getThemeListLocale = (t: TFunction) =>
-  t({ key: "themeList", args: { themes: getParamsString(themeModes) } });
+const SET_THEME = "set theme";
+
+// a theme by its name as typed: "nord" -> "Nord"; the secret theme is not settable
+const findTheme = (name: string) => oneOf(themeModes, makeCapitalize(name));
+
+// the theme the line sets: "set theme nord" -> "Nord"; previewed in the completion menu (TASK-84)
+export const getSetTheme = (line: string): ThemeMode | undefined => {
+  const words = line.trim().split(/\s+/);
+  if (words.length !== 3 || `${words[0]} ${words[1]}`.toLowerCase() !== SET_THEME) return;
+  return findTheme(words[2]);
+};
+
+// the themes with their colors (TASK-84), one a line; a click sets the theme
+const getThemeList = (t: TFunction): LogNode[] => [
+  t({ key: "themeList" }),
+  ...themeModes.flatMap((theme): LogNode[] => [
+    "\n",
+    { type: "command", command: `${SET_THEME} ${theme}`, label: theme, theme },
+  ]),
+];
 
 // any listed theme but the current one: the command always changes something
 const getRandomTheme = (current: ThemeMode): ThemeMode => {
@@ -45,21 +64,19 @@ const SOUND_MODES = getParamsString(soundModes);
 
 export const settingsCommands: Command[] = [
   {
-    name: "set theme",
+    name: SET_THEME,
     params: [...themeModes, RANDOM_THEME],
     descriptionKey: "helpSetTheme",
     run: ({ log, t, theme: currentTheme, appDispatch }, [param]) => {
       if (!param) {
-        log(getThemeListLocale(t));
+        log(getThemeList(t));
         return;
       }
 
       const themeName = makeCapitalize(param);
       // the secret theme is not settable: only the Konami code unlocks it
       const theme =
-        param.toLowerCase() === RANDOM_THEME
-          ? getRandomTheme(currentTheme)
-          : oneOf(themeModes, themeName);
+        param.toLowerCase() === RANDOM_THEME ? getRandomTheme(currentTheme) : findTheme(param);
 
       if (!theme) {
         log(t({ key: "wrongTheme", args: { themeName } }));
@@ -74,7 +91,7 @@ export const settingsCommands: Command[] = [
   {
     name: "show themes",
     descriptionKey: "helpShowThemes",
-    run: ({ log, t }) => log(getThemeListLocale(t)),
+    run: ({ log, t }) => log(getThemeList(t)),
   },
   {
     name: "set caret",

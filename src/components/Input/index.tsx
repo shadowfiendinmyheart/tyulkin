@@ -15,12 +15,14 @@ import { usePrompt, usePromptSegments } from "../../hooks/usePrompt";
 import { useCommandsHint } from "./hooks/useCommandsHint";
 import { useHistoryCommands } from "./hooks/useHistoryCommands";
 import { useReverseSearch } from "./hooks/useReverseSearch";
+import { useThemePreview } from "./hooks/useThemePreview";
 import { useT } from "../../context/localizationContext";
 import { withNode } from "../../store/console/logNodes";
 import { isClickingKey, playKeyClick } from "../../utils/keySound";
 import { isPlainKey } from "../../utils";
 import { getAutosuggestion } from "../../commandHandlers/utils";
 import { HighlightKind } from "../../commandHandlers/highlight";
+import { THEME_ORIGIN_ATTRIBUTE } from "../../utils/themeTransition";
 
 import styles from "./styles.module.scss";
 
@@ -103,9 +105,11 @@ const Input: React.FC<InputProps> = ({ onInputElement }) => {
     commandsHintHandleKeyDownInput,
     commandsHintOptions,
     commandsHintSelected,
+    commandsHintShownOption,
     pickCommandsHintOption,
     closeCommandsHint,
   } = useCommandsHint(inputValue, replaceInputValue);
+  useThemePreview(commandsHintShownOption);
   const { historyCommandsHandleKeyDownInput, resetHistoryBrowsing } = useHistoryCommands(
     inputValue,
     replaceInputValue,
@@ -326,7 +330,10 @@ const Input: React.FC<InputProps> = ({ onInputElement }) => {
             <>
               <span className={styles.promptUser}>{promptSegments.user}</span>{" "}
               <span className={styles.promptDirectory}>{promptSegments.directory}</span>{" "}
-              <span className={styles.promptSymbol}>{promptSegments.symbol}</span>
+              {/* a set theme spreads from here (TASK-84) */}
+              <span className={styles.promptSymbol} {...{ [THEME_ORIGIN_ATTRIBUTE]: "" }}>
+                {promptSegments.symbol}
+              </span>
             </>
           )}
         </span>
