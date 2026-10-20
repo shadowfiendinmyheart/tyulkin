@@ -183,11 +183,18 @@ front matter `title`, `date` (`YYYY-MM-DD`), необязательными `des
 многострочные ячейки и `pre` фильтруются построчно; после `|` поддерживается только `grep`. `Ctrl+R` в
 поле ввода — обратный поиск по истории, как в bash: `Ctrl+R` ещё раз — более старое совпадение, Enter —
 выполнить, стрелки/Tab/Home/End — вставить в строку, Esc/`Ctrl+G` — отменить
-([`Input/hooks/useReverseSearch.ts`](src/components/Input/hooks/useReverseSearch.ts)). `echo` помечен
-`linkable: false`: deep link его не выполняет.
+([`Input/hooks/useReverseSearch.ts`](src/components/Input/hooks/useReverseSearch.ts)). Сочетания
+readline ([`Input/readline.ts`](src/components/Input/readline.ts)): `Ctrl+A`/`Ctrl+E` — в начало/конец
+строки (`Ctrl+E` в конце принимает автоподсказку), `Ctrl+U`/`Ctrl+K` — удалить до начала/конца,
+`Ctrl+W` — слово до пробела слева, `Alt+B`/`Alt+F` — на слово назад/вперёд, `Ctrl+D` — символ под
+кареткой, на пустой строке — `exit`. `Ctrl+K`, когда справа от каретки ничего нет, открывает палитру;
+при поиске `Ctrl+R` `Ctrl+A`/`Ctrl+E` вставляют найденное, как в bash. `Ctrl+W` настольные браузеры не
+отдают странице (закрывают вкладку), `Alt+F` Chrome в Windows может забрать под своё меню; `Ctrl+W`
+работает через `Ctrl` в ряду клавиш на телефоне. `echo` помечен `linkable: false`: deep link его не
+выполняет.
 
 **Палитра команд** ([`components/CommandPalette`](src/components/CommandPalette/index.tsx)).
-`Ctrl+K` (`⌘K`) или лупа в верхней панели открывают нечёткий поиск по командам страницы (с их
+`Ctrl+K` (`⌘K`; в командной строке — если справа от каретки пусто) или лупа в верхней панели открывают нечёткий поиск по командам страницы (с их
 `params`: `set theme White`) и по файлам и каталогам ФС от `~` (`cat ~/about.md`, `cd ~/projects`) с
 описаниями из словаря ([`commandHandlers/palette.ts`](src/commandHandlers/palette.ts)): символы
 запроса ищутся по порядку, выше — подряд и с начала слова; не нашлось в командах — ищется по словам

@@ -11,7 +11,8 @@ import styles from "./styles.module.scss";
 const isMac = () => /Mac|iPhone|iPad/.test(navigator.platform);
 
 // calls onToggle on Ctrl+K or ⌘K anywhere on the page; the matrix rain and the games take the
-// keys before it
+// keys before it. In the command line Ctrl+K with text after the caret kills it, as in readline
+// (TASK-91), and prevents the key: then it is not for the palette
 export const usePaletteShortcut = (onToggle: () => void) => {
   const onToggleRef = React.useRef(onToggle);
   React.useLayoutEffect(() => {
@@ -20,7 +21,7 @@ export const usePaletteShortcut = (onToggle: () => void) => {
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isCtrlLetter(e, "k", { orMeta: true })) return;
+      if (e.defaultPrevented || !isCtrlLetter(e, "k", { orMeta: true })) return;
       e.preventDefault(); // the browser would focus its search field
       if (!e.repeat) onToggleRef.current();
     };

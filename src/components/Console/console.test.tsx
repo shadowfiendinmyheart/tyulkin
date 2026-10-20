@@ -1110,6 +1110,66 @@ describe("extra keys (TASK-93)", () => {
   });
 });
 
+describe("readline keys (TASK-91)", () => {
+  const queryPalette = () => screen.queryByRole("dialog", { name: eng.paletteLabel });
+  const ctrl = (letter: string) => `{Control>}${letter}{/Control}`;
+
+  it("moves the caret and edits the line as bash does", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard(`cat ~/projects/readme${ctrl("a")}`);
+    expect(input.selectionEnd).toBe(0);
+    await user.keyboard("{Alt>}f{/Alt}");
+    expect(input.selectionEnd).toBe(3);
+    await user.keyboard(ctrl("e"));
+    expect(input.selectionEnd).toBe(input.value.length);
+    await user.keyboard("{Alt>}b{/Alt}{Alt>}b{/Alt}");
+    expect(input.value).toBe("cat ~/projects/readme");
+    expect(input.selectionEnd).toBe("cat ~/".length);
+
+    await user.keyboard(ctrl("k"));
+    expect(input.value).toBe("cat ~/");
+    expect(queryPalette()).toBeNull();
+    await user.keyboard(ctrl("w"));
+    expect(input.value).toBe("cat ");
+    await user.keyboard(`about.md{ArrowLeft}{ArrowLeft}${ctrl("u")}`);
+    expect(input.value).toBe("md");
+    expect(input.selectionEnd).toBe(0);
+    await user.keyboard(ctrl("d"));
+    expect(input.value).toBe("d");
+    expect(input.selectionEnd).toBe(0);
+  });
+
+  it("leaves Ctrl+K with nothing after the caret to the palette", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard(`he${ctrl("k")}`);
+    expect(queryPalette()).not.toBeNull();
+    await user.keyboard("{Escape}");
+    expect(input.value).toBe("he");
+  });
+
+  it("accepts the Ctrl+R match by Ctrl+A or Ctrl+E, the caret at its start or end", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard(`education{Enter}{Control>}r{/Control}edu${ctrl("a")}`);
+    expect(input.value).toBe("education");
+    expect(input.selectionEnd).toBe(0);
+    await user.keyboard(`{Control>}r{/Control}edu${ctrl("e")}`);
+    expect(input.value).toBe("education");
+    expect(input.selectionEnd).toBe("education".length);
+  });
+
+  it("accepts the autosuggestion by Ctrl+E", async () => {
+    const { user, input } = renderConsole();
+    await user.keyboard(`about{Enter}ab${ctrl("e")}`);
+    expect(input.value).toBe("about");
+  });
+
+  it("ends the session by Ctrl+D on an empty line", async () => {
+    const { user } = renderConsole();
+    await user.keyboard(ctrl("d"));
+    await waitFor(() => expect(screen.queryByText(eng.processCompleted)).toBeTruthy());
+  });
+});
+
 describe("UX shortcuts (TASK-52)", () => {
   it("runs commands case-insensitively and autocompletes regardless of case", async () => {
     const { user, input } = renderConsole();

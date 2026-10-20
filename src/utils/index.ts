@@ -17,16 +17,26 @@ export const normalizeInput = (userCommand: string) =>
 export const isPlainKey = (e: React.KeyboardEvent) =>
   !e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey && !e.nativeEvent.isComposing;
 
-// Ctrl+<letter> (orMeta: or Cmd+<letter>, as on a Mac); Shift/Alt combos are left to the browser
-// (Ctrl+Shift+C is DevTools, Ctrl+Alt is AltGr on Windows), an IME composition owns the keys.
-// On a non-Latin layout e.key is a local letter ("д"), so the physical key decides
-export const isCtrlLetter = (e: KeyboardEvent, letter: string, { orMeta = false } = {}) => {
-  const isCtrl = orMeta ? e.ctrlKey || e.metaKey : e.ctrlKey && !e.metaKey;
-  if (!isCtrl || e.shiftKey || e.altKey || e.isComposing) return false;
+// a Latin letter is taken as is; on a non-Latin layout e.key is a local letter ("д"), so the
+// physical key decides
+const isLetterKey = (e: KeyboardEvent, letter: string) => {
   const key = e.key.toLowerCase();
   if (/^[a-z]$/.test(key)) return key === letter;
   return e.code === `Key${letter.toUpperCase()}`;
 };
+
+// Ctrl+<letter> (orMeta: or Cmd+<letter>, as on a Mac); Shift/Alt combos are left to the browser
+// (Ctrl+Shift+C is DevTools, Ctrl+Alt is AltGr on Windows), an IME composition owns the keys
+export const isCtrlLetter = (e: KeyboardEvent, letter: string, { orMeta = false } = {}) => {
+  const isCtrl = orMeta ? e.ctrlKey || e.metaKey : e.ctrlKey && !e.metaKey;
+  if (!isCtrl || e.shiftKey || e.altKey || e.isComposing) return false;
+  return isLetterKey(e, letter);
+};
+
+// Alt+<letter> alone (Ctrl+Alt is AltGr on Windows); on a Mac Option+B types "∫", so the physical
+// key decides there too
+export const isAltLetter = (e: KeyboardEvent, letter: string) =>
+  e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.isComposing && isLetterKey(e, letter);
 
 // the browser's own keys (reload, DevTools, back, fullscreen): kept working under a full-page overlay
 export const isBrowserShortcut = (e: KeyboardEvent) =>
