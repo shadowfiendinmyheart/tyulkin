@@ -7,6 +7,7 @@ import {
   GameId,
   OverlayId,
   SecretId,
+  ShutdownPhase,
   SoundMode,
 } from "../../domain";
 import { ActionTypeGenerator } from "../interfaces";
@@ -108,6 +109,8 @@ export interface ConsoleState {
   game: GameId | null;
   // the toast of the last found secret (TASK-97), null when hidden
   achievement: Achievement | null;
+  // `exit` (TASK-98): the screen is going out, or is out until restart; null when on
+  shutdown: ShutdownPhase | null;
 }
 
 export type ConsoleActionType =
@@ -126,6 +129,7 @@ export type ConsoleActionType =
   | ActionSkipTyping
   | ActionSetOverlay
   | ActionSetGame
+  | ActionSetShutdown
   | ActionShowAchievement
   | ActionHideAchievement
   | ActionFailCommand;
@@ -139,6 +143,10 @@ export type ActionFinishTyping = ActionTypeGenerator<ConsoleActionKind.FinishTyp
 export type ActionSkipTyping = ActionTypeGenerator<ConsoleActionKind.SkipTyping>;
 export type ActionSetOverlay = ActionTypeGenerator<ConsoleActionKind.SetOverlay, OverlayId | null>;
 export type ActionSetGame = ActionTypeGenerator<ConsoleActionKind.SetGame, GameId | null>;
+export type ActionSetShutdown = ActionTypeGenerator<
+  ConsoleActionKind.SetShutdown,
+  ShutdownPhase | null
+>;
 export type ActionShowAchievement = ActionTypeGenerator<
   ConsoleActionKind.ShowAchievement,
   Achievement
@@ -178,6 +186,7 @@ export enum ConsoleActionKind {
   SkipTyping = "skipTyping",
   SetOverlay = "setOverlay",
   SetGame = "setGame",
+  SetShutdown = "setShutdown",
   ShowAchievement = "showAchievement",
   HideAchievement = "hideAchievement",
 }

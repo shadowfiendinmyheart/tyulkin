@@ -1,6 +1,6 @@
 import { getRandomScreensaver, oneOf, screensaverIds } from "../../domain";
 import { ROUTES } from "../../router/const";
-import { clearHistory, clearLogs, setOverlay } from "../../store/console/actions";
+import { clearHistory, clearLogs, setOverlay, setShutdown } from "../../store/console/actions";
 import { withNode } from "../../store/console/logNodes";
 import { Command } from "../interfaces";
 import { stopAsk } from "../ask";
@@ -44,10 +44,23 @@ export const globalCommands: Command[] = [
   },
   {
     name: "menu",
-    aliases: ["exit"],
     descriptionKey: "helpMenu",
     shareable: false,
     run: ({ navigate }) => navigate(ROUTES.MAIN),
+  },
+  {
+    // the screen goes out as a CRT does, then "[Process completed]" and a restart (TASK-98),
+    // see ConsolePage
+    name: "exit",
+    descriptionKey: "helpExit",
+    // a link would turn the recipient's page off at once
+    shareable: false,
+    run: ({ consoleDispatch }) => {
+      // an answer of `ask` or a QR code still loading would print into the restarted console
+      stopAsk();
+      stopQr();
+      consoleDispatch(setShutdown("closing"));
+    },
   },
   {
     name: "help",

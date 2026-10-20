@@ -34,6 +34,7 @@ const renderLogs = (logs: Log[]) =>
           overlay: null,
           game: null,
           achievement: null,
+          shutdown: null,
         },
         consoleDispatch: () => undefined,
       }}

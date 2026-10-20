@@ -26,7 +26,7 @@ import inputStyles from "../Input/styles.module.scss";
 import hintStyles from "../CommandsHint/style.module.scss";
 import { QUICK_COMMANDS, QUICK_COMMANDS_TYPED_LIMIT } from "../QuickCommands";
 import { EXTRA_KEYS } from "../ExtraKeys";
-import { GUI_HINT_DELAY_MS, SCREENSAVER_DELAY_MS } from "../../pages/ConsolePage";
+import { GUI_HINT_DELAY_MS, SCREENSAVER_DELAY_MS, SHUTDOWN_MS } from "../../pages/ConsolePage";
 import { ACHIEVEMENT_TOAST_MS } from "../../router/ConsoleSessionLayout";
 import pageStyles from "../../pages/ConsolePage/styles.module.scss";
 import logsStyles from "../Logs/styles.module.scss";
@@ -192,7 +192,7 @@ describe("console", () => {
       const options = within(getMenu()!).getAllByRole("option");
       expect(options.map((option) => option.textContent)).toEqual([
         `experience-- ${eng.helpExperience}`,
-        `exit-- ${eng.helpMenu}`,
+        `exit-- ${eng.helpExit}`,
       ]);
       expect(input.getAttribute("aria-controls")).toBe(getMenu()!.id);
       // nothing is selected until the next Tab or arrow
@@ -449,7 +449,7 @@ describe("command registry (TASK-33)", () => {
 
   it("runs and autocompletes aliases", async () => {
     const { user } = renderConsole("/settings");
-    await user.keyboard("exit{Enter}");
+    await user.keyboard("cd..{Enter}");
     expect(getLogs().at(-1)).toBe("Hi everyone!");
   });
 });
@@ -1541,6 +1541,67 @@ describe("screensaver (TASK-95)", () => {
       renderConsole("/settings");
       act(() => vi.advanceTimersByTime(SCREENSAVER_DELAY_MS * 2));
       expect(queryScreensaver()).toBeNull();
+    });
+  });
+});
+
+describe("exit (TASK-98)", () => {
+  const queryCompleted = () => screen.queryByText(eng.processCompleted);
+  const getRestart = () => screen.getByRole("button", { name: eng.processRestart });
+
+  it("turns the terminal off at once with reduced motion, restart greets on a cleared console", async () => {
+    const { user } = renderConsole();
+    await user.keyboard("about{Enter}exit{Enter}");
+    // the Enter that ran it doesn't press the restart
+    await waitFor(() => expect(queryCompleted()).toBeTruthy());
+    expect(screen.queryByRole("textbox")).toBeNull();
+    // Enter presses the focused restart
+    expect(document.activeElement).toBe(getRestart());
+    await user.keyboard("{Enter}");
+    expect(queryCompleted()).toBeNull();
+    expect(getLogs()).toEqual(mainWelcome);
+    expect(document.activeElement).toBe(screen.getByRole("textbox"));
+  });
+
+  it("leaving the page turns the terminal on", async () => {
+    const { user, router } = renderConsole("/settings");
+    await user.keyboard("exit{Enter}");
+    await waitFor(() => expect(queryCompleted()).toBeTruthy());
+    await act(() => router.navigate("/"));
+    expect(queryCompleted()).toBeNull();
+    expect(screen.getByRole("textbox")).toBeTruthy();
+  });
+
+  describe("with motion", () => {
+    beforeEach(() => {
+      vi.stubGlobal("matchMedia", () => ({ matches: false }));
+      sessionStorage.setItem("guiOffered", "true");
+      vi.useFakeTimers();
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("the screen goes out, then restart is a new login with the boot", () => {
+      const { input } = renderConsole("/settings");
+      // shows the boot in full
+      fireEvent.keyDown(input, { key: "a" });
+      fireEvent.change(input, { target: { value: "exit" } });
+      fireEvent.keyDown(input, { key: "Enter" });
+      const page = document.querySelector(`.${pageStyles.shuttingDown}`) as HTMLElement;
+      expect(page).toBeTruthy();
+      // nothing is typed or clicked while it goes out
+      expect(page.inert).toBe(true);
+      act(() => vi.advanceTimersByTime(SHUTDOWN_MS - 1));
+      expect(queryCompleted()).toBeNull();
+      act(() => vi.advanceTimersByTime(1));
+      expect(queryCompleted()).toBeTruthy();
+
+      fireEvent.click(getRestart());
+      for (let i = 0; i < 20; i++) act(() => vi.advanceTimersByTime(1000));
+      expect(getLogs()[0]).toMatch(/^Last login: /);
+      expect(getLogs().at(-1)).toBe(eng.settingsWelcome);
+      expect(document.querySelector(`.${pageStyles.shuttingDown}`)).toBeNull();
     });
   });
 });

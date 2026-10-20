@@ -36,6 +36,7 @@ const initialState: ConsoleState = {
   overlay: null,
   game: null,
   achievement: null,
+  shutdown: null,
 };
 
 describe("console reducer", () => {

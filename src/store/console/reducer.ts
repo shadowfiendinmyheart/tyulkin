@@ -136,6 +136,14 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
       };
     }
 
+    case ConsoleActionKind.SetShutdown: {
+      if (action.payload === state.shutdown) return state;
+      return {
+        ...state,
+        shutdown: action.payload,
+      };
+    }
+
     case ConsoleActionKind.ShowAchievement: {
       return {
         ...state,

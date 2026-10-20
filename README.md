@@ -132,7 +132,7 @@ src/
 Реестр — [`src/commandHandlers/commands/`](src/commandHandlers/commands):
 
 - `global.ts` — команды, доступные на любой странице (`help`, `clear`, `back`, `menu`,
-  `neofetch`, `gui`, `share`, `matrix`, `screensaver`, `secrets`, `history`, `echo`, `whoami`,
+  `exit`, `neofetch`, `gui`, `share`, `matrix`, `screensaver`, `secrets`, `history`, `echo`, `whoami`,
   `pwd`, `date`, `man`). `man <команда>` и `<команда> --help` собирают man-страницу из полей команды
   ([`commandHandlers/man.ts`](src/commandHandlers/man.ts)), заголовки разделов — из словарей;
 - `main.ts`, `settings.ts` — команды страниц;
@@ -264,6 +264,12 @@ BCP 47-тег в `htmlLangByLanguage` ([`localization/utils.ts`](src/localizatio
 и заставки — сцены общего каркаса
 [`components/CanvasOverlay`](src/components/CanvasOverlay/index.tsx): canvas на всю страницу, цвета
 темы, выход, неподвижный кадр при reduced motion; что показано — `overlay` в состоянии консоли.
+
+`exit` гасит страницу как ЭЛТ (картинка сжимается в линию, линия — в точку, `SHUTDOWN_MS`; при
+reduced motion — сразу), затем остаются `[Process completed]` и кнопка restart
+([`components/ExitScreen`](src/components/ExitScreen/index.tsx)): она очищает консоль и заново
+приветствует, как при входе (boot с «Last login»). Фаза — `shutdown` в состоянии консоли; уход со
+страницы включает терминал обратно.
 
 `set crt on|off` (по умолчанию выкл., `crtModes` в `src/domain`, хранится в storage) включает
 CRT-эффект терминала: свечение текста и слой поверх страницы со scanlines, виньеткой и мерцанием

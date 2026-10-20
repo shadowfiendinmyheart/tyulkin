@@ -1,4 +1,13 @@
-import { CaretMode, CrtMode, FontMode, GameId, OverlayId, SecretId, SoundMode } from "../../domain";
+import {
+  CaretMode,
+  CrtMode,
+  FontMode,
+  GameId,
+  OverlayId,
+  SecretId,
+  ShutdownPhase,
+  SoundMode,
+} from "../../domain";
 import {
   ActionAddHistoryCommand,
   ActionAddLogs,
@@ -15,6 +24,7 @@ import {
   ActionSetCommandsHint,
   ActionSetOverlay,
   ActionSetGame,
+  ActionSetShutdown,
   ActionShowAchievement,
   ActionHideAchievement,
   ActionSkipTyping,
@@ -72,6 +82,11 @@ export const setOverlay = (overlay: OverlayId | null): ActionSetOverlay => ({
 export const setGame = (game: GameId | null): ActionSetGame => ({
   type: ConsoleActionKind.SetGame,
   payload: game,
+});
+// `exit` (TASK-98): the screen goes out ("closing", then "closed"); null turns it on again
+export const setShutdown = (shutdown: ShutdownPhase | null): ActionSetShutdown => ({
+  type: ConsoleActionKind.SetShutdown,
+  payload: shutdown,
 });
 let lastAchievementId = 0;
 // the toast of a secret found for the first time (TASK-97); found: how many are found with it

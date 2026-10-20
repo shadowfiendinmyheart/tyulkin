@@ -4,7 +4,7 @@ import { ConsoleContext } from "../context/consoleContext";
 import storage from "../storage";
 import { reducer } from "../store/console/reducer";
 import { ConsoleState } from "../store/console/interfaces";
-import { hideAchievement, setGame, setOverlay } from "../store/console/actions";
+import { hideAchievement, setGame, setOverlay, setShutdown } from "../store/console/actions";
 
 // how long the toast of a found secret stays on screen (TASK-97)
 export const ACHIEVEMENT_TOAST_MS = 5000;
@@ -27,15 +27,17 @@ const createInitialState = (): ConsoleState => ({
   overlay: null,
   game: null,
   achievement: null,
+  shutdown: null,
 });
 
 // the terminal session (logs, history, caret) lives above the pages, so a trip to the regular
 // view and back doesn't wipe it
 export const ConsoleSessionLayout: React.FC = () => {
   const [state, dispatch] = React.useReducer(reducer, undefined, createInitialState);
-  // the rain, a screensaver and a game belong to the page they were run on: leaving it without a
-  // key or tap (the browser's back by a mouse button or a swipe) closes them. A change of the query
-  // alone (a deep link dropping ?cmd before running `matrix`) is not leaving
+  // the rain, a screensaver, a game and the screen gone out by `exit` belong to the page they were
+  // run on: leaving it without a key or tap (the browser's back by a mouse button or a swipe)
+  // closes them. A change of the query alone (a deep link dropping ?cmd before running `matrix`)
+  // is not leaving
   const { pathname } = useLocation();
   const pathnameRef = React.useRef(pathname);
   React.useLayoutEffect(() => {
@@ -43,6 +45,7 @@ export const ConsoleSessionLayout: React.FC = () => {
     pathnameRef.current = pathname;
     dispatch(setOverlay(null));
     dispatch(setGame(null));
+    dispatch(setShutdown(null));
   }, [pathname]);
 
   React.useEffect(() => {

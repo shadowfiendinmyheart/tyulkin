@@ -88,6 +88,9 @@ export const getRandomScreensaver = (): ScreensaverId =>
 // what covers the whole page with a canvas until any key or tap: the `matrix` rain or a screensaver
 export type OverlayId = "matrix" | ScreensaverId;
 
+// `exit` (TASK-98): the screen goes out as a CRT does, then "[Process completed]" stays
+export type ShutdownPhase = "closing" | "closed";
+
 // narrows an arbitrary (e.g. user- or storage-provided) value to one of the allowed ones
 export const oneOf = <T extends string>(allowed: readonly T[], value: unknown): T | undefined =>
   allowed.find((item) => item === value);

@@ -5,6 +5,7 @@ import AchievementToast from "../../components/AchievementToast";
 import CommandPalette, { PaletteButton, usePaletteShortcut } from "../../components/CommandPalette";
 import Console from "../../components/Console";
 import DeepLinkCommand from "../../components/DeepLinkCommand";
+import ExitScreen from "../../components/ExitScreen";
 import ExtraKeys from "../../components/ExtraKeys";
 import Game from "../../components/Game";
 import CanvasOverlay, { CreateScene } from "../../components/CanvasOverlay";
@@ -14,9 +15,9 @@ import ViewSwitch from "../../components/ViewSwitch";
 import WithCommandHandler from "../../commandHandlers/WithCommandHandler";
 import { useConsoleContext } from "../../context/consoleContext";
 import { ROUTES } from "../../router/const";
-import { addConsoleLog, setOverlay } from "../../store/console/actions";
+import { addConsoleLog, clearLogs, setOverlay, setShutdown } from "../../store/console/actions";
 import { setTheme } from "../../store/app/actions";
-import { getRandomScreensaver, OverlayId, SECRET_THEME } from "../../domain";
+import { getRandomScreensaver, OverlayId, SECRET_THEME, ThemeMode, CaretMode } from "../../domain";
 import { useIdle } from "../../hooks/useIdle";
 import { useKonamiCode } from "../../hooks/useKonamiCode";
 import { usePinchFontSize } from "../../hooks/usePinchFontSize";
@@ -62,20 +63,51 @@ const getBootLogs = (t: TFunction, language: Languages, lastLogin: Date | null) 
   return lines.map((text) => addConsoleLog({ type: "text", text, color: "muted" }));
 };
 
-// on the first welcome of a session (browser tab) remembers the visit and returns the previous
-// one (null on the first visit); undefined when the session has already started
+// remembers the visit and returns the previous one (null on the first visit)
+const login = (): Date | null => {
+  const lastLogin = storage.getLastLogin();
+  storage.setLastLogin(new Date());
+  return lastLogin;
+};
+
+// on the first welcome of a session (browser tab) logs in; undefined when the session has
+// already started
 const startSession = (): { lastLogin: Date | null } | undefined => {
   if (storage.isSessionStarted()) return undefined;
   storage.setSessionStarted();
-  const lastLogin = storage.getLastLogin();
-  storage.setLastLogin(new Date());
-  return { lastLogin };
+  return { lastLogin: login() };
+};
+
+interface WelcomeParams {
+  localization: { t: TFunction; language: Languages };
+  theme: ThemeMode;
+  caretMode: CaretMode;
+}
+
+// the greeting of a page: the boot when logging in (the first welcome of a session, a restart
+// after `exit`) unless the visitor asked for less motion, neofetch on the main page (TASK-54)
+// and the welcome text
+const getWelcomeLogs = (
+  route: ConsoleRouteValues,
+  { localization, theme, caretMode }: WelcomeParams,
+  session: { lastLogin: Date | null } | undefined,
+) => {
+  const { t, language } = localization;
+  const bootLogs =
+    session && !prefersReducedMotion() ? getBootLogs(t, language, session.lastLogin) : [];
+  const neofetchLogs =
+    route === ROUTES.MAIN
+      ? [addConsoleLog(getNeofetch({ t, language, theme, caretMode, now: new Date() }))]
+      : [];
+  return [...bootLogs, ...neofetchLogs, addConsoleLog(t({ key: welcomeLocaleByRoute[route] }))];
 };
 
 // a visitor who has done nothing for this long is offered the regular view
 export const GUI_HINT_DELAY_MS = 15_000;
 // a screensaver covers the page after this long without input (TASK-95)
 export const SCREENSAVER_DELAY_MS = 3 * 60_000;
+// how long the screen goes out after `exit` (TASK-98), the animation of styles.shuttingDown
+export const SHUTDOWN_MS = 700;
 // what is drawn over the page by `matrix` and `screensaver`
 const overlayScenes: Record<OverlayId, CreateScene> = {
   matrix: createMatrixScene,
@@ -109,17 +141,28 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
   React.useEffect(() => {
     if (welcomedRouteRef.current === route) return;
     welcomedRouteRef.current = route;
-    const { localization, theme, caretMode } = welcomeParamsRef.current;
-    const { t, language } = localization;
-    // the boot plays once per session; with reduced motion the welcome comes at once
-    const session = startSession();
-    if (session && !prefersReducedMotion())
-      getBootLogs(t, language, session.lastLogin).forEach((action) => dispatch(action));
-    // the main page greets with neofetch (TASK-54)
-    if (route === ROUTES.MAIN)
-      dispatch(addConsoleLog(getNeofetch({ t, language, theme, caretMode, now: new Date() })));
-    dispatch(addConsoleLog(t({ key: welcomeLocaleByRoute[route] })));
+    // the boot plays once per session
+    getWelcomeLogs(route, welcomeParamsRef.current, startSession()).forEach((action) =>
+      dispatch(action),
+    );
   }, [route, dispatch]);
+
+  // `exit` (TASK-98): the screen goes out as a CRT does, then "[Process completed]" stays; restart
+  // is a new login on a cleared console. With reduced motion it is out at once, yet not within the
+  // Enter that ran `exit`: its keypress would press the restart focused meanwhile
+  const { shutdown } = state;
+  React.useEffect(() => {
+    if (shutdown !== "closing") return;
+    const delay = prefersReducedMotion() ? 0 : SHUTDOWN_MS;
+    const timer = setTimeout(() => dispatch(setShutdown("closed")), delay);
+    return () => clearTimeout(timer);
+  }, [shutdown, dispatch]);
+  // the page goes out as a whole and is gone when out: nothing is typed or clicked meanwhile
+  // (React 18 knows no `inert` prop)
+  const pageRef = React.useRef<HTMLDivElement>(null);
+  React.useLayoutEffect(() => {
+    if (pageRef.current) pageRef.current.inert = shutdown === "closing";
+  }, [shutdown]);
 
   // the regular view is offered on the main page to a visitor who hasn't run a command and has
   // done nothing for a while (no key, click, tap or scrolling); once per session (storage.isGuiOffered)
@@ -158,9 +201,11 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
     };
   }, [route, hasCommands, dispatch]);
 
-  // ↑↑↓↓←→←→BA switches to the secret theme (TASK-65); stored like any other theme
+  // ↑↑↓↓←→←→BA switches to the secret theme (TASK-65); stored like any other theme. Not on the
+  // screen gone out by `exit`: its line would go into a console no one sees, cleared by restart
   useKonamiCode(
     React.useCallback(() => {
+      if (shutdown) return;
       storage.setThemeMode(SECRET_THEME);
       appDispatch(setTheme(SECRET_THEME));
       const { t } = welcomeParamsRef.current.localization;
@@ -168,7 +213,7 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
       // the code is one of the secrets of `secrets` (TASK-63)
       const found = findSecret("konami");
       if (found) dispatch(found);
-    }, [appDispatch, dispatch]),
+    }, [appDispatch, dispatch, shutdown]),
   );
 
   // the virtual keyboard opened (TASK-92): the prompt being typed in stays in view. Only on touch
@@ -190,9 +235,21 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
   const openPalette = React.useCallback(() => setIsPaletteOpen(true), []);
   const closePalette = React.useCallback(() => setIsPaletteOpen(false), []);
   usePaletteShortcut(React.useCallback(() => setIsPaletteOpen((isOpen) => !isOpen), []));
-  // the matrix rain, a screensaver and the games take every key: the palette would get none
+  // restart after `exit` (TASK-98): a new login on a cleared console
+  const restart = React.useCallback(() => {
+    // Ctrl+K pressed on the screen gone out toggled it unseen
+    setIsPaletteOpen(false);
+    dispatch(clearLogs());
+    dispatch(setShutdown(null));
+    getWelcomeLogs(route, welcomeParamsRef.current, { lastLogin: login() }).forEach((action) =>
+      dispatch(action),
+    );
+  }, [route, dispatch]);
+
+  // the matrix rain, a screensaver and the games take every key: the palette would get none;
+  // nor is it opened over the screen gone out by `exit`
   const { overlay } = state;
-  const isOverlayShown = Boolean(overlay) || Boolean(state.game);
+  const isOverlayShown = Boolean(overlay) || Boolean(state.game) || Boolean(shutdown);
 
   // a screensaver after a while without input (TASK-95): not over a game, the rain or the palette,
   // nor over a log still being typed out, not in a hidden tab (useIdle), and not for a visitor who
@@ -244,22 +301,35 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
     return <Navigate to={{ pathname: route, search, hash }} state={locationState} replace />;
   }
 
+  const isShuttingDown = shutdown === "closing";
   return (
     <WithCommandHandler route={route}>
-      <div className={styles.page}>
-        <nav className={cn(styles.toolbar, isCrt && styles.crtGlow)}>
-          <PaletteButton onClick={openPalette} disabled={isOverlayShown} />
-          <ViewSwitch to="gui" quiet />
-        </nav>
+      {shutdown === "closed" ? (
+        <ExitScreen onRestart={restart} />
+      ) : (
         <div
-          className={cn(styles.wrapper, isCrt && styles.crtGlow)}
-          ref={wrapperRef}
-          {...pinchHandlers}
+          className={cn(styles.page, isShuttingDown && styles.shuttingDown)}
+          style={
+            isShuttingDown
+              ? ({ "--shutdown-duration": `${SHUTDOWN_MS}ms` } as React.CSSProperties)
+              : undefined
+          }
+          ref={pageRef}
         >
-          <Console onInputElement={setInputElement} />
+          <nav className={cn(styles.toolbar, isCrt && styles.crtGlow)}>
+            <PaletteButton onClick={openPalette} disabled={isOverlayShown} />
+            <ViewSwitch to="gui" quiet />
+          </nav>
+          <div
+            className={cn(styles.wrapper, isCrt && styles.crtGlow)}
+            ref={wrapperRef}
+            {...pinchHandlers}
+          >
+            <Console onInputElement={setInputElement} />
+          </div>
+          <ExtraKeys input={inputElement} />
         </div>
-        <ExtraKeys input={inputElement} />
-      </div>
+      )}
       <DeepLinkCommand />
       {isPaletteOpen && !isOverlayShown && <CommandPalette onClose={closePalette} />}
       {overlay && <CanvasOverlay createScene={overlayScenes[overlay]} onExit={exitOverlay} />}

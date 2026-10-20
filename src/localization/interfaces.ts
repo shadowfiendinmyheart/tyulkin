@@ -41,6 +41,9 @@ export interface CommonDictionary {
   paletteEmpty: string;
   // shown over the `matrix` digital rain and a screensaver
   overlayExit: string;
+  // the screen gone out by `exit` (TASK-98) and its button that turns the terminal on again
+  processCompleted: string;
+  processRestart: string;
   // the mini-games (TASK-66): the exit button, the end of a game, a chunk that didn't load
   gameExit: string;
   gameOver: string;
@@ -118,6 +121,7 @@ export interface CommandDescriptionDictionary {
   helpBack: string;
   helpClear: string;
   helpMenu: string;
+  helpExit: string;
   helpHelp: string;
   helpLs: string;
   helpEducation: string;

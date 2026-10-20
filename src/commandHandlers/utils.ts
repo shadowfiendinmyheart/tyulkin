@@ -29,7 +29,7 @@ export const separateCommand = <T extends CommandBase>(commands: T[], userComman
   }
 };
 
-// a help table row: "menu (exit)" | "return to the main menu"
+// a help table row: "back (cd..)" | "go back"
 export const getHelpRow = (command: Command, description: string): LogNode[][] => {
   const name: LogNode[] = [{ type: "command", command: command.name }];
   if (command.aliases?.length) {

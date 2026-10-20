@@ -129,3 +129,58 @@ $gutter-bottom: 1ch;
     opacity: 1;
   }
 }
+
+// `exit` (TASK-98): the picture shrinks into a bright line, the line into a dot, the dot goes out;
+// the duration is set by ConsolePage (SHUTDOWN_MS); with reduced motion the page is gone at once
+.shuttingDown {
+  animation: crt-off var(--shutdown-duration) ease-in forwards;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+
+    &::after {
+      display: none;
+    }
+  }
+
+  // the glow of the beam: the line and the dot are bright
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: var(--text-color);
+    animation: crt-off-glow var(--shutdown-duration) ease-in forwards;
+  }
+}
+
+@keyframes crt-off {
+  0% {
+    transform: scale(1, 1);
+  }
+
+  50% {
+    transform: scale(1, 0.004);
+  }
+
+  80% {
+    opacity: 1;
+    transform: scale(0.004, 0.004);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(0, 0);
+  }
+}
+
+@keyframes crt-off-glow {
+  0% {
+    opacity: 0;
+  }
+
+  50%,
+  100% {
+    opacity: 1;
+  }
+}
