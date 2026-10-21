@@ -385,6 +385,37 @@ test("keeps a long autosuggestion within a phone screen (TASK-87) @mobile", asyn
   expect(overflow).toBe(0);
 });
 
+test("blinks the block caret and the char under it in step (TASK-100)", async ({ page }) => {
+  await open(page);
+  // with motion: the caret blinks
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  const chars = input(page).locator("xpath=following-sibling::div[1]");
+  const blinkStartTimes = () =>
+    chars.evaluate((element) =>
+      element.getAnimations({ subtree: true }).map(({ effect, startTime }) => ({
+        // the caret is drawn by ::after, the char under it is inverted by its own animation
+        isCaret: (effect as KeyframeEffect).pseudoElement === "::after",
+        startTime,
+      })),
+    );
+  // "a…" suggests "about": the caret moves over the typed chars, while the first char of the
+  // suggestion under it stays the same element
+  await page.keyboard.type("a");
+  for (const char of "bo") {
+    // the keys come in different phases of the blink
+    await page.waitForTimeout(300);
+    await page.keyboard.type(char);
+    await expect(async () => {
+      const animations = await blinkStartTimes();
+      expect(animations).toHaveLength(2);
+      const caret = animations.find(({ isCaret }) => isCaret);
+      const invertedChar = animations.find(({ isCaret }) => !isCaret);
+      expect(caret?.startTime).toEqual(expect.any(Number));
+      expect(invertedChar?.startTime).toBe(caret?.startTime);
+    }).toPass();
+  }
+});
+
 test("fits the neofetch welcome into a phone screen @mobile", async ({ page }) => {
   await open(page);
   await expect(page.getByRole("log")).toContainText("Uptime: ");

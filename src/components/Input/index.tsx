@@ -12,6 +12,7 @@ import {
   setCommandsHint,
 } from "../../store/console/actions";
 import { usePrompt, usePromptSegments } from "../../hooks/usePrompt";
+import { useCaretBlinkSync } from "./hooks/useCaretBlinkSync";
 import { useCommandsHint } from "./hooks/useCommandsHint";
 import { useHistoryCommands } from "./hooks/useHistoryCommands";
 import { usePromptSwipe } from "./hooks/usePromptSwipe";
@@ -85,7 +86,7 @@ interface InputProps {
 const Input: React.FC<InputProps> = ({ onInputElement }) => {
   const { executeCommand, allCommands, highlight } = useHandlerContext();
   const { consoleDispatch, consoleState } = useConsoleContext();
-  const { logs, history, soundMode } = consoleState;
+  const { logs, history, soundMode, caretMode } = consoleState;
   const [inputValue, setInputValue] = React.useState<string>("");
   // index of the char the caret is drawn on (-1 — before the first char), see readCaretPosition
   const [caretPosition, setCaretPosition] = React.useState<number>(-1);
@@ -100,6 +101,7 @@ const Input: React.FC<InputProps> = ({ onInputElement }) => {
     [onInputElement],
   );
   const consoleInputRef = React.useRef<HTMLDivElement>(null);
+  const charsRef = React.useRef<HTMLDivElement>(null);
   const prompt = usePrompt();
   const promptSegments = usePromptSegments();
   const t = useT();
@@ -153,6 +155,8 @@ const Input: React.FC<InputProps> = ({ onInputElement }) => {
     () => (reverseSearch.isSearching ? [] : highlight(inputValue)),
     [reverseSearch.isSearching, highlight, inputValue],
   );
+  // the block caret and the char it inverts blink in step (TASK-100)
+  useCaretBlinkSync(charsRef, caretMode, caretPosition, inputValue, autosuggestionRest);
 
   // the native input is the single source of truth for the caret
   const syncCaretPosition = React.useCallback(() => {
@@ -440,7 +444,10 @@ const Input: React.FC<InputProps> = ({ onInputElement }) => {
           enterKeyHint="send"
           ref={setInputRef}
         />
-        <div className={cn(styles.chars, autosuggestionRest && styles.charsAutosuggesting)}>
+        <div
+          className={cn(styles.chars, autosuggestionRest && styles.charsAutosuggesting)}
+          ref={charsRef}
+        >
           {caretPosition === -1 || inputValue.length === 0 ? (
             <Char isCaret={true} className={styles.zeroChar} />
           ) : undefined}
