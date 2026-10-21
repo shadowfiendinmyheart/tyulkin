@@ -104,7 +104,8 @@ export const globalCommands: Command[] = [
     name: "gui",
     descriptionKey: "helpGui",
     shareable: false,
-    run: ({ navigate }) => navigate(ROUTES.GUI),
+    // the same cross-fade as by the switch in the corner (TASK-85)
+    run: ({ navigate }) => navigate(ROUTES.GUI, { viewTransition: true }),
   },
   {
     name: "neofetch",

@@ -20,6 +20,8 @@ const ViewSwitch: React.FC<ViewSwitchProps> = ({ to, quiet = false }) => {
     <Link
       className={cn(styles.switch, quiet && styles.quiet)}
       to={to === "gui" ? ROUTES.GUI : ROUTES.MAIN}
+      // the pages cross-fade by View Transitions (TASK-85); with reduced motion at once, see main.scss
+      viewTransition
     >
       {t({ key: to === "gui" ? "switchToGui" : "switchToTerminal" })}
     </Link>

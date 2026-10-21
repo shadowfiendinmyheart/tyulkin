@@ -11,20 +11,30 @@ import { linkify } from "../../store/console/logNodes";
 
 import styles from "./styles.module.scss";
 
+// how a section lays out the paragraphs of its text
+type SectionLayout =
+  // as they are
+  | "plain"
+  // each starts with a title line: a project, a university
+  | "titled"
+  // a job a paragraph: the title line, the period line, then the description
+  | "timeline"
+  // a group a line: "Category: tag, tag, tag"
+  | "tags";
+
 interface Section {
   key: CommonDictionaryKeys;
   titleKey: CommonDictionaryKeys;
-  // paragraphs start with a title line: a job, a project, a university
-  titled?: boolean;
+  layout: SectionLayout;
 }
 
 // the same texts the terminal commands print, in the order of a regular CV
 const sections: Section[] = [
-  { key: "contacts", titleKey: "guiContacts" },
-  { key: "experience", titleKey: "guiExperience", titled: true },
-  { key: "skills", titleKey: "guiSkills" },
-  { key: "projects", titleKey: "guiProjects", titled: true },
-  { key: "education", titleKey: "guiEducation", titled: true },
+  { key: "contacts", titleKey: "guiContacts", layout: "plain" },
+  { key: "experience", titleKey: "guiExperience", layout: "timeline" },
+  { key: "skills", titleKey: "guiSkills", layout: "tags" },
+  { key: "projects", titleKey: "guiProjects", layout: "titled" },
+  { key: "education", titleKey: "guiEducation", layout: "titled" },
 ];
 
 // the owner's text with clickable links (URLs, emails, phones), see linkify
@@ -44,26 +54,85 @@ const renderText = (text: string) =>
   );
 
 // paragraphs are separated by an empty line; an empty text gives no empty paragraph
+const splitParagraphs = (text: string) =>
+  text.split("\n\n").filter((paragraph) => paragraph.trim() !== "");
+
 const renderParagraphs = (text: string, titled = false) =>
-  text
-    .split("\n\n")
-    .filter((paragraph) => paragraph.trim() !== "")
-    .map((paragraph, index) => {
-      const [title, ...lines] = paragraph.split("\n");
+  splitParagraphs(text).map((paragraph, index) => {
+    const [title, ...lines] = paragraph.split("\n");
+    return (
+      // eslint-disable-next-line @eslint-react/no-array-index-key -- the text never reorders
+      <p key={index} className={styles.paragraph}>
+        {titled ? (
+          <>
+            <strong className={styles.paragraphTitle}>{renderText(title)}</strong>
+            {lines.length > 0 && renderText(`\n${lines.join("\n")}`)}
+          </>
+        ) : (
+          renderText(paragraph)
+        )}
+      </p>
+    );
+  });
+
+// the jobs as marks on a vertical line, the latest first as the text has them
+const renderTimeline = (text: string) => (
+  <ol className={styles.timeline}>
+    {splitParagraphs(text).map((paragraph, index) => {
+      const [title, period, ...lines] = paragraph.split("\n");
       return (
         // eslint-disable-next-line @eslint-react/no-array-index-key -- the text never reorders
-        <p key={index} className={styles.paragraph}>
-          {titled ? (
-            <>
-              <strong className={styles.paragraphTitle}>{renderText(title)}</strong>
-              {lines.length > 0 && renderText(`\n${lines.join("\n")}`)}
-            </>
-          ) : (
-            renderText(paragraph)
-          )}
-        </p>
+        <li key={index} className={styles.event}>
+          <h3 className={styles.eventTitle}>{renderText(title)}</h3>
+          {period && <p className={styles.period}>{period}</p>}
+          {lines.length > 0 && <p className={styles.paragraph}>{renderText(lines.join("\n"))}</p>}
+        </li>
+      );
+    })}
+  </ol>
+);
+
+// the commas between tags, not those inside parentheses: "monorepo (Lerna, Nx)" is one tag
+const TAG_SEPARATOR = /,\s*(?![^()]*\))/;
+
+// a line "Category: a, b" is a group of tags; a line without a category is tags alone
+const renderTags = (text: string) =>
+  text
+    .split("\n")
+    .filter((line) => line.trim() !== "")
+    .map((line, index) => {
+      const separator = line.indexOf(": ");
+      const category = separator === -1 ? null : line.slice(0, separator);
+      const tags = (separator === -1 ? line : line.slice(separator + 2))
+        .split(TAG_SEPARATOR)
+        .map((tag) => tag.trim())
+        .filter((tag) => tag !== "");
+      return (
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- the text never reorders
+        <div key={index} className={styles.tagGroup}>
+          {category && <h3 className={styles.tagCategory}>{category}</h3>}
+          <ul className={styles.tags}>
+            {tags.map((tag, tagIndex) => (
+              // eslint-disable-next-line @eslint-react/no-array-index-key -- the text never reorders
+              <li key={tagIndex} className={styles.tag}>
+                {tag}
+              </li>
+            ))}
+          </ul>
+        </div>
       );
     });
+
+const renderSection = (text: string, layout: SectionLayout) => {
+  switch (layout) {
+    case "timeline":
+      return renderTimeline(text);
+    case "tags":
+      return renderTags(text);
+    default:
+      return renderParagraphs(text, layout === "titled");
+  }
+};
 
 const isPrintRequested = (state: unknown) =>
   typeof state === "object" && state !== null && (state as GuiLocationState).print === true;
@@ -112,12 +181,12 @@ const GuiPage: React.FC = () => {
             {t({ key: "guiPrint" })}
           </button>
         </header>
-        {sections.map(({ key, titleKey, titled }) => (
-          <section key={key} className={styles.card} aria-labelledby={`gui-${key}`}>
+        {sections.map(({ key, titleKey, layout }) => (
+          <section key={key} className={styles.section} aria-labelledby={`gui-${key}`}>
             <h2 id={`gui-${key}`} className={styles.title}>
               {t({ key: titleKey })}
             </h2>
-            {renderParagraphs(t({ key }), titled)}
+            {renderSection(t({ key }), layout)}
           </section>
         ))}
       </main>

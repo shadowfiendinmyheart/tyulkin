@@ -138,7 +138,7 @@
 | ✅ TASK-82 | P2 | S | **Блоки вывода** | Команда и её вывод — один блок (как в Warp): отступ между блоками, маркер статуса ✓/✗, время выполнения при наведении, клик по команде блока повторяет её. [Logs](src/components/Logs) |
 | ✅ TASK-83 | P2 | S | **`set font`** | JetBrains Mono / Fira Code (лигатуры) / IBM Plex: self-host, подгрузка по требованию, значение валидируется через `src/storage`; `set fontsize`. |
 | ✅ TASK-84 | P2 | M | **Превью и переходы тем** | `show themes` показывает полоски цветов, клик ставит тему. Смена темы — View Transitions API (круг раскрывается от промпта), при reduced-motion без анимации. Живое превью при Tab в `set theme `. Нужен TASK-80. [settings.ts](src/commandHandlers/commands/settings.ts) |
-| TASK-85 | P3 | M | **GUI в том же стиле** | Перерисовать `/gui` в общем минимализме: моно-заголовки, опыт таймлайном, навыки тегами (контент только из словарей); переход terminal ⇄ gui через View Transitions. [GuiPage](src/pages/GuiPage) |
+| ✅ TASK-85 | P3 | M | **GUI в том же стиле** | Перерисовать `/gui` в общем минимализме: моно-заголовки, опыт таймлайном, навыки тегами (контент только из словарей); переход terminal ⇄ gui через View Transitions. [GuiPage](src/pages/GuiPage) |
 
 ### Шелл-UX
 

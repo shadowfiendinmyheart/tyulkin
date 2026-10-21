@@ -20,3 +20,13 @@ html.theme-transition::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }
+
+// terminal ⇄ gui (TASK-85) and any other page transition: with reduced motion the new page is
+// shown at once, the old one is not faded out
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

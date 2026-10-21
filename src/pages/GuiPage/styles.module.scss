@@ -1,7 +1,10 @@
-// a regular page: the theme colors of the terminal, but a proportional font
+// a regular page in the minimalism of the terminal (TASK-85): the theme colors and its monospace
+// font for headings and labels, a proportional font for the prose, no frames
+$mono: "IBM Plex Mono", monospace;
+
 .page {
   min-height: 100vh;
-  padding: 0 16px 32px;
+  padding: 0 var(--space-4) var(--space-6);
   font-family:
     system-ui,
     -apple-system,
@@ -15,37 +18,44 @@
 .toolbar {
   display: flex;
   justify-content: flex-end;
-  max-width: 800px;
+  max-width: 760px;
   margin: 0 auto;
-  padding: 12px 0;
-  font-family: "IBM Plex Mono", monospace;
+  padding: var(--space-3) 0;
+  font-family: $mono;
 }
 
 .main {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  max-width: 800px;
+  gap: var(--space-6);
+  max-width: 760px;
   margin: 0 auto;
 }
 
 .header,
-.card {
+.section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 20px;
-  border: 1px solid var(--muted-color);
-  border-radius: 8px;
+  gap: var(--space-3);
 }
 
 .name {
+  font-family: $mono;
   font-size: 2rem;
+  font-weight: 600;
   line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
+// a section title as a terminal label: small monospace in the accent color over a thin rule
 .title {
-  font-size: 1.25rem;
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--muted-color);
+  font-family: $mono;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
   color: var(--accent-color);
 }
 
@@ -63,13 +73,87 @@
   color: var(--accent-color);
 }
 
+// experience: a vertical line with a mark at each job
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-left: 5px;
+  padding-left: var(--space-5);
+  border-left: 1px solid var(--muted-color);
+  list-style: none;
+}
+
+.event {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+
+  // the mark on the line, level with the title
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0.45em;
+    // the line is 1px wide at the left padding of the list: the 9px mark is centered on it
+    left: calc(-1 * var(--space-5) - 5px);
+    width: 0;
+    height: 0;
+    // a border, not a background: printing drops backgrounds by default
+    border: 4.5px solid var(--accent-color);
+    border-radius: 50%;
+  }
+}
+
+.eventTitle {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.period {
+  font-family: $mono;
+  font-size: var(--font-size-sm);
+  color: var(--muted-color);
+}
+
+// skills: a category a row, its skills as tags
+.tagGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.tagCategory {
+  font-family: $mono;
+  font-size: var(--font-size-sm);
+  font-weight: 400;
+  color: var(--muted-color);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  list-style: none;
+}
+
+.tag {
+  padding: 2px var(--space-2);
+  border: 1px solid var(--muted-color);
+  border-radius: 4px;
+  font-family: $mono;
+  font-size: var(--font-size-sm);
+}
+
 .print {
   align-self: flex-start;
-  padding: 6px 2ch;
+  padding: var(--space-1) 2ch;
   border: 1px solid var(--accent-color);
   border-radius: 4px;
   background: none;
-  font: inherit;
+  font-family: $mono;
+  font-size: var(--font-size-sm);
   color: var(--accent-color);
   cursor: pointer;
 
@@ -80,7 +164,7 @@
   }
 }
 
-// the printed page is the PDF version of the CV: no controls, no frames, black on white
+// the printed page is the PDF version of the CV: no controls, black on white
 // (colors and page margins are global, see styles/themes.scss)
 @media print {
   .page {
@@ -95,24 +179,39 @@
 
   .main {
     max-width: none;
-    gap: 0;
+    gap: var(--space-4);
   }
 
-  .header,
-  .card {
-    padding: 0 0 12px;
-    border: none;
-    border-radius: 0;
-  }
-
+  // a document for recruiters: the titles as the dictionary writes them
   .title {
-    padding-bottom: 2px;
-    border-bottom: 1px solid currentColor;
+    border-bottom-color: currentColor;
+    text-transform: none;
+    color: inherit;
     break-after: avoid;
   }
 
-  .paragraph {
+  .timeline {
+    gap: var(--space-3);
+    border-left-color: currentColor;
+  }
+
+  .event::before {
+    border-color: currentColor;
+  }
+
+  .paragraph,
+  .event,
+  .tagGroup {
     break-inside: avoid;
+  }
+
+  .period,
+  .tagCategory {
+    color: inherit;
+  }
+
+  .tag {
+    border-color: currentColor;
   }
 
   .link {
