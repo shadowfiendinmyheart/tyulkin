@@ -132,7 +132,7 @@ src/
 Реестр — [`src/commandHandlers/commands/`](src/commandHandlers/commands):
 
 - `global.ts` — команды, доступные на любой странице (`help`, `clear`, `back`, `menu`,
-  `exit`, `neofetch`, `gui`, `share`, `matrix`, `screensaver`, `secrets`, `history`, `echo`, `whoami`,
+  `exit`, `neofetch`, `gui`, `share`, `matrix`, `screensaver`, `secrets`, `history`, `echo`, `figlet`, `whoami`,
   `pwd`, `date`, `man`). `man <команда>` и `<команда> --help` собирают man-страницу из полей команды
   ([`commandHandlers/man.ts`](src/commandHandlers/man.ts)), заголовки разделов — из словарей;
 - `main.ts`, `settings.ts` — команды страниц;
@@ -180,7 +180,13 @@ front matter `title`, `date` (`YYYY-MM-DD`), необязательными `des
 заменяется предыдущей командой (`sudo !!`), в историю попадает развёрнутая строка. `<команда> | grep
 [-i] <слово>` (можно несколько `| grep` подряд) выполняет команду и оставляет в её выводе только строки
 со словом, подсвечивая его: строка таблицы из однострочных ячеек (как в `help`) — одна строка,
-многострочные ячейки и `pre` фильтруются построчно; после `|` поддерживается только `grep`. `Ctrl+R` в
+многострочные ячейки и `pre` фильтруются построчно. `<команда> | lolcat` красит вывод радугой из ANSI-цветов
+темы диагональными полосами ([`store/console/rainbow.ts`](src/store/console/rainbow.ts)): команды и
+ссылки остаются как есть, `pre` получает в `rainbow` своё место в выводе и красится при отрисовке, QR-код
+не красится; `lolcat` применяется после всех `grep`, где бы ни стоял (иначе `grep` не нашёл бы слово в
+разрезанном на цвета тексте). Кроме `grep` и `lolcat` после `|` ничего не поддерживается. `figlet <текст>` рисует текст крупными буквами из
+`#` (встроенный шрифт: латиница, кириллица, цифры, знаки — [`commandHandlers/figlet.ts`](src/commandHandlers/figlet.ts)),
+переносит по словам на 80 колонок (слишком длинное слово — по буквам); скринридеры читают сам текст (`label` у `pre`). `Ctrl+R` в
 поле ввода — обратный поиск по истории, как в bash: `Ctrl+R` ещё раз — более старое совпадение, Enter —
 выполнить, стрелки/Tab/Home/End — вставить в строку, Esc/`Ctrl+G` — отменить
 ([`Input/hooks/useReverseSearch.ts`](src/components/Input/hooks/useReverseSearch.ts)). Сочетания

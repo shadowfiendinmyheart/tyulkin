@@ -5,6 +5,7 @@ import { withNode } from "../../store/console/logNodes";
 import { Command } from "../interfaces";
 import { stopAsk } from "../ask";
 import { gameCommands } from "./games";
+import { drawFiglet } from "../figlet";
 import { getNeofetch } from "../neofetch";
 import { getManPage } from "../man";
 import { QR_VCARD_PARAM, showQr, stopQr } from "../qr";
@@ -139,6 +140,29 @@ export const globalCommands: Command[] = [
     shareable: false,
     linkable: false,
     run: ({ log }, args) => log(unquote(args.join(" "))),
+  },
+  {
+    // the visitor's text in big letters (TASK-99); `| lolcat` makes it a rainbow
+    name: "figlet",
+    anyArgs: true,
+    descriptionKey: "helpFiglet",
+    // the visitor's words, as `echo`
+    shareable: false,
+    linkable: false,
+    run: ({ log, fail, t }, args) => {
+      const text = unquote(args.join(" ")).trim();
+      if (!text) {
+        log(
+          withNode((example) => t({ key: "figletUsage", args: { example } }), {
+            type: "command",
+            command: "figlet hello | lolcat",
+          }),
+        );
+        fail();
+        return;
+      }
+      log({ type: "pre", text: drawFiglet(text), label: text });
+    },
   },
   {
     name: "whoami",

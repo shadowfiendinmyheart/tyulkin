@@ -1,7 +1,8 @@
 import { Languages } from "../localization/interfaces";
 import { htmlLangByLanguage } from "../localization/utils";
-import { LogNode } from "../store/console/interfaces";
+import { LogNode, RainbowPosition } from "../store/console/interfaces";
 import { getNodesText, getNodeText } from "../store/console/logNodes";
+import { getRainbowRuns } from "../store/console/rainbow";
 
 // shell habits (TASK-61): `whoami`, `pwd`, `!!`, `| grep`, history search
 
@@ -104,18 +105,28 @@ export const parseGrepStage = (stage: string): GrepFilter | undefined => {
   return { pattern, ignoreCase: Boolean(match[1]) };
 };
 
-// "help | grep theme | grep -i set": the command and its filters;
-// undefined when something other than grep follows a "|"
+// what can follow a "|": grep (TASK-61) or lolcat (TASK-99)
+export type PipeStage = ({ type: "grep" } & GrepFilter) | { type: "lolcat" };
+
+// a stage after a "|" (trimmed); undefined when it is neither grep with a pattern nor lolcat
+export const parsePipeStage = (stage: string): PipeStage | undefined => {
+  if (/^lolcat$/i.test(stage)) return { type: "lolcat" };
+  const filter = parseGrepStage(stage);
+  return filter && { type: "grep", ...filter };
+};
+
+// "help | grep theme | lolcat": the command and the stages its output goes through;
+// undefined when something else follows a "|"
 export const parsePipeline = (line: string) => {
-  const [command, ...stages] = splitPipes(line).map((part) => part.trim());
-  const filters: GrepFilter[] = [];
-  for (const stage of stages) {
-    const filter = parseGrepStage(stage);
-    if (!filter) return;
-    filters.push(filter);
+  const [command, ...parts] = splitPipes(line).map((part) => part.trim());
+  const stages: PipeStage[] = [];
+  for (const part of parts) {
+    const stage = parsePipeStage(part);
+    if (!stage) return;
+    stages.push(stage);
   }
-  if (!command && filters.length) return;
-  return { command, filters };
+  if (!command && stages.length) return;
+  return { command, stages };
 };
 
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -184,8 +195,13 @@ const grepNodes = (nodes: LogNode[], regexp: RegExp): LogNode[] => {
     const { block } = chunk;
     if (block.type === "pre") {
       const lines = block.text.split("\n").filter(matches);
-      // some rows of a QR code are no code: plain text then
-      if (lines.length) result.push({ ...block, text: lines.join("\n"), qr: undefined });
+      const text = lines.join("\n");
+      // some rows of a QR code are no code: plain text then; some rows of `figlet` art don't
+      // read as its label any more
+      if (lines.length) {
+        const label = text === block.text ? block.label : undefined;
+        result.push({ ...block, text, qr: undefined, label });
+      }
     } else {
       const rows = block.rows.flatMap((row) => {
         const isLine = row.every(
@@ -208,3 +224,74 @@ const grepNodes = (nodes: LogNode[], regexp: RegExp): LogNode[] => {
 
 export const grep = (nodes: LogNode[], { pattern, ignoreCase }: GrepFilter) =>
   grepNodes(nodes, new RegExp(`(${escapeRegExp(pattern)})`, ignoreCase ? "gi" : "g"));
+
+// the lines of a cell: how many rows of the output it takes, and the widest one
+const measureCell = (cell: LogNode[]) => {
+  const lines = getNodesText(cell).split("\n");
+  return { height: lines.length, width: Math.max(...lines.map((line) => Array.from(line).length)) };
+};
+
+// the nodes in rainbow colors from `start` on, and where the next node goes on; a line of them
+// starts at the column `left` (a cell of a table). Commands and links keep their look (they are
+// clicked), so do decorative nodes (their look is what they show: the palette and the logo of neofetch), a QR
+// code stays black on white (it is scanned). Columns of a table are counted from the widest line
+// of a cell and a gap: close to what is drawn, not exact
+const colorNodes = (nodes: LogNode[], start: RainbowPosition, left: number) => {
+  let position = start;
+  const colored = nodes.flatMap((node): LogNode[] => {
+    if (typeof node === "string" || node.type === "text") {
+      const text = typeof node === "string" ? node : node.text;
+      const { runs, end } = getRainbowRuns(text, position, left);
+      position = end;
+      if (typeof node !== "string" && node.decorative) return [node];
+      return runs.map(({ text: run, color }): LogNode => ({ type: "text", text: run, color }));
+    }
+    if (node.type === "command" || node.type === "link") {
+      position = { ...position, col: position.col + Array.from(getNodeText(node)).length };
+      return [node];
+    }
+    // a block starts on a line of its own and ends one
+    let row = position.row + (position.col > left ? 1 : 0);
+    if (node.type === "pre") {
+      position = { row: row + node.text.split("\n").length, col: left };
+      return [node.qr || node.decorative ? node : { ...node, rainbow: { row, col: left } }];
+    }
+    const rows = node.rows.map((cells) => {
+      const sizes = cells.map(measureCell);
+      let col = left;
+      const coloredCells = cells.map((cell, index) => {
+        const coloredCell = colorNodes(cell, { row, col }, col).nodes;
+        col += sizes[index].width + 1;
+        return coloredCell;
+      });
+      row += Math.max(1, ...sizes.map(({ height }) => height));
+      return coloredCells;
+    });
+    position = { row, col: left };
+    return [{ ...node, rows }];
+  });
+  return { nodes: colored, end: position };
+};
+
+// `| lolcat` (TASK-99): the output in the colors of the rainbow, in diagonal stripes, from `start`
+// on; `end` is where the next output goes on
+export const lolcat = (nodes: LogNode[], start: RainbowPosition = { row: 0, col: 0 }) =>
+  colorNodes(nodes, start, 0);
+
+// what the output of a command goes through after a "|": lolcat colors what grep has kept,
+// wherever it stands (`| lolcat | grep x` as `| grep x | lolcat`), as grep finds a word in a text
+// of one piece. The rainbow goes on from one log of the command to the next, a log is a line
+export const createPipe = (stages: PipeStage[]) => {
+  const isColored = stages.some(({ type }) => type === "lolcat");
+  let position: RainbowPosition = { row: 0, col: 0 };
+  return (nodes: LogNode[]) => {
+    const filtered = stages.reduce(
+      (result, stage) => (stage.type === "grep" ? grep(result, stage) : result),
+      nodes,
+    );
+    if (!isColored || !filtered.length) return filtered;
+    const { nodes: colored, end } = lolcat(filtered, position);
+    position = { row: end.row + (end.col ? 1 : 0), col: 0 };
+    return colored;
+  };
+};

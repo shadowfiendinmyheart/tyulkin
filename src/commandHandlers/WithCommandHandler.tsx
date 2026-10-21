@@ -25,7 +25,7 @@ import { findHelpTarget, getManPage } from "./man";
 import { getPaletteEntries } from "./palette";
 import { findSecret } from "./secrets";
 import { vibrateError } from "../utils/haptics";
-import { expandHistory, grep, parsePipeline } from "./shell";
+import { createPipe, expandHistory, parsePipeline } from "./shell";
 import { getAllCommandsWithParams, getSuggestion, separateCommand } from "./utils";
 
 interface WithCommandHandlerProps {
@@ -75,17 +75,19 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ route, children
 
       const rawLog: CommandContext["log"] = (content) => consoleDispatch(addConsoleLog(content));
 
-      // "help | grep theme" (TASK-61): the command, then only the lines of its output with the word
+      // "help | grep theme" (TASK-61): the command, then only the lines of its output with the word;
+      // "| lolcat" (TASK-99) colors it
       const pipeline = parsePipeline(userCommand);
       if (!pipeline) {
         rawLog({ type: "text", text: t({ key: "pipeUsage" }), color: "error" });
         fail();
         return;
       }
-      const { command: line, filters } = pipeline;
-      const log: CommandContext["log"] = filters.length
+      const { command: line, stages } = pipeline;
+      const pipe = stages.length ? createPipe(stages) : undefined;
+      const log: CommandContext["log"] = pipe
         ? (content) => {
-            const nodes = filters.reduce(grep, Array.isArray(content) ? content : [content]);
+            const nodes = pipe(Array.isArray(content) ? content : [content]);
             if (nodes.length) rawLog(nodes);
           }
         : rawLog;

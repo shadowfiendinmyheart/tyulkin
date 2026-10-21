@@ -167,7 +167,7 @@
 | ✅ TASK-96 | P2 | S | **`qr`** | QR-код адреса сайта или vCard из `contacts` блоками Unicode; генератор подгружается через `import()`. |
 | ✅ TASK-97 | P2 | S | **Тосты-ачивки** | Найдена пасхалка → тост «Achievement unlocked: … (3/10)» с `aria-live`; прогресс из существующих `secrets`. [secrets.ts](src/commandHandlers/commands/secrets.ts) |
 | ✅ TASK-98 | P3 | S | **`exit` с анимацией** | Экран гаснет как ЭЛТ (линия → точка), затем `[Process completed]` и кнопка restart; при reduced-motion — без анимации. |
-| TASK-99 | P3 | S | **`figlet` и `\| lolcat`** | Крупный ASCII-текст (встроенный шрифт) и радужный вывод через уже существующие пайпы (`\| grep`). |
+| ✅ TASK-99 | P3 | S | **`figlet` и `\| lolcat`** | Крупный ASCII-текст (встроенный шрифт) и радужный вывод через уже существующие пайпы (`\| grep`). |
 
 ---
 

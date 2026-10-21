@@ -7,6 +7,9 @@ import {
   getPrompt,
   getWorkingDirectory,
   grep,
+  lolcat,
+  createPipe,
+  PipeStage,
   parsePipeline,
   unquote,
 } from "./shell";
@@ -72,13 +75,14 @@ describe("findHistoryMatch", () => {
 });
 
 describe("parsePipeline", () => {
-  it("splits the command and its grep filters", () => {
-    expect(parsePipeline("about")).toEqual({ command: "about", filters: [] });
-    expect(parsePipeline("help | grep theme | GREP -i 'set the'")).toEqual({
+  it("splits the command and its stages", () => {
+    expect(parsePipeline("about")).toEqual({ command: "about", stages: [] });
+    expect(parsePipeline("help | grep theme | GREP -i 'set the' | LolCat")).toEqual({
       command: "help",
-      filters: [
-        { pattern: "theme", ignoreCase: false },
-        { pattern: "set the", ignoreCase: true },
+      stages: [
+        { type: "grep", pattern: "theme", ignoreCase: false },
+        { type: "grep", pattern: "set the", ignoreCase: true },
+        { type: "lolcat" },
       ],
     });
   });
@@ -86,15 +90,17 @@ describe("parsePipeline", () => {
   it("keeps a quoted | in its part", () => {
     expect(parsePipeline('echo "a|b" | grep "|"')).toEqual({
       command: 'echo "a|b"',
-      filters: [{ pattern: "|", ignoreCase: false }],
+      stages: [{ type: "grep", pattern: "|", ignoreCase: false }],
     });
   });
 
-  it("rejects anything but grep with a word after |", () => {
+  it("rejects anything but grep with a word or lolcat after |", () => {
     expect(parsePipeline("help | wc")).toBeUndefined();
     expect(parsePipeline("help | grep")).toBeUndefined();
+    expect(parsePipeline("help | lolcat -a")).toBeUndefined();
     expect(parsePipeline("help || grep x")).toBeUndefined();
     expect(parsePipeline("| grep x")).toBeUndefined();
+    expect(parsePipeline("| lolcat")).toBeUndefined();
   });
 });
 
@@ -170,5 +176,84 @@ describe("grep", () => {
       { type: "text", text: ".", color: "accent" },
       "b",
     ]);
+  });
+});
+
+describe("lolcat (TASK-99)", () => {
+  it("colors text in diagonal stripes of the rainbow", () => {
+    expect(lolcat(["ab\ncd", { type: "text", text: "ef", color: "error" }]).nodes).toEqual([
+      { type: "text", text: "ab\nc", color: "ansi-red" },
+      { type: "text", text: "d", color: "ansi-yellow" },
+      { type: "text", text: "e", color: "ansi-yellow" },
+      { type: "text", text: "f", color: "ansi-green" },
+    ]);
+  });
+
+  it("keeps commands and links, which still take their columns", () => {
+    const command: LogNode = { type: "command", command: "help" };
+    expect(lolcat([command, "ab"]).nodes).toEqual([
+      command,
+      { type: "text", text: "ab", color: "ansi-green" },
+    ]);
+  });
+
+  it("marks pre blocks rainbow from their place on, but not a QR code or an art", () => {
+    const qr: LogNode = { type: "pre", text: "▀▄", qr: true };
+    const logo: LogNode = { type: "pre", text: "=^.^=", decorative: true };
+    expect(lolcat(["ab", { type: "pre", text: "##\n##" }, qr, logo, "c"]).nodes).toEqual([
+      { type: "text", text: "ab", color: "ansi-red" },
+      { type: "pre", text: "##\n##", rainbow: { row: 1, col: 0 } },
+      qr,
+      logo,
+      { type: "text", text: "c", color: "ansi-green" },
+    ]);
+  });
+
+  it("colors the cells of a table by their rows and columns", () => {
+    const pre: LogNode = { type: "pre", text: "#\n#\n#" };
+    expect(lolcat([{ type: "table", rows: [[["ab"], [pre]], [["d"]]] }, "e"]).nodes).toEqual([
+      {
+        type: "table",
+        rows: [
+          [
+            [{ type: "text", text: "ab", color: "ansi-red" }],
+            [{ ...pre, rainbow: { row: 0, col: 3 } }],
+          ],
+          [[{ type: "text", text: "d", color: "ansi-yellow" }]],
+        ],
+      },
+      { type: "text", text: "e", color: "ansi-green" },
+    ]);
+  });
+});
+
+describe("createPipe (TASK-99)", () => {
+  it("colors what grep has kept, wherever lolcat stands", () => {
+    const stages: PipeStage[] = [
+      { type: "lolcat" },
+      { type: "grep", pattern: "bo", ignoreCase: false },
+    ];
+    expect(createPipe(stages)(["help\nabout"])).toEqual([
+      { type: "text", text: "a", color: "ansi-red" },
+      { type: "text", text: "b", color: "ansi-red" },
+      { type: "text", text: "o", color: "ansi-yellow" },
+      { type: "text", text: "u", color: "ansi-yellow" },
+      { type: "text", text: "t", color: "ansi-green" },
+    ]);
+  });
+
+  it("goes on with the rainbow from one log on the next line", () => {
+    const pipe = createPipe([{ type: "lolcat" }]);
+    expect(pipe(["ab"])).toEqual([{ type: "text", text: "ab", color: "ansi-red" }]);
+    expect(pipe(["ab"])).toEqual([
+      { type: "text", text: "a", color: "ansi-red" },
+      { type: "text", text: "b", color: "ansi-yellow" },
+    ]);
+  });
+
+  it("only filters without lolcat", () => {
+    expect(
+      createPipe([{ type: "grep", pattern: "he", ignoreCase: false }])(["help\nabout"]),
+    ).toEqual([{ type: "text", text: "he", color: "accent" }, "lp"]);
   });
 });

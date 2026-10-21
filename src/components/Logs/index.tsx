@@ -3,9 +3,10 @@ import cn from "clsx";
 import { useConsoleContext } from "../../context/consoleContext";
 import CommandButton from "../CommandButton";
 import TextLink from "../TextLink";
-import { Echo, Log, LogColor, LogNode } from "../../store/console/interfaces";
+import { Echo, Log, LogColor, LogNode, RainbowPosition } from "../../store/console/interfaces";
 import { getNodesLength, getNodesText, sliceNodes } from "../../store/console/logNodes";
 import { finishTyping, skipTyping } from "../../store/console/actions";
+import { getRainbowRuns } from "../../store/console/rainbow";
 import { prefersReducedMotion } from "../../utils";
 import { useLongPress } from "../../hooks/useLongPress";
 import { useT } from "../../context/localizationContext";
@@ -67,6 +68,16 @@ const colorClassNames: Record<LogColor, string> = {
   "ansi-bright-white": styles.ansiBrightWhite,
 };
 
+// `| lolcat` (TASK-99): the colors of a pre block, by the place of each character from its start
+// in the output; what is typed out so far keeps its colors as the rest comes
+const renderRainbow = (text: string, start: RainbowPosition) =>
+  getRainbowRuns(text, start, start.col).runs.map(({ text: run, color }, index) => (
+    // eslint-disable-next-line @eslint-react/no-array-index-key -- a log never changes
+    <span key={index} className={colorClassNames[color]}>
+      {run}
+    </span>
+  ));
+
 const renderNode = (node: LogNode): React.ReactNode => {
   if (typeof node === "string") return node;
 
@@ -106,6 +117,8 @@ const renderNode = (node: LogNode): React.ReactNode => {
         <pre
           className={cn(styles.pre, node.qr ? styles.qr : node.decorative && styles.art)}
           aria-hidden={node.decorative || undefined}
+          role={node.label ? "img" : undefined}
+          aria-label={node.label}
           // a QR code shrinks to the width of a phone by its columns
           style={
             node.qr
@@ -113,7 +126,7 @@ const renderNode = (node: LogNode): React.ReactNode => {
               : undefined
           }
         >
-          {node.text}
+          {node.rainbow ? renderRainbow(node.text, node.rainbow) : node.text}
         </pre>
       );
   }

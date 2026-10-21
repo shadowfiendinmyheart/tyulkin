@@ -16,6 +16,12 @@ import { ActionTypeGenerator } from "../interfaces";
 export type LogColor =
   "text" | "muted" | "accent" | "error" | "success" | "warning" | `ansi-${AnsiColor}`;
 
+// a place in the output: the line and the column in it (`| lolcat` colors by it, TASK-99)
+export interface RainbowPosition {
+  row: number;
+  col: number;
+}
+
 // a piece of a log; a plain string is text
 export type LogNode =
   | string
@@ -31,8 +37,17 @@ export type LogNode =
   // rows of cells, a cell is a list of nodes
   | { type: "table"; rows: LogNode[][][] }
   // kept as is: no wrapping, scrolls horizontally (ASCII art, aligned columns).
-  // qr: a QR code of half blocks (TASK-96), dark on light in any theme and shown on a phone too
-  | { type: "pre"; text: string; decorative?: boolean; qr?: boolean };
+  // qr: a QR code of half blocks (TASK-96), dark on light in any theme and shown on a phone too.
+  // rainbow: colored by `| lolcat` (TASK-99) from this place of the output on, see rainbow.ts.
+  // label: what screen readers read instead of the art (`figlet`)
+  | {
+      type: "pre";
+      text: string;
+      decorative?: boolean;
+      qr?: boolean;
+      rainbow?: RainbowPosition;
+      label?: string;
+    };
 
 // what is logged: one node or several in a row
 export type LogContent = LogNode | LogNode[];

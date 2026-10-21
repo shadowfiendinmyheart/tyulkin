@@ -80,7 +80,7 @@ export interface CommonDictionary {
   historyUsage: string;
   // `!!` with no previous command
   historyNotFound: string;
-  // something other than grep after "|"
+  // something other than grep or lolcat after "|"
   pipeUsage: string;
   // the prompt of Ctrl+R, the query goes after it; failing: nothing contains the query
   reverseSearch: string;
@@ -154,6 +154,7 @@ export interface CommandDescriptionDictionary {
   helpSecrets: string;
   helpHistory: string;
   helpEcho: string;
+  helpFiglet: string;
   helpWhoami: string;
   helpPwd: string;
   helpCd: string;
@@ -252,6 +253,8 @@ export interface DictionaryWithArgs {
   manNotFound: string;
   // `qr` with an unknown argument, $vcard is a command placeholder
   qrUsage: string;
+  // `figlet` without a text (TASK-99), $example is a command placeholder
+  figletUsage: string;
   // the tooltip of the command palette button (TASK-90): $shortcut is Ctrl+K or ⌘K
   paletteOpenTitle: string;
 }
@@ -332,6 +335,7 @@ type AskTooLongLocale = LocaleWithArgsGenerator<"askTooLong", "max">;
 type ManUsageLocale = LocaleWithArgsGenerator<"manUsage", "man">;
 type ManNotFoundLocale = LocaleWithArgsGenerator<"manNotFound", "command">;
 type QrUsageLocale = LocaleWithArgsGenerator<"qrUsage", "vcard">;
+type FigletUsageLocale = LocaleWithArgsGenerator<"figletUsage", "example">;
 type PaletteOpenTitleLocale = LocaleWithArgsGenerator<"paletteOpenTitle", "shortcut">;
 type NeofetchLocale = LocaleWithArgsGenerator<
   "neofetch",
@@ -391,6 +395,7 @@ export type LocaleWithArgs =
   | ReadNotFoundLocale
   | AskTooLongLocale
   | ManUsageLocale
+  | FigletUsageLocale
   | ManNotFoundLocale
   | QrUsageLocale
   | PaletteOpenTitleLocale;

@@ -117,6 +117,24 @@ describe("rich logs (TASK-56)", () => {
     expect(pre?.className).toBe(styles.pre);
     expect(pre?.textContent).toBe(" /\\_/\\\n( o.o )");
   });
+
+  it("colors a rainbow pre block by the place of each character (TASK-99)", () => {
+    const log = renderLog([{ type: "pre", text: "abc\nd", rainbow: { row: 2, col: 0 } }]);
+    const pre = log.querySelector("pre");
+    expect(pre?.textContent).toBe("abc\nd");
+    const spans = Array.from(pre?.querySelectorAll("span") ?? []);
+    expect(spans.map((span) => [span.textContent, span.className])).toEqual([
+      ["ab", styles.ansiYellow],
+      ["c\n", styles.ansiGreen],
+      ["d", styles.ansiYellow],
+    ]);
+  });
+
+  it("reads the label of an art instead of its characters (TASK-99)", () => {
+    const log = renderLog([{ type: "pre", text: "# #", label: "hi" }]);
+    const art = within(log).getByRole("img", { name: "hi" });
+    expect(art.tagName).toBe("PRE");
+  });
 });
 
 describe("clickable commands (TASK-55)", () => {

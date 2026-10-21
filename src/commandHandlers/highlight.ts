@@ -1,10 +1,10 @@
 import { CommandBase } from "./interfaces";
 import { findHelpTarget } from "./man";
-import { getPipeRanges, HISTORY_EXPANSION, parseGrepStage } from "./shell";
+import { getPipeRanges, HISTORY_EXPANSION, parsePipeStage } from "./shell";
 import { separateCommand } from "./utils";
 
 // fish-like highlighting of the command line (TASK-86): what each char of the line is
-// - command: the words of a command that runs ("set theme"), or a valid grep after a "|"
+// - command: the words of a command that runs ("set theme"), or a valid grep or lolcat after a "|"
 // - unknown: the first word of a part that doesn't run as typed
 // - argument: the other words
 // - path: an argument of the command that is an existing file or directory
@@ -52,7 +52,7 @@ const getCommandLength = (
 };
 
 // the kind of each char of the line; the command is the first part of a pipeline, the next
-// parts are grep filters
+// parts are its stages (grep, lolcat)
 export const highlightLine = (options: HighlightOptions, line: string): HighlightKind[] => {
   // indexed by UTF-16 units, as the line is drawn by line.split("")
   const kinds = Array<HighlightKind>(line.length).fill("text");
@@ -66,7 +66,7 @@ export const highlightLine = (options: HighlightOptions, line: string): Highligh
     const isCommandPart = partIndex === 0;
     let commandLength: number;
     if (isCommandPart) commandLength = getCommandLength(options, part, words);
-    else commandLength = parseGrepStage(part) ? 1 : 0;
+    else commandLength = parsePipeStage(part) ? 1 : 0;
 
     words.forEach((word, index) => {
       if (index < commandLength) paint(word, "command");
