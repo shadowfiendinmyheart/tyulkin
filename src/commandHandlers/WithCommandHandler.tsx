@@ -69,11 +69,13 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ route, children
   );
 
   const commandHandler = React.useCallback(
-    // fail: marks the block of the command ✗ (TASK-82); not through grep, the error may be filtered out
-    (userCommand: string, fromLink: boolean, fail: () => void) => {
+    // fail: marks the block of the command ✗ (TASK-82); not through grep, the error may be filtered out.
+    // blockId: the block of the command, its output goes there even after a newer command (TASK-102)
+    (userCommand: string, fromLink: boolean, fail: () => void, blockId: number) => {
       if (userCommand.trim() === "") return;
 
-      const rawLog: CommandContext["log"] = (content) => consoleDispatch(addConsoleLog(content));
+      const rawLog: CommandContext["log"] = (content) =>
+        consoleDispatch(addConsoleLog(content, blockId));
 
       // "help | grep theme" (TASK-61): the command, then only the lines of its output with the word;
       // "| lolcat" (TASK-99) colors it
@@ -135,6 +137,7 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ route, children
       const ctx: CommandContext = {
         log,
         fail,
+        blockId,
         t,
         language,
         theme,
@@ -207,7 +210,7 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ route, children
       // the history keeps the expanded command, and it is shown as in bash
       consoleDispatch(addHistoryCommand(command));
       if (command !== typed) consoleDispatch(addConsoleLog(command));
-      commandHandler(command, fromLink, fail);
+      commandHandler(command, fromLink, fail, blockId);
     },
     [consoleDispatch, prompt, commandHandler, t],
   );

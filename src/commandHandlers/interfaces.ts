@@ -8,6 +8,9 @@ export interface CommandContext {
   log: (content: LogContent) => void;
   // marks the command failed: its block shows ✗ (TASK-82); the error itself is logged as usual
   fail: () => void;
+  // the block of the command (the blockId of its echo): `log` writes there; for output that comes
+  // later from elsewhere (a game, TASK-101)
+  blockId: number;
   t: TFunction;
   language: Languages;
   theme: ThemeMode;

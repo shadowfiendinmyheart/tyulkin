@@ -1,8 +1,8 @@
 import React from "react";
 import { useConsoleContext } from "../../context/consoleContext";
 import { useT } from "../../context/localizationContext";
-import { GameId } from "../../domain";
 import { addConsoleLog, setGame } from "../../store/console/actions";
+import { RunningGame } from "../../store/console/interfaces";
 import { isBrowserShortcut } from "../../utils";
 import type { GameResult, GameScreenProps } from "./GameScreen";
 
@@ -22,10 +22,13 @@ const lazyScreen = () =>
 let GameScreen = lazyScreen();
 let mountedGames = 0;
 
-// the game could not be loaded (offline before the chunk was cached): logged, the game is closed
+// the game could not be loaded (offline before the chunk was cached): logged, the game is closed,
+// its command is marked failed (TASK-101)
 const LoadFailed: React.FC<GameScreenProps> = () => {
   const t = useT();
-  const { consoleDispatch: dispatch } = useConsoleContext();
+  const { consoleState, consoleDispatch: dispatch } = useConsoleContext();
+  // the game that failed: taken once, the state has none after setGame(null)
+  const [game] = React.useState(consoleState.game);
   // StrictMode runs the effect twice on mount: logged once
   const isLoggedRef = React.useRef(false);
   React.useEffect(() => {
@@ -33,8 +36,14 @@ const LoadFailed: React.FC<GameScreenProps> = () => {
     isLoggedRef.current = true;
     GameScreen = lazyScreen();
     dispatch(setGame(null));
-    dispatch(addConsoleLog({ type: "text", text: t({ key: "gameLoadFailed" }), color: "error" }));
-  }, [dispatch, t]);
+    dispatch(
+      addConsoleLog(
+        { type: "text", text: t({ key: "gameLoadFailed" }), color: "error" },
+        game?.blockId,
+      ),
+    );
+    game?.fail();
+  }, [dispatch, t, game]);
   return null;
 };
 
@@ -60,11 +69,11 @@ const Loading: React.FC = () => {
 };
 
 interface GameProps {
-  game: GameId;
+  game: RunningGame;
 }
 
-// a mini-game over the console; on exit the score is logged
-const Game: React.FC<GameProps> = ({ game }) => {
+// a mini-game over the console; on exit the score is logged into the block of its command
+const Game: React.FC<GameProps> = ({ game: { id: game, blockId } }) => {
   React.useEffect(() => {
     mountedGames++;
     return () => {
@@ -83,10 +92,11 @@ const Game: React.FC<GameProps> = ({ game }) => {
           isNewRecord
             ? t({ key: "gameNewRecord", args })
             : t({ key: "gameResult", args: { ...args, record: String(record) } }),
+          blockId,
         ),
       );
     },
-    [dispatch, game, t],
+    [dispatch, game, blockId, t],
   );
 
   return (

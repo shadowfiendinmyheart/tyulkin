@@ -13,6 +13,7 @@ import {
   setCaretMode,
   setCommandsHint,
   setCrtMode,
+  setGame,
   setSoundMode,
   showAchievement,
   skipTyping,
@@ -75,6 +76,81 @@ describe("console reducer", () => {
     // already failed, or dropped by clear: nothing changes
     expect(reducer(state, failCommand(failing.payload.echo.blockId))).toBe(state);
     expect(reducer(initialState, failCommand(failing.payload.echo.blockId))).toBe(initialState);
+  });
+
+  it("puts the output of a block after its last log, even after another command (TASK-102)", () => {
+    const asking = addUserLog("ask hi", "~$", "ask hi");
+    const { blockId } = asking.payload.echo;
+    let state = reducer(initialState, addConsoleLog("welcome"));
+    state = reducer(state, asking);
+    state = reducer(state, addConsoleLog("thinking…", blockId));
+    // the latest block: at the end, as without a block
+    expect(state.logs.at(-1)?.content).toEqual(["thinking…"]);
+    state = reducer(state, addUserLog("ls", "~$", "ls"));
+    state = reducer(state, addConsoleLog("about.md"));
+    state = reducer(state, addConsoleLog("React", blockId));
+    state = reducer(state, addConsoleLog("TypeScript", blockId));
+    expect(state.logs.map((log) => log.content[0])).toEqual([
+      "welcome",
+      "~$ ask hi",
+      "thinking…",
+      "React",
+      "TypeScript",
+      "~$ ls",
+      "about.md",
+    ]);
+    // ids stay in the order of adding: the late lines are typed out after the shown ones
+    expect(state.logs.map((log) => log.id)).toEqual([0, 1, 2, 5, 6, 3, 4]);
+    // the block is gone (Ctrl+L): before the newer commands, at the end when there are none
+    state = reducer(reducer(state, clearLogs()), addConsoleLog("late", blockId));
+    expect(state.logs.map((log) => log.content[0])).toEqual(["late"]);
+    state = reducer(state, addUserLog("ls", "~$", "ls"));
+    state = reducer(state, addConsoleLog("later", blockId));
+    expect(state.logs.map((log) => log.content[0])).toEqual(["late", "later", "~$ ls"]);
+  });
+
+  it("types out the next kept log when the typed one is dropped out of order (TASK-102)", () => {
+    const asking = addUserLog("ask hi", "~$", "ask hi");
+    let state = reducer(initialState, asking);
+    state = reducer(state, addUserLog("ls", "~$", "ls"));
+    for (let i = 0; i < MAX_LOGS - 3; i++) state = reducer(state, addConsoleLog(`log ${i}`));
+    state = reducer(state, skipTyping());
+    // a late line of the oldest block, being typed out, then the block is dropped
+    state = reducer(state, addConsoleLog("late", asking.payload.echo.blockId));
+    expect(state.logs[1].content).toEqual(["late"]);
+    expect(state.typedLogId).toBe(state.logs[1].id);
+    state = reducer(state, addConsoleLog("next"));
+    state = reducer(state, addConsoleLog("after"));
+    expect(state.logs.map((log) => log.content[0])).not.toContain("late");
+    // not stuck on the dropped one: the next not typed out
+    expect(state.typedLogId).toBe(state.logs.at(-2)?.id);
+  });
+
+  it("goes on past a late log dropped before its turn (TASK-102)", () => {
+    const asking = addUserLog("ask hi", "~$", "ask hi");
+    let state = reducer(initialState, asking);
+    state = reducer(state, addUserLog("ls", "~$", "ls"));
+    state = reducer(state, addConsoleLog("typed"));
+    for (let i = 0; i < MAX_LOGS - 4; i++) state = reducer(state, addConsoleLog(`log ${i}`));
+    // typing is on "typed" when a late line of the oldest block comes, then it is dropped
+    const late = state.nextLogId;
+    state = reducer(state, addConsoleLog("late", asking.payload.echo.blockId));
+    state = reducer(state, addConsoleLog("next"));
+    state = reducer(state, addConsoleLog("after"));
+    expect(state.logs.map((log) => log.id)).not.toContain(late);
+    expect(state.typedLogId).toBe(2);
+    state = reducer(state, finishTyping(late - 1));
+    expect(state.typedLogId).toBe(late + 1);
+  });
+
+  it("starts and ends a game (TASK-66) with the fail of its command (TASK-101)", () => {
+    const game = { id: "snake", blockId: 1, fail: () => undefined } as const;
+    const state = reducer(initialState, setGame(game));
+    expect(state.game).toBe(game);
+    // the same game again goes on with the block that started it
+    expect(reducer(state, setGame({ ...game, blockId: 2 }))).toBe(state);
+    expect(reducer(state, setGame(null)).game).toBeNull();
+    expect(reducer(initialState, setGame(null))).toBe(initialState);
   });
 
   it("keeps log ids unique after clear", () => {

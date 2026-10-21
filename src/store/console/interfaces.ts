@@ -81,6 +81,9 @@ export interface NewLog {
   // shown at once, not typed out (the echoed input); everything typed before it is shown too
   instant?: boolean;
   echo?: Echo;
+  // the output of this block (the blockId of its echo): put after its last log, not after a newer
+  // command (`ask` streams on, TASK-102); at the end when there is no such block (cleared, dropped)
+  blockId?: number;
 }
 export type Logs = Array<Log>;
 
@@ -91,6 +94,15 @@ export interface Achievement {
   found: number;
   // tells the toasts apart: a new one replaces the shown one and starts its time anew
   id: number;
+}
+
+// a mini-game over the console (TASK-66)
+export interface RunningGame {
+  id: GameId;
+  // the block of the command that started it: what the game logs goes there (TASK-102)
+  blockId: number;
+  // marks that block failed: the game couldn't load (TASK-101)
+  fail: () => void;
 }
 
 export interface ConsoleState {
@@ -121,7 +133,7 @@ export interface ConsoleState {
   // null when none
   overlay: OverlayId | null;
   // the mini-game played over the console (TASK-66), null when none
-  game: GameId | null;
+  game: RunningGame | null;
   // the toast of the last found secret (TASK-97), null when hidden
   achievement: Achievement | null;
   // `exit` (TASK-98): the screen is going out, or is out until restart; null when on
@@ -157,7 +169,7 @@ export type ActionFailCommand = ActionTypeGenerator<ConsoleActionKind.FailComman
 export type ActionFinishTyping = ActionTypeGenerator<ConsoleActionKind.FinishTyping, number>;
 export type ActionSkipTyping = ActionTypeGenerator<ConsoleActionKind.SkipTyping>;
 export type ActionSetOverlay = ActionTypeGenerator<ConsoleActionKind.SetOverlay, OverlayId | null>;
-export type ActionSetGame = ActionTypeGenerator<ConsoleActionKind.SetGame, GameId | null>;
+export type ActionSetGame = ActionTypeGenerator<ConsoleActionKind.SetGame, RunningGame | null>;
 export type ActionSetShutdown = ActionTypeGenerator<
   ConsoleActionKind.SetShutdown,
   ShutdownPhase | null

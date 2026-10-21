@@ -2,7 +2,6 @@ import {
   CaretMode,
   CrtMode,
   FontMode,
-  GameId,
   OverlayId,
   SecretId,
   ShutdownPhase,
@@ -31,11 +30,16 @@ import {
   ConsoleActionKind,
   Echo,
   LogContent,
+  RunningGame,
 } from "./interfaces";
 
-export const addConsoleLog = (content: LogContent): ActionAddLogs => ({
+// blockId: the output of that block (TASK-102), see NewLog
+export const addConsoleLog = (content: LogContent, blockId?: number): ActionAddLogs => ({
   type: ConsoleActionKind.AddLogs,
-  payload: { content: Array.isArray(content) ? content : [content] },
+  payload: {
+    content: Array.isArray(content) ? content : [content],
+    ...(blockId !== undefined && { blockId }),
+  },
 });
 // unique within the page's session: logs outlive a route change, the store too
 let lastBlockId = 0;
@@ -79,7 +83,7 @@ export const setOverlay = (overlay: OverlayId | null): ActionSetOverlay => ({
   payload: overlay,
 });
 // starts a mini-game over the console (TASK-66); null ends it
-export const setGame = (game: GameId | null): ActionSetGame => ({
+export const setGame = (game: RunningGame | null): ActionSetGame => ({
   type: ConsoleActionKind.SetGame,
   payload: game,
 });

@@ -16,5 +16,7 @@ export const gameCommands: Command[] = gameIds.map((game) => ({
   // a link would start a game on the recipient's page at once
   shareable: false,
   linkable: false,
-  run: ({ consoleDispatch }) => consoleDispatch(setGame(game)),
+  // the game may fail to load after the command is over: its block is marked then (TASK-101)
+  run: ({ consoleDispatch, blockId, fail }) =>
+    consoleDispatch(setGame({ id: game, blockId, fail })),
 }));

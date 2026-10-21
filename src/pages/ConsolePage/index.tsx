@@ -333,7 +333,7 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
       <DeepLinkCommand />
       {isPaletteOpen && !isOverlayShown && <CommandPalette onClose={closePalette} />}
       {overlay && <CanvasOverlay createScene={overlayScenes[overlay]} onExit={exitOverlay} />}
-      {state.game && <Game key={state.game} game={state.game} />}
+      {state.game && <Game key={state.game.id} game={state.game} />}
       <AchievementToast />
       {isCrt && <div className={styles.crt} aria-hidden="true" />}
     </WithCommandHandler>

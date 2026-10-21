@@ -6,19 +6,50 @@ import { ConsoleActionKind, ConsoleActionType, ConsoleState, Log } from "./inter
 // roughly the last 250 commands, far more than a CV session needs
 export const MAX_LOGS = 500;
 
+// where a log of the block goes (TASK-102): before the echo of the next block, the end when the
+// block is the latest one. A block that is gone (Ctrl+L, dropped) is older than every kept one:
+// its log goes before the first kept echo, not into the block of a newer command
+const getBlockEnd = (logs: Log[], blockId: number | undefined) => {
+  if (blockId === undefined) return logs.length;
+  const start = findEchoIndex(logs, blockId);
+  const end = logs.findIndex((log, index) => index > start && log.echo);
+  return end === -1 ? logs.length : end;
+};
+
+// the index of the echo of the block, -1 when it is gone; searched from the end: the block is
+// most likely one of the latest
+const findEchoIndex = (logs: Log[], blockId: number) => {
+  for (let index = logs.length - 1; index >= 0; index--) {
+    if (logs[index].echo?.blockId === blockId) return index;
+  }
+  return -1;
+};
+
+// the log typed out next: the kept one with the smallest id from `from` on, nextLogId when none.
+// Logs are not in the order of ids (a late log of an older block, TASK-102), and a dropped one
+// can't be typed out
+const getTypedLogId = (logs: Log[], from: number, nextLogId: number) =>
+  logs.reduce((next, { id }) => (id >= from && id < next ? id : next), nextLogId);
+
 export function reducer(state: ConsoleState, action: ConsoleActionType): ConsoleState {
   switch (action.type) {
     case ConsoleActionKind.AddLogs: {
-      const { content, instant, echo } = action.payload;
+      const { content, instant, echo, blockId } = action.payload;
       const log: Log = { content, id: state.nextLogId, ...(echo && { echo }) };
       const keptLogs =
         state.logs.length >= MAX_LOGS ? state.logs.slice(-(MAX_LOGS - 1)) : state.logs;
+      const end = getBlockEnd(keptLogs, blockId);
+      const logs = [...keptLogs.slice(0, end), log, ...keptLogs.slice(end)];
       return {
         ...state,
-        logs: [...keptLogs, log],
+        logs,
         nextLogId: log.id + 1,
-        // a dropped log can't be typed out: typing goes on from the oldest kept one
-        typedLogId: instant ? log.id + 1 : Math.max(state.typedLogId, keptLogs[0]?.id ?? log.id),
+        // a dropped log can't be typed out: typing goes on from the next kept one
+        typedLogId: instant
+          ? log.id + 1
+          : keptLogs === state.logs
+            ? state.typedLogId
+            : getTypedLogId(logs, state.typedLogId, log.id + 1),
       };
     }
 
@@ -31,16 +62,13 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
     }
 
     case ConsoleActionKind.FailCommand: {
-      // searched from the end: the block is most likely the latest one; a dropped one changes nothing
-      for (let index = state.logs.length - 1; index >= 0; index--) {
-        const { echo } = state.logs[index];
-        if (echo?.blockId !== action.payload) continue;
-        if (echo.failed) return state;
-        const logs = [...state.logs];
-        logs[index] = { ...state.logs[index], echo: { ...echo, failed: true } };
-        return { ...state, logs };
-      }
-      return state;
+      // a dropped block changes nothing
+      const index = findEchoIndex(state.logs, action.payload);
+      const echo = state.logs[index]?.echo;
+      if (!echo || echo.failed) return state;
+      const logs = [...state.logs];
+      logs[index] = { ...state.logs[index], echo: { ...echo, failed: true } };
+      return { ...state, logs };
     }
 
     case ConsoleActionKind.AddHistoryCommand: {
@@ -108,7 +136,8 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
       if (action.payload < state.typedLogId) return state;
       return {
         ...state,
-        typedLogId: action.payload + 1,
+        // the next kept one: the log after this id may be dropped already (TASK-102)
+        typedLogId: getTypedLogId(state.logs, action.payload + 1, state.nextLogId),
       };
     }
 
@@ -129,7 +158,8 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
     }
 
     case ConsoleActionKind.SetGame: {
-      if (action.payload === state.game) return state;
+      // the same game again: it goes on, its block stays the one that started it
+      if (action.payload?.id === state.game?.id) return state;
       return {
         ...state,
         game: action.payload,
