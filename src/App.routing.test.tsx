@@ -68,3 +68,30 @@ it("shows the error screen when the dictionary fails to load (TASK-29)", async (
   expect(screen.getByText(/failed to load the dictionary/)).toBeTruthy();
   expect(screen.queryByRole("textbox")).toBeNull();
 });
+
+it("runs a command clicked in the output of another page on that page (TASK-103)", async () => {
+  await renderAppAt("/settings");
+  await screen.findByText(eng.settingsWelcome);
+
+  const user = userEvent.setup();
+  await user.keyboard("show themes{Enter}");
+  await user.keyboard("nope{Enter}");
+  await user.keyboard("back{Enter}");
+  await waitFor(() => expect(window.location.pathname).toBe("/"));
+  await screen.findByText(eng.welcome);
+
+  // `help` is global: it runs on the open page
+  const logsBefore = screen.getAllByRole("listitem").length;
+  await user.click(screen.getAllByRole("button", { name: "help" })[0]);
+  expect(window.location.pathname).toBe("/");
+  expect(screen.getAllByRole("listitem").length).toBe(logsBefore + 2);
+
+  // `set theme` is a command of ~/settings only: the click goes back there and runs it
+  await user.click(screen.getByRole("button", { name: "Nord" }));
+  await waitFor(() => expect(document.documentElement.dataset.theme).toBe("Nord"));
+  expect(window.location.pathname).toBe("/settings");
+  expect(screen.getAllByRole("listitem").at(-2)?.textContent).toContain("set theme Nord");
+  expect(getLastLog()).toBe(eng.changeTheme.replace("$themeName", "Nord"));
+  // the command is dropped from the history entry: coming back to it doesn't run it again
+  expect(window.history.state?.usr ?? null).toBeNull();
+});

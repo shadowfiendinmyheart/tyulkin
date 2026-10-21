@@ -10,6 +10,7 @@ import {
   ShutdownPhase,
   SoundMode,
 } from "../../domain";
+import { ConsoleRouteValues } from "../../router/interfaces";
 import { ActionTypeGenerator } from "../interfaces";
 
 // theme colors of a text, see styles/themes.scss: the semantic ones and the ANSI palette
@@ -75,6 +76,9 @@ export interface Log {
   // stable React key: logs are dropped from the start (MAX_LOGS), so indexes shift
   id: number;
   echo?: Echo;
+  // the page it was printed on (TASK-103): its commands, clicked on another page, run there.
+  // None before any page was open
+  route?: ConsoleRouteValues;
 }
 export interface NewLog {
   content: LogNode[];
@@ -138,6 +142,8 @@ export interface ConsoleState {
   achievement: Achievement | null;
   // `exit` (TASK-98): the screen is going out, or is out until restart; null when on
   shutdown: ShutdownPhase | null;
+  // the open console page: new logs are printed on it (Log.route); null before the first one
+  route: ConsoleRouteValues | null;
 }
 
 export type ConsoleActionType =
@@ -159,10 +165,12 @@ export type ConsoleActionType =
   | ActionSetShutdown
   | ActionShowAchievement
   | ActionHideAchievement
-  | ActionFailCommand;
+  | ActionFailCommand
+  | ActionSetRoute;
 
 export type ActionAddLogs = ActionTypeGenerator<ConsoleActionKind.AddLogs, NewLog>;
 export type ActionClearLogs = ActionTypeGenerator<ConsoleActionKind.ClearLogs>;
+export type ActionSetRoute = ActionTypeGenerator<ConsoleActionKind.SetRoute, ConsoleRouteValues>;
 // payload: the blockId of the echo
 export type ActionFailCommand = ActionTypeGenerator<ConsoleActionKind.FailCommand, number>;
 // payload: id of the typed out log
@@ -199,6 +207,7 @@ export type ActionSetCommandsHint = ActionTypeGenerator<
 export enum ConsoleActionKind {
   AddLogs = "addLogs",
   ClearLogs = "clearLogs",
+  SetRoute = "setRoute",
   FailCommand = "failCommand",
   AddHistoryCommand = "addHistoryCommand",
   ClearHistory = "clearHistory",

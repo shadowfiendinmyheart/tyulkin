@@ -6,3 +6,9 @@ export type ConsoleRouteValues = (typeof CONSOLE_ROUTES)[keyof typeof CONSOLE_RO
 export interface GuiLocationState {
   print?: boolean;
 }
+
+// navigation state of a console page: a command clicked in the output of another page runs
+// there once it is open (TASK-103), as if it was typed after `cd`
+export interface ConsoleLocationState {
+  command?: string;
+}

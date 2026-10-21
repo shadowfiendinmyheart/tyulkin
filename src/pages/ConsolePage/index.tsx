@@ -15,7 +15,13 @@ import ViewSwitch from "../../components/ViewSwitch";
 import WithCommandHandler from "../../commandHandlers/WithCommandHandler";
 import { useConsoleContext } from "../../context/consoleContext";
 import { ROUTES } from "../../router/const";
-import { addConsoleLog, clearLogs, setOverlay, setShutdown } from "../../store/console/actions";
+import {
+  addConsoleLog,
+  clearLogs,
+  setOverlay,
+  setRoute,
+  setShutdown,
+} from "../../store/console/actions";
 import { setTheme } from "../../store/app/actions";
 import { getRandomScreensaver, OverlayId, SECRET_THEME, ThemeMode, CaretMode } from "../../domain";
 import { useIdle } from "../../hooks/useIdle";
@@ -134,6 +140,12 @@ const ConsolePage: React.FC<ConsolePageProps> = ({ route }) => {
   React.useLayoutEffect(() => {
     welcomeParamsRef.current = { localization, theme, caretMode };
   }, [localization, theme, caretMode]);
+
+  // logs are printed on this page from now on (TASK-103): before the welcome and any command,
+  // which run in passive effects and on input
+  React.useLayoutEffect(() => {
+    dispatch(setRoute(route));
+  }, [route, dispatch]);
 
   // welcome text; StrictMode re-runs effects on mount, so the route that was already
   // welcomed is remembered (refs survive the remount) to log it once

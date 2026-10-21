@@ -277,6 +277,23 @@ test("sets a theme by a click through a view transition, previews themes by Tab 
   await expect(page.locator("html")).toHaveAttribute("data-theme", "Nord");
 });
 
+test("runs a command clicked after cd on the page it was printed on (TASK-103)", async ({
+  page,
+}) => {
+  await open(page, "settings");
+  await page.keyboard.type("show themes");
+  await page.keyboard.press("Enter");
+  await expect(lastLog(page)).toContainText("Nord");
+  await page.keyboard.type("cd ~");
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("log")).toContainText(eng.welcome);
+
+  await page.getByRole("log").getByRole("button", { name: "Nord", exact: true }).click();
+  await expect(page).toHaveURL(new RegExp(`${BASE_PATH}settings$`));
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "Nord");
+  await expect(lastLog(page)).toHaveText("Theme successfully changed to Nord");
+});
+
 test("opens the site root without the trailing slash", async ({ page }) => {
   await page.goto(BASE_PATH.replace(/\/$/, ""));
   await expect(page.getByRole("log")).toContainText(eng.welcome);

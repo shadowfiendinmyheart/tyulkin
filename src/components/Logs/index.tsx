@@ -4,6 +4,7 @@ import { useConsoleContext } from "../../context/consoleContext";
 import CommandButton from "../CommandButton";
 import TextLink from "../TextLink";
 import { Echo, Log, LogColor, LogNode, RainbowPosition } from "../../store/console/interfaces";
+import { ConsoleRouteValues } from "../../router/interfaces";
 import { getNodesLength, getNodesText, sliceNodes } from "../../store/console/logNodes";
 import { finishTyping, skipTyping } from "../../store/console/actions";
 import { getRainbowRuns } from "../../store/console/rainbow";
@@ -78,7 +79,8 @@ const renderRainbow = (text: string, start: RainbowPosition) =>
     </span>
   ));
 
-const renderNode = (node: LogNode): React.ReactNode => {
+// route: the page the log was printed on, its commands run there (TASK-103)
+const renderNode = (node: LogNode, route?: ConsoleRouteValues): React.ReactNode => {
   if (typeof node === "string") return node;
 
   switch (node.type) {
@@ -95,7 +97,9 @@ const renderNode = (node: LogNode): React.ReactNode => {
         </TextLink>
       );
     case "command":
-      return <CommandButton command={node.command} label={node.label} theme={node.theme} />;
+      return (
+        <CommandButton command={node.command} label={node.label} theme={node.theme} route={route} />
+      );
     case "table":
       return (
         <table className={styles.table}>
@@ -105,7 +109,7 @@ const renderNode = (node: LogNode): React.ReactNode => {
               <tr key={rowIndex}>
                 {row.map((cell, cellIndex) => (
                   // eslint-disable-next-line @eslint-react/no-array-index-key -- a log never changes
-                  <td key={cellIndex}>{renderNodes(cell)}</td>
+                  <td key={cellIndex}>{renderNodes(cell, route)}</td>
                 ))}
               </tr>
             ))}
@@ -132,10 +136,10 @@ const renderNode = (node: LogNode): React.ReactNode => {
   }
 };
 
-const renderNodes = (nodes: LogNode[]) =>
+const renderNodes = (nodes: LogNode[], route?: ConsoleRouteValues) =>
   nodes.map((node, index) => (
     // eslint-disable-next-line @eslint-react/no-array-index-key -- a log never changes
-    <React.Fragment key={index}>{renderNode(node)}</React.Fragment>
+    <React.Fragment key={index}>{renderNode(node, route)}</React.Fragment>
   ));
 
 // "14:03:07": when a command was entered
@@ -167,15 +171,16 @@ const CopyStatus = ({ status }: { status?: string }) =>
 // (copied, read by screen readers) stays the input as it was entered
 const EchoItem = ({
   echo: { prompt, input, command, time, failed },
+  route,
   blockId,
   isMarked,
   copyStatus,
-}: { echo: Echo } & BlockProps) => (
+}: { echo: Echo; route?: ConsoleRouteValues } & BlockProps) => (
   <li className={cn(styles.log, styles.echo, isMarked && styles.marked)} data-block={blockId}>
     <CopyStatus status={copyStatus} />
     {`${prompt} `}
     {command ? (
-      <CommandButton command={command} label={input} className={styles.echoCommand} />
+      <CommandButton command={command} label={input} className={styles.echoCommand} route={route} />
     ) : (
       input
     )}
@@ -188,13 +193,14 @@ const EchoItem = ({
 const LogItem = React.memo(function LogItem({
   content,
   echo,
+  route,
   ...block
-}: Pick<Log, "content" | "echo"> & BlockProps) {
-  if (echo) return <EchoItem echo={echo} {...block} />;
+}: Pick<Log, "content" | "echo" | "route"> & BlockProps) {
+  if (echo) return <EchoItem echo={echo} route={route} {...block} />;
   return (
     <li className={cn(styles.log, block.isMarked && styles.marked)} data-block={block.blockId}>
       <CopyStatus status={block.copyStatus} />
-      {renderNodes(content)}
+      {renderNodes(content, route)}
     </li>
   );
 });
@@ -323,6 +329,7 @@ const Logs: React.FC<LogsProps> = ({ onTypingProgress }) => {
             key={log.id}
             content={log === typingLog ? sliceNodes(log.content, typedLength) : log.content}
             echo={log.echo}
+            route={log.route}
             blockId={blockIds.get(log.id) ?? 0}
             isMarked={copy?.blockId === blockIds.get(log.id)}
             copyStatus={log.id === firstCopiedLogId ? copyStatus : undefined}

@@ -9,9 +9,9 @@ export const MAX_LOGS = 500;
 // where a log of the block goes (TASK-102): before the echo of the next block, the end when the
 // block is the latest one. A block that is gone (Ctrl+L, dropped) is older than every kept one:
 // its log goes before the first kept echo, not into the block of a newer command
-const getBlockEnd = (logs: Log[], blockId: number | undefined) => {
+// start: the index of its echo (findEchoIndex)
+const getBlockEnd = (logs: Log[], blockId: number | undefined, start: number) => {
   if (blockId === undefined) return logs.length;
-  const start = findEchoIndex(logs, blockId);
   const end = logs.findIndex((log, index) => index > start && log.echo);
   return end === -1 ? logs.length : end;
 };
@@ -35,10 +35,19 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
   switch (action.type) {
     case ConsoleActionKind.AddLogs: {
       const { content, instant, echo, blockId } = action.payload;
-      const log: Log = { content, id: state.nextLogId, ...(echo && { echo }) };
       const keptLogs =
         state.logs.length >= MAX_LOGS ? state.logs.slice(-(MAX_LOGS - 1)) : state.logs;
-      const end = getBlockEnd(keptLogs, blockId);
+      // the output of a block is of the page its command was run on, even if printed after `cd`
+      // (`ask` streams on): its commands run there (TASK-103)
+      const start = blockId === undefined ? -1 : findEchoIndex(keptLogs, blockId);
+      const route = keptLogs[start]?.route ?? state.route;
+      const log: Log = {
+        content,
+        id: state.nextLogId,
+        ...(echo && { echo }),
+        ...(route && { route }),
+      };
+      const end = getBlockEnd(keptLogs, blockId, start);
       const logs = [...keptLogs.slice(0, end), log, ...keptLogs.slice(end)];
       return {
         ...state,
@@ -58,6 +67,14 @@ export function reducer(state: ConsoleState, action: ConsoleActionType): Console
         ...state,
         logs: [],
         typedLogId: state.nextLogId,
+      };
+    }
+
+    case ConsoleActionKind.SetRoute: {
+      if (action.payload === state.route) return state;
+      return {
+        ...state,
+        route: action.payload,
       };
     }
 

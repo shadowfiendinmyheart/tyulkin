@@ -14,6 +14,7 @@ import {
   setCommandsHint,
   setCrtMode,
   setGame,
+  setRoute,
   setSoundMode,
   showAchievement,
   skipTyping,
@@ -38,6 +39,7 @@ const initialState: ConsoleState = {
   game: null,
   achievement: null,
   shutdown: null,
+  route: null,
 };
 
 describe("console reducer", () => {
@@ -76,6 +78,25 @@ describe("console reducer", () => {
     // already failed, or dropped by clear: nothing changes
     expect(reducer(state, failCommand(failing.payload.echo.blockId))).toBe(state);
     expect(reducer(initialState, failCommand(failing.payload.echo.blockId))).toBe(initialState);
+  });
+
+  it("marks a log with the page it is printed on, a late one with the page of its block (TASK-103)", () => {
+    let state = reducer(initialState, addConsoleLog("before any page"));
+    state = reducer(state, setRoute("/"));
+    const ask = addUserLog("ask hi", "~$", "ask hi");
+    state = reducer(state, ask);
+    state = reducer(state, addUserLog("cd settings", "~$", "cd settings"));
+    state = reducer(state, setRoute("/settings"));
+    state = reducer(state, addConsoleLog("settings welcome"));
+    state = reducer(state, addConsoleLog("late answer", ask.payload.echo.blockId));
+    expect(state.logs.map(({ content, route }) => [content[0], route])).toEqual([
+      ["before any page", undefined],
+      ["~$ ask hi", "/"],
+      ["late answer", "/"],
+      ["~$ cd settings", "/"],
+      ["settings welcome", "/settings"],
+    ]);
+    expect(reducer(state, setRoute("/settings"))).toBe(state);
   });
 
   it("puts the output of a block after its last log, even after another command (TASK-102)", () => {

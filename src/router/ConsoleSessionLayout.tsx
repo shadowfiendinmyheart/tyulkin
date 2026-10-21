@@ -28,6 +28,8 @@ const createInitialState = (): ConsoleState => ({
   game: null,
   achievement: null,
   shutdown: null,
+  // set by the page (ConsolePage)
+  route: null,
 });
 
 // the terminal session (logs, history, caret) lives above the pages, so a trip to the regular

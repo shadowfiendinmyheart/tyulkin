@@ -35,6 +35,7 @@ const renderLogs = (logs: Log[]) =>
           game: null,
           achievement: null,
           shutdown: null,
+          route: null,
         },
         consoleDispatch: () => undefined,
       }}
@@ -143,7 +144,27 @@ describe("clickable commands (TASK-55)", () => {
     const button = screen.getByRole("button", { name: "cd .." });
     expect(button.getAttribute("type")).toBe("button");
     fireEvent.click(button);
-    expect(executeCommand).toHaveBeenCalledExactlyOnceWith("cd ..");
+    expect(executeCommand).toHaveBeenCalledExactlyOnceWith("cd ..", { route: undefined });
+  });
+
+  it("runs a command on the page it was printed on, a table cell too (TASK-103)", () => {
+    executeCommand.mockClear();
+    renderLogs([
+      {
+        id: 0,
+        route: "/settings",
+        content: [
+          { type: "command", command: "set theme Nord", label: "Nord" },
+          { type: "table", rows: [[[{ type: "command", command: "show themes" }]]] },
+        ],
+      },
+    ]);
+    fireEvent.click(screen.getByRole("button", { name: "Nord" }));
+    fireEvent.click(screen.getByRole("button", { name: "show themes" }));
+    expect(executeCommand.mock.calls).toEqual([
+      ["set theme Nord", { route: "/settings" }],
+      ["show themes", { route: "/settings" }],
+    ]);
   });
 });
 
@@ -185,11 +206,12 @@ describe("command blocks (TASK-82)", () => {
 
   it("runs the command of a block again on click", () => {
     executeCommand.mockClear();
-    renderLogs([{ id: 0, content: ["~ ❯ !!"], echo: echo("!!", "about") }]);
+    renderLogs([{ id: 0, content: ["~ ❯ !!"], echo: echo("!!", "about"), route: "/" }]);
     const button = screen.getByRole("button", { name: "!!" });
     // what a click runs, when the input is not it
     expect(button.getAttribute("title")).toBe("about");
     fireEvent.click(button);
-    expect(executeCommand).toHaveBeenCalledExactlyOnceWith("about");
+    // on the page it was entered on (TASK-103)
+    expect(executeCommand).toHaveBeenCalledExactlyOnceWith("about", { route: "/" });
   });
 });

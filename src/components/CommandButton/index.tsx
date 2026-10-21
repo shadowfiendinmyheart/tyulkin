@@ -2,6 +2,7 @@ import React from "react";
 import cn from "clsx";
 import { useHandlerContext } from "../../context/handlerContext";
 import { ThemeMode } from "../../domain";
+import { ConsoleRouteValues } from "../../router/interfaces";
 import styles from "./styles.module.scss";
 
 // the colors of a theme strip, theme tokens (see styles/themes.scss): the text, the accent and
@@ -25,6 +26,9 @@ interface CommandButtonProps {
   className?: string;
   // the colors of the theme are shown before the label (`show themes`, TASK-84)
   theme?: ThemeMode;
+  // the page the command was printed on: a click on another page opens it and runs there
+  // (TASK-103); none: runs on the open page
+  route?: ConsoleRouteValues;
 }
 
 // a highlighted command name; a click runs it as if it was typed (for mouse and touch users)
@@ -33,6 +37,7 @@ const CommandButton: React.FC<CommandButtonProps> = ({
   label = command,
   className,
   theme,
+  route,
 }) => {
   const { executeCommand } = useHandlerContext();
 
@@ -42,7 +47,7 @@ const CommandButton: React.FC<CommandButtonProps> = ({
       className={cn(styles.command, className)}
       // what a click runs, when the label doesn't say it
       title={label === command ? undefined : command}
-      onClick={() => executeCommand(command)}
+      onClick={() => executeCommand(command, { route })}
     >
       {theme && (
         // the tokens of the theme apply inside it: its selectors are [data-theme="…"]

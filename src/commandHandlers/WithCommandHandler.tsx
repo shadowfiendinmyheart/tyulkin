@@ -14,7 +14,7 @@ import {
   failCommand,
   setCommandsHint,
 } from "../store/console/actions";
-import { ConsoleRouteValues } from "../router/interfaces";
+import { ConsoleLocationState, ConsoleRouteValues } from "../router/interfaces";
 import { LogNode } from "../store/console/interfaces";
 import { withNode, withNodes } from "../store/console/logNodes";
 import { commandsByRoute, globalCommands, secretCommands } from "./commands";
@@ -183,8 +183,22 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ route, children
 
   // shared by Enter in the input, clicks on commands in logs and deep links
   const executeCommand = React.useCallback<HandlerContextType["executeCommand"]>(
-    (userCommand, { fromLink = false } = {}) => {
+    (userCommand, { fromLink = false, route: commandRoute = route } = {}) => {
       const typed = userCommand.trim();
+      // a command of the page it was printed on, run from another page (TASK-103): there, once it
+      // is open (DeepLinkCommand), as `cd` and the command typed would. A global one, a secret or
+      // an unknown one runs here as before; a deep link always runs on its own page
+      const pageCommands = commandsByRoute[commandRoute];
+      if (
+        !fromLink &&
+        commandRoute !== route &&
+        separateCommand(pageCommands, parsePipeline(typed)?.command ?? typed)
+      ) {
+        consoleDispatch(setCommandsHint([]));
+        const state: ConsoleLocationState = { command: typed };
+        navigate(commandRoute, { state });
+        return;
+      }
       // `!!` is the previous command (TASK-61); a link runs what it says
       const command = fromLink ? typed : expandHistory(typed, historyRef.current[0]);
       consoleDispatch(setCommandsHint([]));
@@ -212,7 +226,7 @@ const WithCommandHandler: React.FC<WithCommandHandlerProps> = ({ route, children
       if (command !== typed) consoleDispatch(addConsoleLog(command));
       commandHandler(command, fromLink, fail, blockId);
     },
-    [consoleDispatch, prompt, commandHandler, t],
+    [route, navigate, consoleDispatch, prompt, commandHandler, t],
   );
 
   // fish-like highlighting of the typed line (TASK-86), matched as commandHandler matches it:

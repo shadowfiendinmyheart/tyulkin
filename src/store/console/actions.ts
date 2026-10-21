@@ -12,6 +12,7 @@ import {
   ActionAddLogs,
   ActionClearHistory,
   ActionClearLogs,
+  ActionSetRoute,
   ActionFailCommand,
   ActionCountTypedCommand,
   ActionFinishTyping,
@@ -32,6 +33,7 @@ import {
   LogContent,
   RunningGame,
 } from "./interfaces";
+import { ConsoleRouteValues } from "../../router/interfaces";
 
 // blockId: the output of that block (TASK-102), see NewLog
 export const addConsoleLog = (content: LogContent, blockId?: number): ActionAddLogs => ({
@@ -66,6 +68,11 @@ export const addUserLog = (
   },
 });
 export const clearLogs = (): ActionClearLogs => ({ type: ConsoleActionKind.ClearLogs });
+// the console page opened: logs printed from now on belong to it (TASK-103)
+export const setRoute = (route: ConsoleRouteValues): ActionSetRoute => ({
+  type: ConsoleActionKind.SetRoute,
+  payload: route,
+});
 // marks the block of a command failed: ✗ instead of ✓ (TASK-82); blockId: of its echo
 export const failCommand = (blockId: number): ActionFailCommand => ({
   type: ConsoleActionKind.FailCommand,
