@@ -354,6 +354,14 @@ print-стили убирают управление и красят всё чё
 - `ts-loader` для TS; `sass-loader` → `css-loader` (CSS-модули только для `*.module.*`, экспорт по
   умолчанию) → `MiniCssExtractPlugin` в проде / `style-loader` в dev;
 - `[contenthash]` в именах JS, CSS и шрифтов в проде;
+- первый экран — `runtime` (хеши всех чанков), `vendors` (React и роутер, меняются редко и
+  остаются в кеше между деплоями) и `main`; всё, что ему не нужно, — ленивые чанки: страница `gui`
+  (`lazy` в [`router/routes.tsx`](src/router/routes.tsx), подгружается заранее через prefetch),
+  игры, `qr`, шрифты `set font`, словари, а редкие команды с тяжёлым содержимым (`changelog`,
+  `figlet`) грузятся при первом запуске через `runLazy`
+  ([`commandHandlers/lazy.ts`](src/commandHandlers/lazy.ts)). `performance.maxEntrypointSize` поднят
+  с 244 до 360 KiB: одни React и data router (view transitions, ошибки маршрутов) — ~215 KiB; сборка
+  без предупреждений — часть проверок, новый тяжёлый код первого экрана заметен сразу;
 - шрифт IBM Plex Mono самохостится из `@fontsource/ibm-plex-mono`; собственный `FontPreloadPlugin`
   добавляет `<link rel="preload">` для латинского подмножества и роняет сборку, если файл не найден;
 - `<noscript>` в `index.html` заполняется текстами разделов резюме из `eng.json` (`about`,

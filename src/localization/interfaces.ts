@@ -114,6 +114,8 @@ export interface CommonDictionary {
   qrSite: string;
   qrVcard: string;
   qrLoadFailed: string;
+  // a command that is a chunk of its own (TASK-105, commandHandlers/lazy.ts) didn't load
+  commandLoadFailed: string;
 }
 
 // one line of `help` per command, see commandHandlers/commands

@@ -1,4 +1,5 @@
 import { TFunction } from "../localization/interfaces";
+import { runLazy } from "./lazy";
 import { LogNode } from "../store/console/interfaces";
 import { linkify, withNode } from "../store/console/logNodes";
 
@@ -56,12 +57,6 @@ export const drawQr = (modules: boolean[][]) => {
   return lines.join("\n");
 };
 
-// a code still loading is not shown after `clear`: only if no clear came while it loaded
-let clearsCount = 0;
-export const stopQr = () => {
-  clearsCount += 1;
-};
-
 // the code is an image to scan: screen readers skip it, the line over it says what it holds
 const getQrNode = (modules: boolean[][]): LogNode => ({
   type: "pre",
@@ -92,24 +87,20 @@ export const showQr = async ({ t, param, log, fail }: QrParams) => {
     return;
   }
 
-  const clearsAtStart = clearsCount;
-  let encode: typeof import("uqr").encode;
-  try {
-    ({ encode } = await import(/* webpackChunkName: "qr" */ "uqr"));
-  } catch {
-    if (clearsCount !== clearsAtStart) return;
-    log({ type: "text", text: t({ key: "qrLoadFailed" }), color: "error" });
-    fail();
-    return;
-  }
-  if (clearsCount !== clearsAtStart) return;
-
-  if (isVcard) {
-    log(t({ key: "qrVcard" }));
-    log(getQrNode(encode(getVcard(t), { border: QR_BORDER }).data));
-  } else {
-    const siteUrl = getSiteUrl();
-    log([t({ key: "qrSite" }), " ", ...linkify(siteUrl)]);
-    log(getQrNode(encode(siteUrl, { border: QR_BORDER }).data));
-  }
+  // a code still loading is not shown after `clear` (runLazy)
+  await runLazy(
+    () => import(/* webpackChunkName: "qr" */ "uqr"),
+    { log, fail, t },
+    ({ encode }) => {
+      if (isVcard) {
+        log(t({ key: "qrVcard" }));
+        log(getQrNode(encode(getVcard(t), { border: QR_BORDER }).data));
+      } else {
+        const siteUrl = getSiteUrl();
+        log([t({ key: "qrSite" }), " ", ...linkify(siteUrl)]);
+        log(getQrNode(encode(siteUrl, { border: QR_BORDER }).data));
+      }
+    },
+    "qrLoadFailed",
+  );
 };

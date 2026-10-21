@@ -275,6 +275,19 @@ describe("neofetch (TASK-54)", () => {
   });
 });
 
+describe("lazy commands (TASK-105)", () => {
+  it("print into their own block once their chunk is loaded, through a pipe too", async () => {
+    const { user } = renderConsole();
+    await user.keyboard("changelog{Enter}figlet hi | lolcat{Enter}");
+    await waitFor(() => expect(screen.getByRole("img", { name: "hi" })).toBeTruthy());
+    const logs = getLogs();
+    const changelog = logs.indexOf("visitor@tyulkin ~ ❯ changelog");
+    // the header and the table of the changes, then the next command
+    expect(logs[changelog + 1]).toBe(t({ key: "changelogAll", args: { total: "2" } }));
+    expect(logs[changelog + 3]).toBe("visitor@tyulkin ~ ❯ figlet hi | lolcat");
+  });
+});
+
 describe("crt effect (TASK-64)", () => {
   const getCrt = () => document.querySelector(`.${pageStyles.crt}`);
 

@@ -3,7 +3,8 @@ import { createT } from "../localization";
 import eng from "../localization/dictionaries/eng.json";
 import ru from "../localization/dictionaries/ru.json";
 import { LogContent } from "../store/console/interfaces";
-import { drawQr, getSiteUrl, getVcard, showQr, stopQr } from "./qr";
+import { stopLazyCommands } from "./lazy";
+import { drawQr, getSiteUrl, getVcard, showQr } from "./qr";
 
 describe("drawQr (TASK-96)", () => {
   it("draws two rows of modules per line with half blocks", () => {
@@ -100,7 +101,7 @@ describe("showQr (TASK-96)", () => {
       log: (c) => logs.push(c),
       fail: vi.fn(),
     });
-    stopQr();
+    stopLazyCommands();
     await shown;
     expect(logs).toEqual([]);
   });

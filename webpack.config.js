@@ -353,6 +353,28 @@ module.exports = async (env, argv) => {
     resolve: {
       extensions: [".tsx", ".ts", ".js"],
     },
+    optimization: {
+      // the runtime knows the hash of every chunk: on its own, a change of a lazy chunk doesn't
+      // rewrite the scripts of the first screen
+      runtimeChunk: "single",
+      splitChunks: {
+        cacheGroups: {
+          // React and the router change far more rarely than the app (every commit rewrites it:
+          // __GIT_LOG__): a returning visitor keeps them cached
+          vendors: {
+            test: /[\\/]node_modules[\\/].*\.m?js$/,
+            name: "vendors",
+            chunks: "initial",
+          },
+        },
+      },
+    },
+    performance: {
+      // the first screen needs React (react-dom ~126 KiB) and the data router (~89 KiB: view
+      // transitions of `gui`, route errors) — more than webpack's default 244 KiB with no app
+      // code at all. What it doesn't need is a lazy chunk (TASK-105); this limit keeps it so
+      maxEntrypointSize: 360 * 1024,
+    },
     plugins: [
       new HtmlWebpackPlugin(htmlOptions),
       // SPA fallback for static hosting without rewrites (GitHub Pages serves 404.html for any

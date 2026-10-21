@@ -13,7 +13,8 @@ const t = createT(eng);
 // jsdom has no layout: the terminal a test switches to scrolls to its prompt
 Element.prototype.scrollIntoView = () => undefined;
 
-const renderGui = (path = "/gui") => {
+// the page is a lazy route (TASK-105): rendered once its chunk is loaded
+const renderGui = async (path = "/gui") => {
   const router = createMemoryRouter(routes, { initialEntries: [path] });
   render(
     <StrictMode>
@@ -31,6 +32,7 @@ const renderGui = (path = "/gui") => {
       </AppContext.Provider>
     </StrictMode>,
   );
+  await screen.findByRole("heading", { level: 1 });
   return router;
 };
 
@@ -42,8 +44,8 @@ afterEach(() => {
   Reflect.deleteProperty(document, "startViewTransition");
 });
 
-it("shows the CV sections from the dictionary with clickable contacts", () => {
-  renderGui();
+it("shows the CV sections from the dictionary with clickable contacts", async () => {
+  await renderGui();
   expect(screen.getByRole("heading", { level: 1, name: "Ivan Tyulkin" })).toBeTruthy();
   for (const title of [
     eng.guiContacts,
@@ -65,8 +67,8 @@ it("shows the CV sections from the dictionary with clickable contacts", () => {
   expect(screen.getByRole("button", { name: eng.guiPrint })).toBeTruthy();
 });
 
-it("shows the experience as a timeline: a job a mark with its title, period and description", () => {
-  renderGui();
+it("shows the experience as a timeline: a job a mark with its title, period and description", async () => {
+  await renderGui();
   const experience = within(screen.getByRole("region", { name: eng.guiExperience }));
   const jobs = experience.getAllByRole("listitem");
   const paragraphs = eng.experience.split("\n\n");
@@ -79,8 +81,8 @@ it("shows the experience as a timeline: a job a mark with its title, period and 
   });
 });
 
-it("shows the skills as tags grouped by category", () => {
-  renderGui();
+it("shows the skills as tags grouped by category", async () => {
+  await renderGui();
   const skills = within(screen.getByRole("region", { name: eng.guiSkills }));
   const lines = eng.skills.split("\n");
   expect(skills.getAllByRole("heading", { level: 3 }).map((h) => h.textContent)).toEqual(
@@ -96,26 +98,25 @@ it("shows the skills as tags grouped by category", () => {
 });
 
 // with reduced motion the transition has no animation: that is CSS (main.scss)
-it("switches to the terminal by a view transition", () => {
+it("switches to the terminal by a view transition", async () => {
   const startViewTransition = vi.fn((update: () => void) => {
     update();
     const done = Promise.resolve();
     return { ready: done, finished: done, updateCallbackDone: done, skipTransition: vi.fn() };
   });
   Object.assign(document, { startViewTransition });
-  const router = renderGui();
+  const router = await renderGui();
   fireEvent.click(screen.getByRole("link", { name: eng.switchToTerminal }));
   expect(startViewTransition).toHaveBeenCalledOnce();
   expect(router.state.location.pathname).toBe("/");
 });
 
 it("opens /gui/ with a trailing slash as /gui", async () => {
-  const router = renderGui("/gui/");
-  expect(await screen.findByRole("heading", { level: 1 })).toBeTruthy();
+  const router = await renderGui("/gui/");
   expect(router.state.location.pathname).toBe("/gui");
 });
 
-it("is not offered in the terminal once opened", () => {
-  renderGui();
+it("is not offered in the terminal once opened", async () => {
+  await renderGui();
   expect(sessionStorage.getItem("guiOffered")).toBe("true");
 });

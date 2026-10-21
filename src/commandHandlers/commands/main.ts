@@ -3,8 +3,8 @@ import { GuiLocationState } from "../../router/interfaces";
 import { withNodes } from "../../store/console/logNodes";
 import { ask, askUrl } from "../ask";
 import { blogPosts, getBlogList, getBlogPost } from "../blog";
-import { changes, getChangelog } from "../changelog";
 import { Command } from "../interfaces";
+import { runLazy } from "../lazy";
 import { sections } from "../sections";
 
 // the AI assistant about the owner (TASK-71): listed only in a build with its proxy (ASK_PROXY_URL)
@@ -77,8 +77,16 @@ export const mainCommands: Command[] = [
     name: "changelog",
     params: ["--all"],
     descriptionKey: "helpChangelog",
-    run: ({ log, t }, [param]) =>
-      getChangelog(t, changes, param?.toLowerCase() === "--all").forEach((content) => log(content)),
+    // the commits are a chunk of their own (TASK-105): they grow with every one
+    run: (ctx, [param]) =>
+      void runLazy(
+        () => import(/* webpackChunkName: "changelog" */ "../changelog"),
+        ctx,
+        ({ changes, getChangelog }) =>
+          getChangelog(ctx.t, changes, param?.toLowerCase() === "--all").forEach((content) =>
+            ctx.log(content),
+          ),
+      ),
   },
   {
     // the owner's posts (TASK-70), compiled at build time; "No posts yet" without them

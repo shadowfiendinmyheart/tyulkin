@@ -184,6 +184,7 @@
   "qrSite": "Scan to open",
   "qrVcard": "Scan to save my contact",
   "qrLoadFailed": "The QR code generator could not be loaded, check the connection and try again",
+  "commandLoadFailed": "The command could not be loaded, check the connection and try again",
   "qrUsage": "Type qr for the site address or $vcard for my contacts",
   "paletteOpenTitle": "search commands and files ($shortcut)"
 }

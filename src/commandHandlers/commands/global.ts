@@ -5,10 +5,10 @@ import { withNode } from "../../store/console/logNodes";
 import { Command } from "../interfaces";
 import { stopAsk } from "../ask";
 import { gameCommands } from "./games";
-import { drawFiglet } from "../figlet";
 import { getNeofetch } from "../neofetch";
 import { getManPage } from "../man";
-import { QR_VCARD_PARAM, showQr, stopQr } from "../qr";
+import { runLazy, stopLazyCommands } from "../lazy";
+import { QR_VCARD_PARAM, showQr } from "../qr";
 import { getSecretsLog } from "../secrets";
 import { formatDate, formatHistory, getWorkingDirectory, unquote, USER_NAME } from "../shell";
 import {
@@ -38,8 +38,8 @@ export const globalCommands: Command[] = [
     run: ({ consoleDispatch }) => {
       // an answer of `ask` would go on printing into the cleared console
       stopAsk();
-      // so is a QR code still loading
-      stopQr();
+      // so is a QR code or a command still loading
+      stopLazyCommands();
       consoleDispatch(clearLogs());
     },
   },
@@ -57,9 +57,9 @@ export const globalCommands: Command[] = [
     // a link would turn the recipient's page off at once
     shareable: false,
     run: ({ consoleDispatch }) => {
-      // an answer of `ask` or a QR code still loading would print into the restarted console
+      // an answer of `ask`, a QR code or a command still loading would print into the restarted console
       stopAsk();
-      stopQr();
+      stopLazyCommands();
       consoleDispatch(setShutdown("closing"));
     },
   },
@@ -150,7 +150,8 @@ export const globalCommands: Command[] = [
     // the visitor's words, as `echo`
     shareable: false,
     linkable: false,
-    run: ({ log, fail, t }, args) => {
+    run: (ctx, args) => {
+      const { log, fail, t } = ctx;
       const text = unquote(args.join(" ")).trim();
       if (!text) {
         log(
@@ -162,7 +163,12 @@ export const globalCommands: Command[] = [
         fail();
         return;
       }
-      log({ type: "pre", text: drawFiglet(text), label: text });
+      // the letters are a chunk of their own (TASK-105)
+      void runLazy(
+        () => import(/* webpackChunkName: "figlet" */ "../figlet"),
+        ctx,
+        ({ drawFiglet }) => log({ type: "pre", text: drawFiglet(text), label: text }),
+      );
     },
   },
   {
