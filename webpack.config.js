@@ -8,6 +8,7 @@ const { getGitLog } = require("./scripts/git-log.cjs");
 const { getGithubRepos } = require("./scripts/github-repos.cjs");
 const pwa = require("./scripts/pwa.cjs");
 const blog = require("./scripts/blog.cjs");
+const { normalizeBasePath } = require("./scripts/base-path.cjs");
 
 // static CV text for crawlers and no-JS visitors, taken from the dictionary (single source)
 const toHtmlLines = (text) => escapeXml(text).split("\n").join("<br />");
@@ -254,13 +255,6 @@ const getAskUrl = () => {
   return url ? new URL(url).href : "";
 };
 
-// "tyulkin", "/tyulkin" or "/tyulkin/" -> "/tyulkin/"; nothing -> "/"
-const normalizeBasePath = (basePath) => {
-  // `--env basePath` without a value gives `true`
-  const trimmed = (typeof basePath === "string" ? basePath : "").replace(/^\/+|\/+$/g, "");
-  return trimmed ? `/${trimmed}/` : "/";
-};
-
 // the absolute URL of the deployed site from SITE_URL (CI sets it for the published build), with a
 // trailing slash; it must end with the base path the build is made for. Not set: no absolute tags
 const getSiteUrl = (basePath) => {
@@ -280,8 +274,8 @@ module.exports = async (env, argv) => {
   const mode = argv.mode || "development";
   const isProduction = mode === "production";
   const devtool = isProduction ? false : "inline-source-map";
-  // the site may live in a subpath (GitHub Pages project site): `webpack --env basePath=/tyulkin/`;
-  // asset URLs and the router basename both come from it
+  // the site may live in a subpath (GitHub Pages project site): `webpack --env basePath=tyulkin`
+  // (scripts/base-path.cjs); asset URLs and the router basename both come from it
   const basePath = normalizeBasePath(env.basePath);
   const siteUrl = isProduction ? getSiteUrl(basePath) : undefined;
   // the published site only: the dev server doesn't count visits

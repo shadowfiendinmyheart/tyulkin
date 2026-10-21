@@ -48,7 +48,7 @@ push в `master`, если прошли проверки и e2e. В настро
 должен быть выбран **GitHub Actions**.
 
 - Сайт проекта живёт в подкаталоге (`https://<user>.github.io/tyulkin/`), поэтому сборка принимает
-  `--env basePath=/tyulkin/`: из него берутся `publicPath` ассетов и `basename` роутера
+  `--env basePath=tyulkin` (или `/tyulkin/`): из него берутся `publicPath` ассетов и `basename` роутера
   (`__BASE_PATH__` через `DefinePlugin`). По умолчанию — `/`.
 - SPA-фолбэк: Pages отвечает `404.html` на любой неизвестный путь, а прод-сборка кладёт туда копию
   `index.html` — прямой заход на `/tyulkin/settings` открывает приложение (со статусом 404).
@@ -56,6 +56,12 @@ push в `master`, если прошли проверки и e2e. В настро
   `E2E_BASE_PATH` (по умолчанию `/tyulkin/`, в CI — `/<имя репо>/`), а
   [`e2e/server.mjs`](e2e/server.mjs) раздаёт её как Pages (подкаталог, `404.html`, редирект
   `/tyulkin` → `/tyulkin/`). Со своим доменом в `ci.yml` достаточно поставить `E2E_BASE_PATH: /`.
+- Base path можно писать без слэшей: `--env basePath=tyulkin`,
+  `node e2e/server.mjs dist-e2e 4173 tyulkin` (без последнего аргумента — `/`). В Git Bash на
+  Windows так и нужно: MSYS переписывает аргументы и переменные окружения вида `/tyulkin/` в
+  Windows-путь (`C:/Program Files/Git/tyulkin/`). Такой путь сборка, сервер и
+  `playwright.config.ts` не принимают и падают с подсказкой
+  ([`scripts/base-path.cjs`](scripts/base-path.cjs)).
 
 ## ИИ-ассистент `ask`
 

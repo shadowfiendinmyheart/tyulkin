@@ -1,11 +1,22 @@
 // Serves a build the way GitHub Pages does: under a subpath, with 404.html (and status 404) for any
 // unknown path. The e2e tests run against it, so the deployed SPA fallback is tested too.
-// Usage: node e2e/server.mjs <dir> <port> <basePath>
+// Usage: node e2e/server.mjs <dir> <port> [basePath]
+// basePath: "tyulkin" (or "/tyulkin/"; nothing: the site root). Without the leading slash it
+// survives Git Bash on Windows, which rewrites "/tyulkin/" into a Windows path (scripts/base-path.cjs)
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { normalizeBasePath } from "../scripts/base-path.cjs";
 
-const [dir, port, basePath] = process.argv.slice(2);
+const [dir, port, basePathArg] = process.argv.slice(2);
+let basePath;
+try {
+  basePath = normalizeBasePath(basePathArg);
+} catch (error) {
+  // the hint as one line, not a stack trace
+  console.error(error.message);
+  process.exit(1);
+}
 const root = path.resolve(dir);
 
 const contentTypes = {
